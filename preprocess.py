@@ -4,6 +4,7 @@ import rpy2.robjects.packages as rpackages
 from rpy2.robjects.packages import importr
 import os
 import click
+import glob
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 
@@ -71,8 +72,8 @@ class TCGADownloader:
                     # This will create a map between idat file name, cases (barcode) and project
                     readr::write_tsv(match.file.cases.all, path =  "idat_filename_case.txt")
                     # code to move all files to local folder
-                    #for(file in dir(".",pattern = ".idat", recursive = T)){
-                    #    TCGAbiolinks:::move(file,file.path('%s',basename(file)))
+                    for(file in dir(".",pattern = ".idat", recursive = T)){
+                        TCGAbiolinks:::move(file,file.path('%s',basename(file)))
                     }
                    """%output_dir)
 
@@ -98,6 +99,11 @@ class TCGADownloader:
                     df <- rbindlist(data)
                     write.csv(df, file=file.path('%s','clinical_info.csv'))
                    """%output_dir)
+
+    def create_sample_sheet(self, input_sample_sheet, output_sample_sheet, head_tcga_dir):
+        pass
+        #tcga_files = glob.glob(head_tcga_dir+'/*')
+        #pd.read_csv('clinical_info.csv')
 
 class PreProcessIDAT:
     def __init__(self, idat_dir):
