@@ -5,6 +5,7 @@ from rpy2.robjects.packages import importr
 import os
 import click
 import glob
+import numpy as np, pandas as pd
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 
@@ -100,8 +101,17 @@ class TCGADownloader:
                     write.csv(df, file=file.path('%s','clinical_info.csv'))
                    """%output_dir)
 
-    def create_sample_sheet(self, input_sample_sheet, output_sample_sheet, head_tcga_dir):
-        pass
+    def create_sample_sheet(self, input_sample_sheet, idat_dir, output_sample_sheet, mapping_file="barcode_mapping.txt"):
+        idats = glob.glob("{}/*.idat".format(idat_dir))
+        barcode_mappings = np.loadtxt(mapping_file,dtype=str)
+        barcode_mappings[:,1] = np.vectorize(lambda x: '-'.join(x.split('-')[:4]))(barcode_mappings[:,1])
+        barcode_mappings = {v:k for k,v in dict(barcode_mappings.tolist()).items()}
+        input_df = pd.read_csv(input_sample_sheet)
+        input_df['Basename'] = input_df['bcr_patient_barcode'].map(barcode_mappings)
+        idat_basenames = np.unique(np.vectorize(lambda x: '_'.join(x.split('_')[:2]))(idats))
+        output_df = input_df[input_df['Basename'].isin(idat_basenames)]
+        output_df.loc[:,['Basename']] = output_df['Basename'].map(lambda x: idat_dir+x)
+        output_df.to_csv(output_sample_sheet)
         #tcga_files = glob.glob(head_tcga_dir+'/*')
         #pd.read_csv('clinical_info.csv')
 
@@ -155,6 +165,17 @@ def download_clinical(output_dir):
     os.makedirs(output_dir, exist_ok=True)
     downloader = TCGADownloader()
     downloader.download_clinical(output_dir)
+
+@preprocess.command()
+@click.option('-is', '--input_sample_sheet', default='./tcga_idats/clinical_info.csv', help='Clinical information downloaded from tcga.', type=click.Path(exists=False), show_default=True)
+@click.option('-i', '--idat_dir', default='./tcga_idats/', help='Idat directory.', type=click.Path(exists=False), show_default=True)
+@click.option('-os', '--output_sample_sheet', default='./tcga_idats/minfiSheet.csv', help='CSV for minfi input.', type=click.Path(exists=False), show_default=True)
+@click.option('-m', '--mapping_file', default='./barcode_mapping.txt', help='Mapping file from uuid to TCGA barcode.', type=click.Path(exists=False), show_default=True)
+def create_sample_sheet(input_sample_sheet, idat_dir, output_sample_sheet, mapping_file):
+    os.makedirs(output_dir, exist_ok=True)
+    downloader = TCGADownloader()
+    downloader.create_sample_sheet(input_sample_sheet, idat_dir, output_sample_sheet, mapping_file)
+    print("Please remove {} from {}, if it exists in that directory.".format(input_sample_sheet, idat_dir))
 
 ## preprocess ##
 
