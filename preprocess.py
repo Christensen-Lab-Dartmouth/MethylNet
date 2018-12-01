@@ -132,6 +132,9 @@ class TCGADownloader:
         idatFiles = robjects.r('list.files("{}/idat", pattern = "idat.gz$", full = TRUE)'.format(query))
         base.sapply(idatFiles, base.gunzip, overwrite = True)
         subprocess.call('mv {}/idat/*.idat {}/'.format(query, output_dir),shell=True)
+        # FIXME Table, dataTable import
+        pandas2ri.ri2py(base.as_data_frame_matrix(robjects.r("Table(dataTable(getGEO('{}')[[1]]))".format(geo_query)))).to_csv('{}/{}_clinical_info.csv'.format(output_dir,query))
+
 
 class PreProcessIDAT:
     # https://kasperdanielhansen.github.io/genbioconductor/html/minfi.html
@@ -297,7 +300,7 @@ def remove_low_sample_number():
 
 ## preprocess ##
 
-@preprocess.command()
+@preprocess.command() # update
 @click.option('-i', '--idat_dir', default='./tcga_idats/', help='Idat directory.', type=click.Path(exists=False), show_default=True)
 def plot_qc(idat_dir, geo_query, n_cores, output_dir):
     preprocesser = PreProcessIDAT(idat_dir)
@@ -323,6 +326,8 @@ def remove_MAD_threshold():
 
 ## Build MethylNet (sklearn interface) and Pickle ##
 # methylnet class features various dataloaders, data augmentation methods, different types variational autoencoders (load from other), with customizable architecture, etc, skorch?
+
+# use another script for this: https://towardsdatascience.com/paper-repro-deep-neuroevolution-756871e00a66
 
 #################
 
