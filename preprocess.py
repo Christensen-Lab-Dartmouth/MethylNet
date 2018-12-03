@@ -9,6 +9,7 @@ import numpy as np, pandas as pd
 from collections import Counter
 #import impyute
 from sklearn.impute import SimpleImputer
+from functools import reduce
 from fancyimpute import KNN, NuclearNormMinimization, SoftImpute, IterativeImputer, BiScaler
 from rpy2.robjects import pandas2ri
 pandas2ri.activate()
@@ -277,10 +278,38 @@ class PreProcessIDAT:
         pandas2ri.ri2py(self.pheno).to_csv('{}/pheno.csv'.format(output_dir))
         pandas2ri.ri2py(self.beta_final).to_csv('{}/beta.csv'.format(output_dir))
 
+class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_data, rework indexing
+    def __init__(self, pheno_df, beta_df):
+        self.pheno=self.pheno_df
+        self.beta=self.beta_df
+
+    def export(self, output_pickle):
+        pass
+
+    def write_csvs(self, output_dir):
+        self.pheno.to_csv('{}/pheno.csv'.format(output_dir))
+        self.beta.to_csv('{}/beta.csv'.format(output_dir))
+
+    def impute(self, imputer):
+        self.beta = imputer.fit_transform(self.beta)
+
+    def load(self, input_pickle):
+        pass
+
+class MethylationArrays:
+    def __init__(self, list_methylation_arrays):
+        self.methylation_arrays = list_methylation_arrays
+
+    def combine(self): # FIXME add sort based on samples
+        pheno_df=pd.concat([methylArr.pheno for methylArr in self.methylation_arrays], join='inner')#.sort()
+        beta_df=pd.concat([methylArr.beta for methylArr in self.methylation_arrays], join='inner')#.sort()
+        return MethylationArray(pheno_df,beta_df)
+
+
 class ImputerObject:
     def __init__(self, solver, method, opts={}):
 
-        imputers = {'fancyimpute':dict(KNN=KNN(k=opts['k']),MICE=IterativeImputer(),BiScaler=BiScaler(),Soft=SoftImpute()),
+        imputers = {'fancyimpute':dict(KNN=KNN(**opts),MICE=IterativeImputer(**opts),BiScaler=BiScaler(**opts),Soft=SoftImpute(**opts)),
                     'impyute':dict(),
                     'simple':dict(Mean=SimpleImputer(strategy='mean'),Zero=SimpleImputer(strategy='constant'))}
         try:
@@ -289,6 +318,9 @@ class ImputerObject:
             print('{} {} not a valid combination.\nValid combinations:{}'.format(
                 solver, method, '\n'.join('{}:{}'.format(solver,','.join(imputers[solver].keys())) for solver in imputers)))
             exit()
+
+
+
 
 #### COMMANDS ####
 
@@ -462,15 +494,33 @@ def preprocess_pipeline(idat_dir, geo_query, n_cores, output_dir, split_by_subty
 @click.option('-m', '--method', default='knn', help='Method of imputation.', type=click.Choice(['KNN', 'Mean', 'Zero', 'MICE', 'BiScaler', 'Soft', 'random', 'DeepCpG', 'DAPL']), show_default=True)
 @click.option('-s', '--solver', default='fancyimpute', help='Imputation library.', type=click.Choice(['fancyimpute', 'impyute', 'simple']), show_default=True)
 @click.option('-k', '--n_neighbors', default=5, help='Number neioghbors for imputation if using KNN.', show_default=True)
-
-def imputation_pipeline(split_by_subtype=True, method='knn', solver='fancyimpute', n_neighbors=5): # wrap a class around this
+@click.option('-o', '--orientation', default='rows', help='Impute rows or columns, NOTE: Change this description to CpGs or samples.', type=click.Choice(['rows','columns']), show_default=True)
+def imputation_pipeline(split_by_subtype=True, method='knn', solver='fancyimpute', n_neighbors=5, orientation='rows'): # wrap a class around this
     """Imputation of subtype or no subtype using """
     if method in ['DeepCpG', 'DAPL', 'EM']:
         print('Method {} coming soon...'.format(method))
     elif solver in ['impyute']:
         print('Impyute coming soon...')
     else:
-        imputer = ImputerObject(solver, method, dict(k=n_neighbors))
+        imputer = ImputerObject(solver, method, opts=dict(k=n_neighbors, orientation=orientation))
+        # methylationarray object impute after splitting? try to limit data usage, then export... try to limit csvs else huge data usage
+
+
+def extract_pheno_beta_df_from_folder(folder):
+    return pd.read_csv(folder+'/pheno.csv'), pd.read_csv(folder+'/beta.csv')
+
+@preprocess.command()
+# fixme add commands
+def combine_split_methylation_arrays(postimputation=False):
+    """If split MethylationArrays by subtype for either preprocessing or imputation, can use to recombine data for downstream step."""
+    methylation_analyses_folders= 'please update'
+    list_methyl_arrays = []
+    for folder in methylation_analyses_folders:
+        pheno_df, beta_df = extract_pheno_beta_df_from_folder(folder)
+        list_methyl_arrays.append(MethylationArray(pheno_df, beta_df))
+    list_methyl_arrays = MethylationArrays(list_methyl_arrays)
+    combined_methyl_array = list_methyl_arrays.combine()
+    combined_methyl_array.write_csvs(output_dir)
 
 def remove_MAD_threshold():
     """Filter CpGs below MAD threshold"""
