@@ -109,7 +109,7 @@ class TCGADownloader:
 
     def download_geo(self, query, output_dir):
         """library(GEOquery)"""
-        import GEOparse
+        #import GEOparse
         base=importr('base')
         geo = importr("GEOquery")
         geo.getGEOSuppFiles(query)
