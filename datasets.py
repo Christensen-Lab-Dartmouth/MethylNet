@@ -15,6 +15,7 @@ class Transformer:
 # test_set_percent = 0.1
 # methyl_test_df = methyl_df2.sample(frac=test_set_percent)
 # methyl_train_df = methyl_df2.drop(methyl_test_df.index)
+# instead get beta keys and sample
 
 def get_methylation_dataset(methylation_array, outcome_col):
     return MethylationDataSet(methylation_array, Transformer(), outcome_col)
@@ -29,7 +30,7 @@ class MethylationDataSet(Dataset):
 
     def __getitem__(self, index):
         transform = self.transform.generate()
-        return transform(self.methylation_array.beta.iloc[index]),self.samples[index],self.outcome_col.iloc[index]
+        return transform(self.methylation_array.beta.iloc[index,].values),self.samples[index],self.outcome_col.iloc[index]
 
     def __len__(self):
         return self.methylation_array.beta.shape[0]

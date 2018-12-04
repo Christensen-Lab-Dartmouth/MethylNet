@@ -1,4 +1,40 @@
 import copy
+from torch import nn
+
+def train(model, loader, loss_func, optimizer):
+    model.train()
+    for inputs, _ in loader:
+        inputs = Variable(inputs)
+
+        output, mean, logvar = model(inputs)
+        loss = vae_loss(output, inputs, mean, logvar, loss_func)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+def project(model, loader):
+    for inputs, _ in loader:
+        inputs = Variable(inputs)
+        z = model.get_latent_z(inputs)
+
+class AutoEncoder:
+    def __init__(self, autoencoder_model, n_epochs, loss_fn, optimizer):
+        self.model=autoencoder_model
+        self.n_epochs = n_epochs
+        self.loss_fn = loss_fn
+        self.optiimzer = optimizer
+
+    def fit(self, train_data):
+        for epoch in range(self.n_epochs):
+            train(self.model, self.train_data, self.loss_fn, self.optimizer)
+        return self.model
+
+    def transform(self, train_data):
+        return project(self.model, train_data)
+
+    def fit_transform(self, train_data):
+        return self.fit(train_data).transform(train_data)
 
 def vae_loss(output, input, mean, logvar, loss_func):
     recon_loss = loss_func(output, input)
@@ -56,6 +92,11 @@ class TybaltTitusVAE(nn.Module):
         z = self.sample_z(mean, logvar)
         out = self.decode(z)
         return out, mean, logvar
+
+    def get_latent_z(self, x):
+        mean, logvar = self.encode(x)
+        z = self.sample_z(mean, logvar)
+        return z
 
 class CVAE(nn.Module):
     def __init__(self, in_shape, n_latent):

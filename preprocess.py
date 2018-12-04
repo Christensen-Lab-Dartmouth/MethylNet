@@ -320,6 +320,15 @@ class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_da
             methyl_arrays.write_dbs(conn)
         return methyl_arrays
 
+    def split_train_test(self, train_p=0.8):
+        np.random.seed(42)
+        methyl_array_idx = pd.Series(self.pheno_df.index)
+        #np.random.shuffle(methyl_array_idx)
+        train_idx = methyl_array_idx.sample(frac=train_p)
+        test_idx = methyl_array_idx.drop(train_idx.index)
+        return MethylationArray(self.pheno.loc[train_idx.values,],self.beta.loc[train_idx.values,],'train'),
+                MethylationArray(self.pheno.loc[test_idx.values,],self.beta.loc[test_idx.values,],'test')
+
     def mad_filter(self, n_top_cpgs):
         mad_cpgs = self.beta.mad(axis=1).sort_values(ascending=False)
         top_mad_cpgs = list(mad_cpgs.iloc[:,:n_top_cpgs])
