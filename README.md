@@ -30,5 +30,5 @@ What MethylNet can do:
         * And more!
 
 TODO:
-* Test Preprocessing tools
+* Test Preprocessing tools 
 * Test VAE
