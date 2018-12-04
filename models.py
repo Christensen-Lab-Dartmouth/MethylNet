@@ -23,7 +23,7 @@ class AutoEncoder:
         self.model=autoencoder_model
         self.n_epochs = n_epochs
         self.loss_fn = loss_fn
-        self.optiimzer = optimizer
+        self.optimizer = optimizer
 
     def fit(self, train_data):
         for epoch in range(self.n_epochs):
