@@ -1,0 +1,3 @@
+Age (years at operation)	age
+Sex	sex
+WHO Grade	grade

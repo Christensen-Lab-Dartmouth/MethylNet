@@ -8,12 +8,11 @@ import glob
 import numpy as np, pandas as pd
 from collections import Counter
 #import impyute
-from sklearn.impute import SimpleImputer
 from functools import reduce
-from fancyimpute import KNN, NuclearNormMinimization, SoftImpute, IterativeImputer, BiScaler
-from rpy2.robjects import pandas2ri
+from rpy2.robjects import pandas2ri, numpy2ri
 import sqlite3
 pandas2ri.activate()
+numpy2ri.activate()
 # fixme dump to sql db!!
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
@@ -28,6 +27,7 @@ class PackageInstaller:
         pass
 
     def install_bioconductor(self):
+        #robjects.r['install.packages']("BiocInstaller",repos="http://bioconductor.org/packages/3.7/bioc")
         base = importr('base')
         base.source("http://www.bioconductor.org/biocLite.R")
 
@@ -140,10 +140,10 @@ class PreProcessPhenoData:
         idats = glob.glob("{}/*.idat".format(self.idat_dir))
         idat_basenames = np.unique(np.vectorize(lambda x: '_'.join(x.split('/')[-1].split('_')[:3]))(idats))
         idat_geo_map = dict(zip(np.vectorize(lambda x: x.split('_')[0])(idat_basenames),np.array(idat_basenames)))
-        self.pheno_sheet['Basename'] = self.pheno_sheet['geo_accession'].map(idat_geo_map).map(lambda x: self.idat_dir+x)
+        self.pheno_sheet['Basename'] = self.pheno_sheet['geo_accession'].map(idat_geo_map)
         self.pheno_sheet = self.pheno_sheet[self.pheno_sheet['Basename'].isin(idat_basenames)]
+        self.pheno_sheet.loc[:,'Basename'] = self.pheno_sheet['Basename'].map(lambda x: self.idat_dir+x)
         self.pheno_sheet = self.pheno_sheet[['Basename','geo_accession',disease_class_column]].rename(columns={'geo_accession':'AccNum',disease_class_column:'disease'})
-
 
     def format_tcga(self, mapping_file="barcode_mapping.txt"):
         idats = glob.glob("{}/*.idat".format(self.idat_dir))
@@ -156,27 +156,51 @@ class PreProcessPhenoData:
         self.pheno_sheet.loc[:,['Basename']] = self.pheno_sheet['Basename'].map(lambda x: self.idat_dir+x)
         self.pheno_sheet = self.pheno_sheet[['Basename', 'disease', 'tumor_stage', 'vital_status', 'age_at_diagnosis', 'gender', 'race', 'ethnicity']].rename(columns={'tumor_stage':'stage','vital_status':'vital','age_at_diagnosis':'age'})
 
-
     def format_custom(self, basename_col, disease_class_column, include_columns={}):
-        self.pheno_sheet['Basename'] = self.pheno_sheet[basename_col].map(lambda x: self.idat_dir+x)
+        idats = glob.glob("{}/*.idat".format(self.idat_dir))
+        idat_basenames = np.unique(np.vectorize(lambda x: '_'.join(x.split('/')[-1].split('_')[:-1]))(idats))
+        idat_count_underscores = np.vectorize(lambda x: x.count('_'))(idat_basenames)
+        self.pheno_sheet['Basename'] = self.pheno_sheet[basename_col]
+        basename_count_underscores = np.vectorize(lambda x: x.count('_'))(self.pheno_sheet['Basename'])
+        min_underscores=min(np.hstack([idat_count_underscores,basename_count_underscores]))
+        basic_basename_fn = np.vectorize(lambda x: '_'.join(x.split('_')[-min_underscores-1:]))
+        basic_basename=dict(zip(basic_basename_fn(self.pheno_sheet['Basename']),self.pheno_sheet['Basename'].values))
+        basic_idat=dict(zip(basic_basename_fn(idat_basenames),idat_basenames))
+        complete_mapping={basic_basename[basename]:basic_idat[basename] for basename in basic_basename}
+        self.pheno_sheet.loc[:,'Basename']=self.pheno_sheet['Basename'].map(complete_mapping).map(lambda x: self.idat_dir+x)
         self.pheno_sheet['disease'] = self.pheno_sheet[disease_class_column]
-        self.pheno_sheet = self.pheno_sheet[np.unique(['Basename', 'disease']+include_columns.keys())].rename(columns=include_columns)
+        self.pheno_sheet = self.pheno_sheet[np.unique(['Basename', 'disease']+list(include_columns.keys()))].rename(columns=include_columns)
 
-    def merge(self, other_formatted_sheet):
-        self.pheno_sheet = self.pheno_sheet.merge(other_formatted_sheet,how='inner', on='Basename')
+    def merge(self, other_formatted_sheet, use_second_sheet_disease=True):
+        disease_dict = {False:'disease_x',True:'disease_y'}
+        self.pheno_sheet = self.pheno_sheet.merge(other_formatted_sheet.pheno_sheet,how='inner', on='Basename')
+        self.pheno_sheet['disease'] = self.pheno_sheet[disease_dict[use_second_sheet_disease]]
+        cols=list(self.pheno_sheet)
+        self.pheno_sheet = self.pheno_sheet[[col for col in cols if col!='Unnamed: 0_x' and col!='Unnamed: 0_y' and col!=disease_dict[use_second_sheet_disease]]]
 
     def concat(self, other_formatted_sheet):
-        self.pheno_sheet=pd.concat([self.pheno_sheet,other_formatted_sheet],join='inner').reset_index(drop=True)
+        self.pheno_sheet=pd.concat([self.pheno_sheet,other_formatted_sheet.pheno_sheet],join='inner').reset_index(drop=True)
+        self.pheno_sheet=self.pheno_sheet[[col for col in list(self.pheno_sheet) if not col.startswith('Unnamed:')]]
 
     def export(self, output_sheet_name):
         self.pheno_sheet.to_csv(output_sheet_name)
         print("Please move all other sample sheets out of this directory.")
 
-    def get_categorical_distribution(self, key):
+    def get_categorical_distribution(self, key, disease_only=False, subtype_delimiter=','):
+        if disease_only:
+            self.pheno_sheet['disease_only'] = self.pheno_sheet['disease'].map(lambda x: x.split(',')[0])
+            key='disease_only'
         return Counter(self.pheno_sheet[key])
 
-    def remove_diseases(self,exclude_disease_list):
-        self.pheno_sheet = self.pheno_sheet[~self.pheno_sheet['disease'].isin(exclude_disease_list)]
+    def remove_diseases(self,exclude_disease_list, low_count, disease_only,subtype_delimiter):
+        if low_count:
+            count_diseases=pd.DataFrame(self.get_categorical_distribution(low_count, disease_only,subtype_delimiter).items(),columns=['disease','count'])
+            exclude_diseases_more=count_diseases.loc[count_diseases['count']<low_count,['disease']].unique().tolist()
+            if disease_only:
+                exclude_diseases_more=self.pheno_sheet.loc[self.pheno_sheet['disease_only'].isin(exclude_diseases_more),'disease'].unique().tolist()
+        else:
+            exclude_diseases_more=[]
+        self.pheno_sheet = self.pheno_sheet[~self.pheno_sheet['disease'].isin(exclude_disease_list+exclude_diseases_more)]
 
 
 class PreProcessIDAT:
@@ -189,8 +213,8 @@ class PreProcessIDAT:
 
 
     def load_idats(self, geo_query=''): # maybe have a larger parent class that subsets idats by subtype, then preprocess each subtype and combine the dataframes
-        targets = self.minfi.read_450k_sheet(self.idat_dir)
-        self.RGset = self.minfi.read_450k_exp(targets=targets, extended=True)
+        targets = self.minfi.read_metharray_sheet(self.idat_dir)
+        self.RGset = self.minfi.read_metharray_exp(targets=targets, extended=True)
         if geo_query:
             geo = importr('GEOquery')
             self.RGset.slots["pData"] = robjects.r('pData')(robjects.r("getGEO('{}')[[1]]".format(query)))
@@ -202,7 +226,7 @@ class PreProcessIDAT:
         return self.RGset
 
     def preprocessRAW(self):
-        self.MSet = self.minfi.preprocessRAW(self.RGset)
+        self.MSet = self.minfi.preprocessRaw(self.RGset)
         return self.MSet
 
     def preprocessENmix(self, n_cores=6):
@@ -216,7 +240,7 @@ class PreProcessIDAT:
         return self.RSet
 
     def get_beta(self):
-        self.beta = self.minfi.getBeta(self.RSet, "Illumina")
+        self.beta = self.minfi.getBeta(self.RSet)
         return self.beta
 
     def filter_beta(self):
@@ -229,11 +253,12 @@ class PreProcessIDAT:
         geneplotter = importr("geneplotter")
         base = importr('base')
         anno=self.minfi.getAnnotation(self.RGset)
-        self.enmix.multifreqpoly(self.get_meth()+self.get_unmeth(), xlab="Total intensity")
+        #self.enmix.multifreqpoly(self.get_meth()+self.get_unmeth(), xlab="Total intensity")
+        anno_py = pandas2ri.ri2py(robjects.r['as'](anno,'data.frame'))
         beta_py = pandas2ri.ri2py(self.beta)
-        anno_py = pandas2ri.ri2py(anno)
-        beta1=pandas2ri.py2ri(beta_py[anno_py["Type"]=="I"])
-        beta2=pandas2ri.py2ri(beta_py[anno_py["Type"]=="II"])
+        print(beta_py)
+        beta1=numpy2ri.py2ri(beta_py[anno_py["Type"]=="I"])
+        beta2=numpy2ri.py2ri(beta_py[anno_py["Type"]=="II"])
         grdevice.jpeg(output_dir+'/dist.jpg',height=900,width=600)
         base.par(mfrow=robjects.vectors.IntVector([3,2]))
         self.enmix.multidensity(self.beta, main="Multidensity")
@@ -254,7 +279,8 @@ class PreProcessIDAT:
         return self.minfi.getUnmeth(self.MSet)
 
     def extract_pheno_data(self, methylset=False):
-        self.pheno = self.minfi.pData(self.Mset) if methylset else self.minfi.pData(self.RGset)
+        self.pheno = robjects.r("pData")(self.Mset) if methylset else robjects.r("pData")(self.RGset)
+        print(self.pheno)
         return self.pheno
 
     def extract_manifest(self):
@@ -278,7 +304,7 @@ class PreProcessIDAT:
 
     def output_pheno_beta(self, output_db, disease=''):
         self.pheno_py=pandas2ri.ri2py(self.pheno)
-        self.beta_py=pandas2ri.ri2py(self.beta_final)
+        self.beta_py=pd.DataFrame(pandas2ri.ri2py(self.beta_final),columns=numpy2ri.ri2py(robjects.r("featureNames")(self.RSet)),rows=numpy2ri.ri2py(robjects.r("sampleNames")(self.RSet))).transpose()
         conn = sqlite3.connect(output_db)#'{}/methyl_array.db'.format(output_dir))
         pheno.to_sql('pheno' if not disease else 'pheno_{}'.format(disease), conn=conn, if_exists='replace')
         beta.to_sql('beta' if not disease else 'beta_{}'.format(disease), conn=conn, if_exists='replace')
@@ -309,6 +335,14 @@ class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_da
     def impute(self, imputer):
         self.beta = imputer.fit_transform(self.beta)
 
+    def split_train_test(self, train_p=0.8):
+        np.random.seed(42)
+        methyl_array_idx = pd.Series(self.pheno_df.index)
+        #np.random.shuffle(methyl_array_idx)
+        train_idx = methyl_array_idx.sample(frac=train_p)
+        test_idx = methyl_array_idx.drop(train_idx.index)
+        return MethylationArray(self.pheno.loc[train_idx.values],self.beta.loc[train_idx.values],'train'),MethylationArray(self.pheno.loc[test_idx.values],self.beta.loc[test_idx.values],'test')
+
     def split_by_subtype(self, write_db=False, conn=None):
         methyl_arrays = []
         for disease, pheno_df in self.pheno.groupby('diseases'):
@@ -319,15 +353,6 @@ class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_da
         if write_db and conn != None:
             methyl_arrays.write_dbs(conn)
         return methyl_arrays
-
-    def split_train_test(self, train_p=0.8):
-        np.random.seed(42)
-        methyl_array_idx = pd.Series(self.pheno_df.index)
-        #np.random.shuffle(methyl_array_idx)
-        train_idx = methyl_array_idx.sample(frac=train_p)
-        test_idx = methyl_array_idx.drop(train_idx.index)
-        return MethylationArray(self.pheno.loc[train_idx.values,],self.beta.loc[train_idx.values,],'train'),
-                MethylationArray(self.pheno.loc[test_idx.values,],self.beta.loc[test_idx.values,],'test')
 
     def mad_filter(self, n_top_cpgs):
         mad_cpgs = self.beta.mad(axis=1).sort_values(ascending=False)
@@ -426,13 +451,13 @@ def download_geo(geo_query,output_dir):
 @click.option('-i', '--idat_dir', default='./tcga_idats/', help='Idat directory.', type=click.Path(exists=False), show_default=True)
 @click.option('-os', '--output_sample_sheet', default='./tcga_idats/minfiSheet.csv', help='CSV for minfi input.', type=click.Path(exists=False), show_default=True)
 @click.option('-m', '--mapping_file', default='./barcode_mapping.txt', help='Mapping file from uuid to TCGA barcode.', type=click.Path(exists=False), show_default=True)
-@click.option('-h', '--header_line', default=0, help='Line to begin reading csv/xlsx.', show_default=True)
+@click.option('-l', '--header_line', default=0, help='Line to begin reading csv/xlsx.', show_default=True)
 @click.option('-d', '--disease_class_column', default="methylation class:ch1", help='Disease classification column, for custom and geo datasets.', type=click.Path(exists=False), show_default=True)
 @click.option('-b', '--basename_col', default="Sentrix ID (.idat)", help='Basename classification column, for custom datasets.', type=click.Path(exists=False), show_default=True)
 @click.option('-c', '--include_columns_file', default="", help='Custom columns file containing columns to keep, separated by \\n. Add a tab for each line if you wish to rename columns: original_name \\t new_column_name', type=click.Path(exists=False), show_default=True)
 def create_sample_sheet(input_sample_sheet, source_type, idat_dir, output_sample_sheet, mapping_file, header_line, disease_class_column, basename_col, include_columns_file):
-    os.makedirs(output_dir, exist_ok=True)
-    pheno_sheet = PreProcessPhenoData(input_sample_sheet, idat_dir, header_line=0 if source_type is not 'custom' else header_line)
+    os.makedirs(output_sample_sheet[:output_sample_sheet.rfind('/')], exist_ok=True)
+    pheno_sheet = PreProcessPhenoData(input_sample_sheet, idat_dir, header_line= (0 if source_type != 'custom' else header_line))
     if source_type == 'tcga':
         pheno_sheet.format_tcga(mapping_file)
     elif source_type == 'geo':
@@ -443,17 +468,18 @@ def create_sample_sheet(input_sample_sheet, source_type, idat_dir, output_sample
         else:
             include_columns={}
         pheno_sheet.format_custom(basename_col, disease_class_column, include_columns)
-    pheno_sheet.export(output_sheet_name)
+    pheno_sheet.export(output_sample_sheet)
     print("Please remove {} from {}, if it exists in that directory.".format(input_sample_sheet, idat_dir))
 
 @preprocess.command()
 @click.option('-s1', '--sample_sheet1', default='./tcga_idats/clinical_info1.csv', help='Clinical information downloaded from tcga/geo/custom, formatted using create_sample_sheet.', type=click.Path(exists=False), show_default=True)
 @click.option('-s2', '--sample_sheet2', default='./tcga_idats/clinical_info2.csv', help='Clinical information downloaded from tcga/geo/custom, formatted using create_sample_sheet.', type=click.Path(exists=False), show_default=True)
 @click.option('-os', '--output_sample_sheet', default='./tcga_idats/minfiSheet.csv', help='CSV for minfi input.', type=click.Path(exists=False), show_default=True)
-def merge_sample_sheets(sample_sheet1, sample_sheet2, output_sample_sheet):
+@click.option('-d', '--second_sheet_disease', is_flag=True, help='Use second sheet\'s disease column.')
+def merge_sample_sheets(sample_sheet1, sample_sheet2, output_sample_sheet, second_sheet_disease):
     s1 = PreProcessPhenoData(sample_sheet1, idat_dir='', header_line=0)
     s2 = PreProcessPhenoData(sample_sheet2, idat_dir='', header_line=0)
-    s1.merge(s2)
+    s1.merge(s2,second_sheet_disease)
     s1.export(output_sample_sheet)
 
 @preprocess.command()
@@ -468,19 +494,24 @@ def concat_sample_sheets(sample_sheet1, sample_sheet2, output_sample_sheet):
     s1.export(output_sample_sheet)
 
 @preprocess.command()
-@click.option('-is', '--formatted_sample_sheet', default='./tcga_idats/clinical_info.csv', help='Clinical information downloaded from tcga/geo/custom, formatted using create_sample_sheet.', type=click.Path(exists=False), show_default=True)
+@click.option('-is', '--formatted_sample_sheet', default='./tcga_idats/minfiSheet.csv', help='Clinical information downloaded from tcga/geo/custom, formatted using create_sample_sheet.', type=click.Path(exists=False), show_default=True)
 @click.option('-k', '--key', default='disease', help='Column of csv to print statistics for.', type=click.Path(exists=False), show_default=True)
-def get_categorical_distribution(formatted_sample_sheet,key):
-    print('\n'.join('{}:{}'.format(k,v) for k,v in PreProcessPhenoData(formatted_sample_sheet, idat_dir='', header_line=0).get_categorical_distribution(key)))
+@click.option('-d', '--disease_only', is_flag=True, help='Only look at disease, or text before subtype_delimiter.')
+@click.option('-sd', '--subtype_delimiter', default=',', help='Delimiter for disease extraction.', type=click.Path(exists=False), show_default=True)
+def get_categorical_distribution(formatted_sample_sheet,key,disease_only=False,subtype_delimiter=','):
+    print('\n'.join('{}:{}'.format(k,v) for k,v in PreProcessPhenoData(formatted_sample_sheet, idat_dir='', header_line=0).get_categorical_distribution(key,disease_only,subtype_delimiter).items()))
 
 @preprocess.command()
 @click.option('-is', '--formatted_sample_sheet', default='./tcga_idats/clinical_info.csv', help='Clinical information downloaded from tcga/geo/custom, formatted using create_sample_sheet.', type=click.Path(exists=False), show_default=True)
 @click.option('-e', '--exclude_disease_list', default='', help='List of conditions to exclude, from disease column.', type=click.Path(exists=False), show_default=True)
 @click.option('-os', '--output_sample_sheet', default='./tcga_idats/minfiSheet.csv', help='CSV for minfi input.', type=click.Path(exists=False), show_default=True)
-def remove_diseases(formatted_sample_sheet, exclude_disease_list, output_sheet_name):
+@click.option('-l', '--low_count', default=0, help='Remove diseases if they are below a certain count, default this is not used.', type=click.Path(exists=False), show_default=True)
+@click.option('-d', '--disease_only', is_flag=True, help='Only look at disease, or text before subtype_delimiter.')
+@click.option('-sd', '--subtype_delimiter', default=',', help='Delimiter for disease extraction.', type=click.Path(exists=False), show_default=True)
+def remove_diseases(formatted_sample_sheet, exclude_disease_list, output_sheet_name, low_count, disease_only=False,subtype_delimiter=','):
     exclude_disease_list = exclude_disease_list.split(',')
     pData = PreProcessPhenoData(formatted_sample_sheet, idat_dir='', header_line=0)
-    pData.remove_diseases(exclude_disease_list)
+    pData.remove_diseases(exclude_disease_list,low_count, disease_only,subtype_delimiter)
     pData.export(output_sheet_name)
     print("Please remove {} from idat directory, if it exists in that directory.".format(formatted_sample_sheet))
 
@@ -511,11 +542,11 @@ def plot_qc(idat_dir, geo_query, output_dir, split_by_subtype):
     if idat_dir.endswith('.csv') and split_by_subtype:
         pheno=pd.read_csv(idat_dir)
         for name, group in pheno.groupby('disease'):
-            new_sheet = idat_dir.replace('.csv','_{}.csv'.format(name))
+            new_sheet = idat_dir.replace('.csv','_{}.csv'.format(name)).split('/')[-1]
             new_out_dir = '{}/{}/'.format(output_dir,name)
-            group.to_csv(new_sheet)
             os.makedirs(new_out_dir, exist_ok=True)
-            preprocesser = PreProcessIDAT(new_sheet)
+            group.to_csv('{}/{}'.format(new_out_dir,new_sheet))
+            preprocesser = PreProcessIDAT(new_out_dir)
             preprocesser.load_idats(geo_query='')
             preprocesser.plot_original_qc(new_out_dir)
     else:
@@ -537,9 +568,10 @@ def preprocess_pipeline(idat_dir, geo_query, n_cores, output_db, split_by_subtyp
             name=name.replace(' ','')
             new_sheet = idat_dir.replace('.csv','_{}.csv'.format(name))
             #new_out_dir = '{}/{}/'.format(output_dir,name)
-            group.to_csv(new_sheet)
+            os.makedirs(new_out_dir, exist_ok=True)
+            group.to_csv('{}/{}'.format(new_out_dir,new_sheet))
             #os.makedirs(new_out_dir, exist_ok=True)
-            preprocesser = PreProcessIDAT(new_sheet)
+            preprocesser = PreProcessIDAT(new_out_dir)
             preprocesser.preprocess(geo_query='', n_cores=n_cores)
             preprocesser.output_pheno_beta(output_db,name)
             print("Please use combine_split_methylation_arrays")
@@ -580,8 +612,10 @@ def combine_split_methylation_arrays(input_db, output_db):
 @click.option('-k', '--n_neighbors', default=5, help='Number neighbors for imputation if using KNN.', show_default=True)
 @click.option('-o', '--orientation', default='rows', help='Impute rows or columns, NOTE: Change this description to CpGs or samples.', type=click.Choice(['rows','columns']), show_default=True)
 @click.option('-o', '--output_db', default='./imputed_outputs/methyl_array.db', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-def imputation_pipeline(methyl_array_db,split_by_subtype=True,method='knn', solver='fancyimpute', n_neighbors=5, orientation='rows', output_db): # wrap a class around this
+def imputation_pipeline(methyl_array_db,split_by_subtype=True,method='knn', solver='fancyimpute', n_neighbors=5, orientation='rows', output_db=''): # wrap a class around this
     """Imputation of subtype or no subtype using """
+    from sklearn.impute import SimpleImputer
+    from fancyimpute import KNN, NuclearNormMinimization, SoftImpute, IterativeImputer, BiScaler
     os.makedirs(output_db[:output_db.rfind('/')],exist_ok=True)
     if method in ['DeepCpG', 'DAPL', 'EM']:
         print('Method {} coming soon...'.format(method))
