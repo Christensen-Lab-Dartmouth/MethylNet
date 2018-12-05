@@ -1,10 +1,13 @@
 import copy
 from torch import nn
+import torch
+from torch.autograd import Variable
 
-def train(model, loader, loss_func, optimizer):
+def train(model, loader, loss_func, optimizer, cuda=True):
     model.train()
-    for inputs, _ in loader:
+    for inputs, _, _ in loader:
         inputs = Variable(inputs)
+        if cuda:
 
         output, mean, logvar = model(inputs)
         loss = vae_loss(output, inputs, mean, logvar, loss_func)
@@ -12,26 +15,35 @@ def train(model, loader, loss_func, optimizer):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+    return model, loss
 
-def project(model, loader):
-    for inputs, _ in loader:
+def project(model, loader, cuda=True):
+    for inputs, sample_names, outcomes in loader:
         inputs = Variable(inputs)
+        if cuda:
+            inputs = inputs.cuda()
         z = model.get_latent_z(inputs)
+    return z, sample_names, outcomes
 
 class AutoEncoder:
-    def __init__(self, autoencoder_model, n_epochs, loss_fn, optimizer):
+    def __init__(self, autoencoder_model, n_epochs, loss_fn, optimizer, cuda=True):
         self.model=autoencoder_model
+        if cuda:
+            self.model = self.model.cuda()
         self.n_epochs = n_epochs
         self.loss_fn = loss_fn
         self.optimizer = optimizer
+        self.cuda = cuda
 
     def fit(self, train_data):
         for epoch in range(self.n_epochs):
-            train(self.model, self.train_data, self.loss_fn, self.optimizer)
-        return self.model
+            model, loss = train(self.model, self.train_data, self.loss_fn, self.optimizer, self.cuda)
+            print("Epoch {}: Loss {}".format(epoch,loss))
+        self.model = model
+        return model
 
     def transform(self, train_data):
-        return project(self.model, train_data)
+        return project(self.model, train_data, self.cuda)
 
     def fit_transform(self, train_data):
         return self.fit(train_data).transform(train_data)

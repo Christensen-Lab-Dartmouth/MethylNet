@@ -279,8 +279,7 @@ class PreProcessIDAT:
         return self.minfi.getUnmeth(self.MSet)
 
     def extract_pheno_data(self, methylset=False):
-        self.pheno = robjects.r("pData")(self.Mset) if methylset else robjects.r("pData")(self.RGset)
-        print(self.pheno)
+        self.pheno = robjects.r("pData")(self.MSet) if methylset else robjects.r("pData")(self.RGset)
         return self.pheno
 
     def extract_manifest(self):
@@ -303,11 +302,11 @@ class PreProcessIDAT:
         self.plot_qc_metrics(output_dir)
 
     def output_pheno_beta(self, output_db, disease=''):
-        self.pheno_py=pandas2ri.ri2py(self.pheno)
-        self.beta_py=pd.DataFrame(pandas2ri.ri2py(self.beta_final),columns=numpy2ri.ri2py(robjects.r("featureNames")(self.RSet)),rows=numpy2ri.ri2py(robjects.r("sampleNames")(self.RSet))).transpose()
+        self.pheno_py=pandas2ri.ri2py(robjects.r['as'](self.pheno,'data.frame'))
+        self.beta_py=pd.DataFrame(pandas2ri.ri2py(self.beta_final),index=numpy2ri.ri2py(robjects.r("featureNames")(self.RSet)),columns=numpy2ri.ri2py(robjects.r("sampleNames")(self.RSet)))
         conn = sqlite3.connect(output_db)#'{}/methyl_array.db'.format(output_dir))
-        pheno.to_sql('pheno' if not disease else 'pheno_{}'.format(disease), conn=conn, if_exists='replace')
-        beta.to_sql('beta' if not disease else 'beta_{}'.format(disease), conn=conn, if_exists='replace')
+        self.pheno_py.to_sql('pheno' if not disease else 'pheno_{}'.format(disease), conn=conn, if_exists='replace')
+        self.beta_py.to_sql('beta' if not disease else 'beta_{}'.format(disease), conn=conn, if_exists='replace')
         conn.close()
 
     def export_csv(self, output_dir):
@@ -334,6 +333,9 @@ class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_da
 
     def impute(self, imputer):
         self.beta = imputer.fit_transform(self.beta)
+
+    def return_shape(self):
+        return self.beta.shape
 
     def split_train_test(self, train_p=0.8):
         np.random.seed(42)
