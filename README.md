@@ -28,43 +28,43 @@ What MethylNet can do:
                 * Inclusion in cross-media retrieval and integration with histopathology images for stronger and interchangeable predictions  
                 * Possible: Learning hierarchical semantic representations of various biological ontological networks (GO, KEGG, etc.)  
                 * And more!
-4. Misc.
+4. Misc.  
                 * Job deployment system using Toil (PBS/Torque) for high performance computing
 
 Getting Started:  
-0. Small test cases: GSE64950 , GSE104376
-                * python preprocess.py download_geo -g GSE104376 -o test_idats/
-                * python preprocess.py create_sample_sheet -s geo -i test_idats/ -os ./test_idats/geo_minfi.csv -is test_idats/GSE104376_clinical_info.csv -d "gender:ch1" # gender is "disease" as mock test
-                * python preprocess.py plot_qc -i ./test_idats/
-                * python preprocess.py preprocess_pipeline -i ./test_idats/ -n 30
+0. Small test cases: GSE64950 , GSE104376  
+                * python preprocess.py download_geo -g GSE104376 -o test_idats/  
+                * python preprocess.py create_sample_sheet -s geo -i test_idats/ -os ./test_idats/geo_minfi.csv -is test_idats/GSE104376_clinical_info.csv -d "gender:ch1" # gender is "disease" as mock test  
+                * python preprocess.py plot_qc -i ./test_idats/  
+                * python preprocess.py preprocess_pipeline -i ./test_idats/ -n 30  
 1. Log into server ssh xxxxx@discovery7.hpcc.dartmouth.edu  
                 * ssh x01  
-                * module load python/3-Anaconda#module load python/3.6-Miniconda
+                * module load python/3-Anaconda#module load python/3.6-Miniconda  
                 * module load cuda  
-2. Download or load anaconda environment:
-                * install conda environment from https://anaconda.org/jlevy44/methylnet # note imcomplete number of packages, may consider docker container
-                * source activate methylnet
-3. Download data:
-                * python preprocess.py download_clinical -h  
-                * python preprocess.py download_geo -h  
-                * python preprocess.py download_geo -g GSE109381 -o geo_idats/
-                * python preprocess.py download_tcga -h  
-4. Format clinical data for minfi processing:
-                * Brain Cancer example: GSE109381 (train and test sheets from supplementals)
-                * python preprocess.py create_sample_sheet -h  
-                * make custom include_columns_file <- tab delimited file of header of csv file header csv column name\\t desired name
-                * python preprocess.py create_sample_sheet -s custom -is geo_idats/train.xlsx -l 1 -i geo_idats/ -os ./geo_idats/minfiSheet.csv -d "Pathological Diagnosis (WHO 2016)" -b "Sentrix ID (.idat)" -c include_col.txt
-                * python preprocess.py create_sample_sheet -s custom -is geo_idats/test.xlsx -l 1 -i geo_idats/ -os ./geo_idats/minfiSheet2.csv -d "Pathological diagnosis (WHO 2016) prior to methylation classification" -b "Sentrix ID (.idat)" -c include_col2.txt
-                * python preprocess.py concat_sample_sheets -s1 ./geo_idats/minfiSheet.csv -s2 ./geo_idats/minfiSheet2.csv -os ./geo_idats/geo_concat.csv
-                * python preprocess.py create_sample_sheet -s geo -i geo_idats/ -os ./geo_idats/geo_minfi.csv -is geo_idats/GSE109381_clinical_info.csv
-                * python preprocess.py merge_sample_sheets -s1 ./geo_idats/geo_minfi.csv -s2 ./geo_idats/geo_concat.csv -os ./geo_idats/geo_merged.csv
-                * python preprocess.py get_categorical_distribution -is ./geo_idats/geo_merged.csv
-                * python preprocess.py get_categorical_distribution -is ./geo_idats/geo_merged.csv -d
-                * python preprocess.py get_categorical_distribution -is ./geo_idats/geo_merged.csv -d | awk -F':' '{sum+=$2} END {print sum}'
-                * Prints out total number of cases/controls 3905
-5. Preprocessing pipeline with minfi and enmix:
-                * python preprocess.py plot_qc -i ./geo_idats/
-                * python preprocess.py preprocess_pipeline -i ./geo_idats/
+2. Download or load anaconda environment:  
+                * install conda environment from https://anaconda.org/jlevy44/methylnet # note imcomplete number of packages, may consider docker container  
+                * source activate methylnet  
+3. Download data:  
+                * python preprocess.py download_clinical -h    
+                * python preprocess.py download_geo -h    
+                * python preprocess.py download_geo -g GSE109381 -o geo_idats/  
+                * python preprocess.py download_tcga -h    
+4. Format clinical data for minfi processing:   
+                * Brain Cancer example: GSE109381 (train and test sheets from supplementals)  
+                * python preprocess.py create_sample_sheet -h    
+                * make custom include_columns_file <- tab delimited file of header of csv file header csv column name\\t desired name  
+                * python preprocess.py create_sample_sheet -s custom -is geo_idats/train.xlsx -l 1 -i geo_idats/ -os ./geo_idats/minfiSheet.csv -d "Pathological Diagnosis (WHO 2016)" -b "Sentrix ID (.idat)" -c include_col.txt  
+                * python preprocess.py create_sample_sheet -s custom -is geo_idats/test.xlsx -l 1 -i geo_idats/ -os ./geo_idats/minfiSheet2.csv -d "Pathological diagnosis (WHO 2016) prior to methylation classification" -b "Sentrix ID (.idat)" -c include_col2.txt  
+                * python preprocess.py concat_sample_sheets -s1 ./geo_idats/minfiSheet.csv -s2 ./geo_idats/minfiSheet2.csv -os ./geo_idats/geo_concat.csv  
+                * python preprocess.py create_sample_sheet -s geo -i geo_idats/ -os ./geo_idats/geo_minfi.csv -is geo_idats/GSE109381_clinical_info.csv  
+                * python preprocess.py merge_sample_sheets -s1 ./geo_idats/geo_minfi.csv -s2 ./geo_idats/geo_concat.csv -os ./geo_idats/geo_merged.csv  
+                * python preprocess.py get_categorical_distribution -is ./geo_idats/geo_merged.csv  
+                * python preprocess.py get_categorical_distribution -is ./geo_idats/geo_merged.csv -d  
+                * python preprocess.py get_categorical_distribution -is ./geo_idats/geo_merged.csv -d | awk -F':' '{sum+=$2} END {print sum}'  
+                * Prints out total number of cases/controls 3905  
+5. Preprocessing pipeline with minfi and enmix:  
+                * python preprocess.py plot_qc -i ./geo_idats/  
+                * python preprocess.py preprocess_pipeline -i ./geo_idats/  
 
 TODO:
 * Test Preprocessing tools   
