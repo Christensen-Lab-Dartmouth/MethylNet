@@ -218,7 +218,7 @@ class PreProcessIDAT:
         if geo_query:
             geo = importr('GEOquery')
             self.RGset.slots["pData"] = robjects.r('pData')(robjects.r("getGEO('{}')[[1]]".format(query)))
-            print(self.RGset.slots["pData"])
+            #print(self.RGset.slots["pData"])
         #robjects.r("""targets <- read.450k.sheet({})
         #    sub({}, "", targets$Basename)
         #    RGset <- read.450k.exp(base = {}, targets = targets)""".format(self.idat_dir))
@@ -256,7 +256,7 @@ class PreProcessIDAT:
         #self.enmix.multifreqpoly(self.get_meth()+self.get_unmeth(), xlab="Total intensity")
         anno_py = pandas2ri.ri2py(robjects.r['as'](anno,'data.frame'))
         beta_py = pandas2ri.ri2py(self.beta)
-        print(beta_py)
+        #print(beta_py)
         beta1=numpy2ri.py2ri(beta_py[anno_py["Type"]=="I"])
         beta2=numpy2ri.py2ri(beta_py[anno_py["Type"]=="II"])
         grdevice.jpeg(output_dir+'/dist.jpg',height=900,width=600)
@@ -301,12 +301,22 @@ class PreProcessIDAT:
         self.get_beta()
         self.plot_qc_metrics(output_dir)
 
-    def output_pheno_beta(self, output_db, disease=''):
+    def output_pheno_beta(self):
         self.pheno_py=pandas2ri.ri2py(robjects.r['as'](self.pheno,'data.frame'))
-        self.beta_py=pd.DataFrame(pandas2ri.ri2py(self.beta_final),index=numpy2ri.ri2py(robjects.r("featureNames")(self.RSet)),columns=numpy2ri.ri2py(robjects.r("sampleNames")(self.RSet)))
+        self.beta_py=pd.DataFrame(pandas2ri.ri2py(self.beta_final),index=numpy2ri.ri2py(robjects.r("featureNames")(self.RSet)),columns=numpy2ri.ri2py(robjects.r("sampleNames")(self.RSet))).transpose()
+
+    def export_pickle(self, output_pickle, disease=''):
+        output_dict = {}
+        if os.path.exists(output_pickle):
+            output_dict = pickle.load(open(output_pickle,'rb'))
+        output_dict['pheno' if not disease else 'pheno_{}'.format(disease)] = self.pheno_py
+        output_dict['beta' if not disease else 'beta_{}'.format(disease)] = self.beta_py
+        pickle.dump(output_dict, open(output_pickle,'wb'))
+
+    def export_sql(self, output_db, disease=''):
         conn = sqlite3.connect(output_db)#'{}/methyl_array.db'.format(output_dir))
-        self.pheno_py.to_sql('pheno' if not disease else 'pheno_{}'.format(disease), conn=conn, if_exists='replace')
-        self.beta_py.to_sql('beta' if not disease else 'beta_{}'.format(disease), conn=conn, if_exists='replace')
+        self.pheno_py.to_sql('pheno' if not disease else 'pheno_{}'.format(disease), con=conn, if_exists='replace')
+        self.beta_py.to_sql('beta' if not disease else 'beta_{}'.format(disease), con=conn, if_exists='replace')
         conn.close()
 
     def export_csv(self, output_dir):
@@ -327,9 +337,17 @@ class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_da
         self.pheno.to_csv('{}/pheno.csv'.format(output_dir))
         self.beta.to_csv('{}/beta.csv'.format(output_dir))
 
+    def write_pickle(self, output_pickle, disease=''):
+        output_dict = {}
+        if os.path.exists(output_pickle):
+            output_dict = pickle.load(open(output_pickle,'rb'))
+        output_dict['pheno' if not disease else 'pheno_{}'.format(disease)] = self.pheno_py
+        output_dict['beta' if not disease else 'beta_{}'.format(disease)] = self.beta_py
+        pickle.dump(output_dict, open(output_pickle,'wb'))
+
     def write_db(self, conn, disease=''):
-        self.pheno.to_sql('pheno' if not disease else 'pheno_{}'.format(disease), conn=conn, if_exists='replace')
-        self.beta.to_sql('beta' if not disease else 'beta_{}'.format(disease), conn=conn, if_exists='replace')
+        self.pheno.to_sql('pheno' if not disease else 'pheno_{}'.format(disease), con=conn, if_exists='replace')
+        self.beta.to_sql('beta' if not disease else 'beta_{}'.format(disease), con=conn, if_exists='replace')
 
     def impute(self, imputer):
         self.beta = imputer.fit_transform(self.beta)
@@ -343,17 +361,17 @@ class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_da
         #np.random.shuffle(methyl_array_idx)
         train_idx = methyl_array_idx.sample(frac=train_p)
         test_idx = methyl_array_idx.drop(train_idx.index)
-        return MethylationArray(self.pheno.loc[train_idx.values],self.beta.loc[train_idx.values],'train'),MethylationArray(self.pheno.loc[test_idx.values],self.beta.loc[test_idx.values],'test')
+        return MethylationArray(self.pheno.loc[train_idx.values],self.beta.loc[train_idx.values,:],'train'),MethylationArray(self.pheno.loc[test_idx.values],self.beta.loc[test_idx.values,:],'test')
 
-    def split_by_subtype(self, write_db=False, conn=None):
+    def split_by_subtype(self, write_pkl=False, out_pkl=None):
         methyl_arrays = []
         for disease, pheno_df in self.pheno.groupby('diseases'):
             new_disease_name = disease.replace(' ','')
-            beta_df = self.beta.loc[pheno_df.index,:]
+            beta_df = self.beta.loc[:,pheno_df.index]
             methyl_arrays.append(MethylationArray(pheno_df,beta_df,new_disease_name))
         methyl_arrays = MethylationArrays(methyl_arrays)
-        if write_db and conn != None:
-            methyl_arrays.write_dbs(conn)
+        if write_pkl and out_pkl != None:
+            methyl_arrays.write_pkls(out_pkl)
         return methyl_arrays
 
     def mad_filter(self, n_top_cpgs):
@@ -377,6 +395,10 @@ class MethylationArrays:
         for methyl_arr in self.methylation_arrays:
             methyl_arr.write_db(conn, methyl_arr.name)
 
+    def write_pkls(self,pkl):
+        for methyl_arr in self.methylation_arrays:
+            methyl_arr.write_pickle(pkl, methyl_arr.name)
+
     def impute(self, imputer):
         for i in range(len(self.methylation_arrays)):
             self.methylation_arrays[i].impute(imputer)
@@ -399,11 +421,17 @@ class ImputerObject:
 def extract_pheno_beta_df_from_folder(folder):
     return pd.read_csv(folder+'/pheno.csv'), pd.read_csv(folder+'/beta.csv')
 
+def extract_pheno_beta_df_from_pickle_dict(input_dict, disease=''):
+    if disease:
+        return input_dict['pheno_{}'.format(disease)], input_dict['beta_{}'.format(disease)]
+    else:
+        return input_dict['pheno'], input_dict['beta']
+
 def extract_pheno_beta_df_from_sql(conn, disease=''):
     if disease:
-        return pd.read_sql('pheno_{}'.format(disease),conn), pd.read_sql('beta_{}'.format(disease),conn)
+        return pd.read_sql('select * from {};'.format('pheno_{}'.format(disease)),conn), pd.read_sql('select * from {};'.format('beta_{}'.format(disease)),conn)
     else:
-        return pd.read_sql('pheno',conn), pd.read_sql('beta',conn)
+        return pd.read_sql('select * from {};'.format('pheno'),conn), pd.read_sql('select * from {};'.format('beta'),conn)
 
 #### COMMANDS ####
 
@@ -560,10 +588,10 @@ def plot_qc(idat_dir, geo_query, output_dir, split_by_subtype):
 @click.option('-i', '--idat_dir', default='./tcga_idats/', help='Idat directory if one sample sheet, alternatively can be your phenotype sample sheet.', type=click.Path(exists=False), show_default=True)
 @click.option('-g', '--geo_query', default='', help='GEO study to query, do not use if already created geo sample sheet.', type=click.Path(exists=False), show_default=True)
 @click.option('-n', '--n_cores', default=6, help='Number cores to use for preprocessing.', show_default=True)
-@click.option('-o', '--output_db', default='./preprocess_outputs/methyl_array.db', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_pkl', default='./preprocess_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-ss', '--split_by_subtype', is_flag=True, help='If using formatted sample sheet csv, split by subtype and perform preprocessing. Will need to combine later.')
-def preprocess_pipeline(idat_dir, geo_query, n_cores, output_db, split_by_subtype):
-    os.makedirs(output_db[:output_db.rfind('/')],exist_ok=True)
+def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subtype):
+    os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     if idat_dir.endswith('.csv') and split_by_subtype:
         pheno=pd.read_csv(idat_dir)
         for name, group in pheno.groupby('disease'):
@@ -575,50 +603,55 @@ def preprocess_pipeline(idat_dir, geo_query, n_cores, output_db, split_by_subtyp
             #os.makedirs(new_out_dir, exist_ok=True)
             preprocesser = PreProcessIDAT(new_out_dir)
             preprocesser.preprocess(geo_query='', n_cores=n_cores)
-            preprocesser.output_pheno_beta(output_db,name)
+            preprocesser.output_pheno_beta()
+            preprocesser.export_pickle(output_pkl,name)
             print("Please use combine_split_methylation_arrays")
     else:
         preprocesser = PreProcessIDAT(idat_dir)
         preprocesser.preprocess(geo_query, n_cores)
-        preprocesser.output_pheno_beta(output_db)
+        preprocesser.output_pheno_beta()
+        preprocesser.export_pickle(output_pkl)
+
+@preprocess.command()
+@click.option('-i', '--input_dir', default='./', help='Directory containing jpg.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_dir', default='./preprocess_output_images/', help='Output directory for images.', type=click.Path(exists=False), show_default=True)
+def move_jpg(input_dir, output_dir):
+    os.makedirs(output_dir, exist_ok=True)
+    subprocess.call('mv {} {}'.format(os.path.join(input_dir,'*.jpg'),os.path.abspath(output_dir)),shell=True)
+
 
 # FIXME add all below
 
 @preprocess.command()
-@click.option('-i', '--input_db', default='./preprocess_outputs/methyl_array.db', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-@click.option('-o', '--output_db', default='./combined_outputs/methyl_array.db', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-def combine_split_methylation_arrays(input_db, output_db):
+@click.option('-i', '--input_pkl', default='./preprocess_outputs/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_pkl', default='./combined_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+def combine_split_methylation_arrays(input_pkl, output_pkl):
     """If split MethylationArrays by subtype for either preprocessing or imputation, can use to recombine data for downstream step."""
-    os.makedirs(output_db[:output_db.rfind('/')],exist_ok=True)
-    conn = sqlite3.connect(input_db)
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    tables = [table[table.find('_')+1:] for table in cursor.fetchall() if '_' in table]
+    os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
+    input_dict = pickle.load(open(input_pkl,'rb'))
+    tables = [table[table.find('_')+1:] for table in input_dict.keys() if '_' in table]
     diseases = np.unique(tables)
     list_methyl_arrays = []
     for disease in diseases:
-        pheno_df, beta_df = extract_pheno_beta_df_from_sql(conn, disease)
+        pheno_df, beta_df = extract_pheno_beta_df_from_pickle_dict(input_dict, disease)
         list_methyl_arrays.append(MethylationArray(pheno_df, beta_df))
     list_methyl_arrays = MethylationArrays(list_methyl_arrays)
     combined_methyl_array = list_methyl_arrays.combine()
-    conn.close()
-    conn = sqlite3.connect(output_db)
-    combined_methyl_array.write_db(output_db)
-    conn.close()
+    combined_methyl_array.write_pickle(output_pkl)
 
 @preprocess.command()
-@click.option('-i', '--input_db', default='./combined_outputs/methyl_array.db', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-i', '--input_pkl', default='./combined_outputs/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-ss', '--split_by_subtype', is_flag=True, help='Imputes CpGs by subtype before combining again.')
 @click.option('-m', '--method', default='knn', help='Method of imputation.', type=click.Choice(['KNN', 'Mean', 'Zero', 'MICE', 'BiScaler', 'Soft', 'random', 'DeepCpG', 'DAPL']), show_default=True)
 @click.option('-s', '--solver', default='fancyimpute', help='Imputation library.', type=click.Choice(['fancyimpute', 'impyute', 'simple']), show_default=True)
 @click.option('-k', '--n_neighbors', default=5, help='Number neighbors for imputation if using KNN.', show_default=True)
 @click.option('-o', '--orientation', default='rows', help='Impute rows or columns, NOTE: Change this description to CpGs or samples.', type=click.Choice(['rows','columns']), show_default=True)
-@click.option('-o', '--output_db', default='./imputed_outputs/methyl_array.db', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-def imputation_pipeline(methyl_array_db,split_by_subtype=True,method='knn', solver='fancyimpute', n_neighbors=5, orientation='rows', output_db=''): # wrap a class around this
+@click.option('-o', '--output_pkl', default='./imputed_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+def imputation_pipeline(methyl_array_pkl,split_by_subtype=True,method='knn', solver='fancyimpute', n_neighbors=5, orientation='rows', output_pkl=''): # wrap a class around this
     """Imputation of subtype or no subtype using """
     from sklearn.impute import SimpleImputer
     from fancyimpute import KNN, NuclearNormMinimization, SoftImpute, IterativeImputer, BiScaler
-    os.makedirs(output_db[:output_db.rfind('/')],exist_ok=True)
+    os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     if method in ['DeepCpG', 'DAPL', 'EM']:
         print('Method {} coming soon...'.format(method))
     elif solver in ['impyute']:
@@ -626,71 +659,61 @@ def imputation_pipeline(methyl_array_db,split_by_subtype=True,method='knn', solv
     else:
         imputer = ImputerObject(solver, method, opts=dict(k=n_neighbors, orientation=orientation))
         # methylationarray object impute after splitting? try to limit data usage, then export... try to limit csvs else huge data usage
-    conn = sqlite3.connect(input_db)
+    input_dict = pickle.load(open(input_pkl,'rb'))
 
     if split_by_subtype:
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = [table[table.find('_')+1:] for table in cursor.fetchall() if '_' in table]
+
+        tables = [table[table.find('_')+1:] for table in input_dict.keys() if '_' in table]
         diseases = np.unique(tables)
         if not diseases.tolist():
-            methyl_array = MethylationArray(*extract_pheno_beta_df_from_sql(conn))
+            methyl_array = MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
             methyl_arrays = methyl_array.split_by_subtype()
             del methyl_array
         else:
-            methyl_arrays = MethylationArrays([MethylationArray(extract_pheno_beta_df_from_sql(conn, disease)) for disease in diseases])
+            methyl_arrays = MethylationArrays([MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict, disease)) for disease in diseases])
 
         methyl_arrays.impute(imputer)
 
         methyl_array = MethylationArrays.combine()
 
     else:
-        methyl_array = MethylationArray(*extract_pheno_beta_df_from_sql(conn))
+        methyl_array = MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
 
         methyl_array.impute(imputer)
 
-    conn.close()
-
-    conn = sqlite3.connect(output_db)
-    methyl_array.write_db(output_db)
-    conn.close()
+    methyl_array.write_pickle(output_pkl)
 
 @preprocess.command()
-@click.option('-i', '--input_db', default='./imputed_outputs/methyl_array.db', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-@click.option('-o', '--output_db', default='./final_preprocessed/methyl_array.db', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-i', '--input_pkl', default='./imputed_outputs/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_pkl', default='./final_preprocessed/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-n', '--n_top_cpgs', default=300000, help='Number cpgs to include with highest variance across population.', show_default=True)
 def remove_MAD_threshold(n_top_cpgs=300000):
     """Filter CpGs below MAD threshold"""
-    os.makedirs(output_db[:output_db.rfind('/')],exist_ok=True)
-    conn = sqlite3.connect(input_db)
-    methyl_array = MethylationArray(*extract_pheno_beta_df_from_sql(conn))
-    conn.close()
+    os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
+    input_dict=pickle.load(open(input_pkl,'rb'))
+    methyl_array = MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
 
     methyl_array.mad_filter(n_top_cpgs)
 
-    conn = sqlite3.connect(output_db)
-    methyl_array.write_db(output_db)
-    conn.close()
+    methyl_array.write_pickle(output_pkl)
 
 @preprocess.command()
-@click.option('-i', '--input_db', default='./final_preprocessed/methyl_array.db', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./final_preprocessed/', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-def db_to_csv(input_db, output_dir):
+def pkl_to_csv(input_pkl, output_dir):
     os.makedirs(output_dir,exist_ok=True)
-    conn = sqlite3.connect(input_db)
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    tables=cursor.fetchall()
-    for table in tables:
-        pd.read_sql(table,conn).to_csv('{}/{}.csv'.format(output_dir,table))
-    conn.close()
+    input_dict=pickle.load(open(input_pkl,'rb'))
+    #tables=list(map(lambda t: t,list(input_dict.keys())))
+    for k in input_dict.keys():
+        input_dict[k].to_csv('{}/{}.csv'.format(output_dir,k))
+        #pd.read_sql('select * from {};'.format(table),conn).to_csv('{}/{}.csv'.format(output_dir,table))
 
 @preprocess.command()
-@click.option('-i', '--input_db', default='./final_preprocessed/methyl_array.db', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-@click.option('-o', '--output_db', default='./backup/methyl_array.db', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-def backup_db(input_db, output_db):
-    os.makedirs(output_db[:output_db.rfind('/')],exist_ok=True)
-    subprocess.call('rsync {} {}'.format(input_db, output_db),shell=True)
+@click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_pkl', default='./backup/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+def backup_pkl(input_pkl, output_pkl):
+    os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
+    subprocess.call('rsync {} {}'.format(input_pkl, output_pkl),shell=True)
 
 ## Build methylation class with above features ##
 

@@ -1,4 +1,4 @@
-from preprocess import MethylationArray, extract_pheno_beta_df_from_sql
+from preprocess import MethylationArray, extract_pheno_beta_df_from_pickle_dict
 from models import AutoEncoder, TybaltTitusVAE
 from datasets import get_methylation_dataset
 import torch
@@ -9,43 +9,61 @@ import pandas as pd, numpy as np
 import click
 from os.path import join
 
+CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 
-output_dir = 'output_dir'
-cuda=True
-hidden_layer_encoder_topology=[100,100]
-n_latent = 100
-input_db='methylation_array.db'
-lr=0.001
-weight_decay=0.0001
-n_epochs = n_epochs
+@click.group(context_settings= CONTEXT_SETTINGS)
+@click.version_option(version='0.1')
+def embed():
+    pass
 
-output_file = join(output_dir,'output_latent.csv')
-output_model = join(output_dir,'output_model.p')
-outcome_dict_file = join(output_dir,'output_outcomes.p')
+def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology):
+    os.makedirs(output_dir,exist_ok=True)
 
-conn = sqlite3.connect(input_db)
-methyl_array=MethylationArray(*extract_pheno_beta_df_from_sql(conn))
-conn.close()
+    output_file = join(output_dir,'output_latent.csv')
+    output_model = join(output_dir,'output_model.p')
+    outcome_dict_file = join(output_dir,'output_outcomes.p')
 
+    input_dict = pickle.load(open(input_pkl,'wb'))
+    methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
 
-model=TybaltTitusVAE(n_input=methyl_array.return_shape()[1],n_latent=n_latent,hidden_layer_encoder_topology)
+    model=TybaltTitusVAE(n_input=methyl_array.return_shape()[1],n_latent=n_latent,hidden_layer_encoder_topology=hidden_layer_encoder_topology)
 
-optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay=weight_decay)
+    optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay=weight_decay)
 
-loss_fn = MSELoss()
+    loss_fn = MSELoss()
 
-methyl_dataset = get_methylation_dataset(methylation_array) # train, test split? Add val set?
+    methyl_dataset = get_methylation_dataset(methylation_array) # train, test split? Add val set?
 
-methyl_dataloader = DataLoader(
-    dataset=methyl_dataset,
-    num_workers=4,
-    batch_size=1,
-    shuffle=False)
+    methyl_dataloader = DataLoader(
+        dataset=methyl_dataset,
+        num_workers=4,
+        batch_size=1,
+        shuffle=False)
 
-auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=n_epochs,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda)
-auto_encoder_snapshot = auto_encoder.fit(methyl_dataloader)
-latent_projection, sample_names, outcomes = auto_encoder.transform(methyl_dataloader)
-outcome_dict=dict(zip(sample_names,outcomes))
-pd.DataFrame(latent_projection,index=sample_names).to_csv(output_file)
-torch.save(auto_encoder_snapshot,output_model)
-pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
+    auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=n_epochs,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda)
+    auto_encoder_snapshot = auto_encoder.fit(methyl_dataloader)
+    latent_projection, sample_names, outcomes = auto_encoder.transform(methyl_dataloader)
+    outcome_dict=dict(zip(sample_names,outcomes))
+    latent_projection=pd.DataFrame(latent_projection,index=sample_names)
+    latent_projection.to_csv(output_file)
+    torch.save(auto_encoder_snapshot,output_model)
+    pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
+    return latent_projection, outcome_dict, auto_encoder_snapshot
+
+@preprocess.command()
+@click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_dir', default='./embeddings/', help='Output directory for embeddings.', type=click.Path(exists=False), show_default=True)
+@click.option('-c', '--cuda', is_flag=True, help='Use GPUs.')
+@click.option('-n', '--n_latent', default=64, help='Number of latent dimensions.', show_default=True)
+@click.option('-lr', '--learning_rate', default=1e-3, help='Number of latent dimensions.', show_default=True)
+@click.option('-wd', '--weight_decay', default=1e-4, help='Weight decay of adam optimizer.', show_default=True)
+@click.option('-e', '--n_epochs', default=50, help='Number of epochs to train over.', show_default=True)
+@click.option('-hlt', '--hidden_layer_encoder_topology', default='', help='Topology of hidden layers, comma delimited, leave empty for one layer encoder, eg. 100,100 is example of 5-hidden layer topology.', type=click.Path(exists=False), show_default=True)
+def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology):
+    hidden_layer_encoder_topology=list(map(int,hidden_layer_encoder_topology.split(',')))
+    embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology)
+
+#################
+
+if __name__ == '__main__':
+    embed()
