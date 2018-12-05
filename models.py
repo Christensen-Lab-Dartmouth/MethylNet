@@ -8,7 +8,7 @@ def train(model, loader, loss_func, optimizer, cuda=True):
     for inputs, _, _ in loader:
         inputs = Variable(inputs)
         if cuda:
-
+            inputs = inputs.cuda
         output, mean, logvar = model(inputs)
         loss = vae_loss(output, inputs, mean, logvar, loss_func)
 
@@ -106,9 +106,7 @@ class TybaltTitusVAE(nn.Module):
         return out, mean, logvar
 
     def get_latent_z(self, x):
-        mean, logvar = self.encode(x)
-        z = self.sample_z(mean, logvar)
-        return z
+        return self.encode(x)[0]
 
 class CVAE(nn.Module):
     def __init__(self, in_shape, n_latent):
@@ -161,3 +159,6 @@ class CVAE(nn.Module):
         z = self.sample_z(mean, logvar)
         out = self.decode(z)
         return out, mean, logvar
+
+    def get_latent_z(self, x):
+        return self.encode(x)[0]

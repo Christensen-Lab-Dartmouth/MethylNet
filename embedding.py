@@ -16,7 +16,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def embed():
     pass
 
-def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology):
+def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology, convolutional = False):
     os.makedirs(output_dir,exist_ok=True)
 
     output_file = join(output_dir,'output_latent.csv')
@@ -26,12 +26,6 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     input_dict = pickle.load(open(input_pkl,'wb'))
     methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
 
-    model=TybaltTitusVAE(n_input=methyl_array.return_shape()[1],n_latent=n_latent,hidden_layer_encoder_topology=hidden_layer_encoder_topology)
-
-    optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay=weight_decay)
-
-    loss_fn = MSELoss()
-
     methyl_dataset = get_methylation_dataset(methylation_array) # train, test split? Add val set?
 
     methyl_dataloader = DataLoader(
@@ -39,6 +33,15 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
         num_workers=4,
         batch_size=1,
         shuffle=False)
+
+    if not convolutional:
+        model=TybaltTitusVAE(n_input=methyl_array.return_shape()[1],n_latent=n_latent,hidden_layer_encoder_topology=hidden_layer_encoder_topology)
+    else:
+        model = CVAE(n_latent=n_latent,in_shape=methyl_dataset.new_shape)
+
+    optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay=weight_decay)
+
+    loss_fn = MSELoss()
 
     auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=n_epochs,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda)
     auto_encoder_snapshot = auto_encoder.fit(methyl_dataloader)

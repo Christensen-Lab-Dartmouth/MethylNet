@@ -11,6 +11,7 @@ from collections import Counter
 from functools import reduce
 from rpy2.robjects import pandas2ri, numpy2ri
 import sqlite3
+import pickle
 pandas2ri.activate()
 numpy2ri.activate()
 # fixme dump to sql db!!
@@ -326,8 +327,8 @@ class PreProcessIDAT:
 
 class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_data, rework indexing
     def __init__(self, pheno_df, beta_df, name=''):
-        self.pheno=self.pheno_df
-        self.beta=self.beta_df
+        self.pheno=pheno_df
+        self.beta=beta_df
         self.name=name
 
     def export(self, output_pickle):
@@ -341,8 +342,8 @@ class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_da
         output_dict = {}
         if os.path.exists(output_pickle):
             output_dict = pickle.load(open(output_pickle,'rb'))
-        output_dict['pheno' if not disease else 'pheno_{}'.format(disease)] = self.pheno_py
-        output_dict['beta' if not disease else 'beta_{}'.format(disease)] = self.beta_py
+        output_dict['pheno' if not disease else 'pheno_{}'.format(disease)] = self.pheno
+        output_dict['beta' if not disease else 'beta_{}'.format(disease)] = self.beta
         pickle.dump(output_dict, open(output_pickle,'wb'))
 
     def write_db(self, conn, disease=''):
@@ -350,14 +351,14 @@ class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_da
         self.beta.to_sql('beta' if not disease else 'beta_{}'.format(disease), con=conn, if_exists='replace')
 
     def impute(self, imputer):
-        self.beta = imputer.fit_transform(self.beta)
+        self.beta = pd.DataFrame(imputer.fit_transform(self.beta),index=self.beta.index,columns=list(self.beta))
 
     def return_shape(self):
         return self.beta.shape
 
     def split_train_test(self, train_p=0.8):
         np.random.seed(42)
-        methyl_array_idx = pd.Series(self.pheno_df.index)
+        methyl_array_idx = pd.Series(self.pheno.index)
         #np.random.shuffle(methyl_array_idx)
         train_idx = methyl_array_idx.sample(frac=train_p)
         test_idx = methyl_array_idx.drop(train_idx.index)
@@ -375,8 +376,8 @@ class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_da
         return methyl_arrays
 
     def mad_filter(self, n_top_cpgs):
-        mad_cpgs = self.beta.mad(axis=1).sort_values(ascending=False)
-        top_mad_cpgs = list(mad_cpgs.iloc[:,:n_top_cpgs])
+        mad_cpgs = self.beta.mad(axis=0).sort_values(ascending=False)
+        top_mad_cpgs = np.array(list(mad_cpgs.iloc[:n_top_cpgs].index))
         self.beta = self.beta.loc[:, top_mad_cpgs]
 
     def load(self, input_pickle):
@@ -405,16 +406,26 @@ class MethylationArrays:
 
 class ImputerObject:
     def __init__(self, solver, method, opts={}):
-
-        imputers = {'fancyimpute':dict(KNN=KNN(**opts),MICE=IterativeImputer(**opts),BiScaler=BiScaler(**opts),Soft=SoftImpute(**opts)),
+        from fancyimpute import KNN, NuclearNormMinimization, SoftImpute, IterativeImputer, BiScaler
+        from sklearn.impute import SimpleImputer
+        import inspect
+        imputers = {'fancyimpute':dict(KNN=KNN,MICE=IterativeImputer,BiScaler=BiScaler,Soft=SoftImpute),
                     'impyute':dict(),
                     'simple':dict(Mean=SimpleImputer(strategy='mean'),Zero=SimpleImputer(strategy='constant'))}
         try:
-            self.imputer = imputers[solver][method]
+            if solver == 'fancyimpute':
+                f=imputers[solver][method]
+                opts={key: opts[key] for key in opts if key in inspect.getargspec(f.__init__)[0]}
+                self.imputer=f(**opts)
+            else:
+                self.imputer = imputers[solver][method]
         except:
             print('{} {} not a valid combination.\nValid combinations:{}'.format(
                 solver, method, '\n'.join('{}:{}'.format(solver,','.join(imputers[solver].keys())) for solver in imputers)))
             exit()
+
+    def return_imputer(self):
+        return self.imputer
 
 #### FUNCTIONS ####
 
@@ -642,22 +653,23 @@ def combine_split_methylation_arrays(input_pkl, output_pkl):
 @preprocess.command()
 @click.option('-i', '--input_pkl', default='./combined_outputs/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-ss', '--split_by_subtype', is_flag=True, help='Imputes CpGs by subtype before combining again.')
-@click.option('-m', '--method', default='knn', help='Method of imputation.', type=click.Choice(['KNN', 'Mean', 'Zero', 'MICE', 'BiScaler', 'Soft', 'random', 'DeepCpG', 'DAPL']), show_default=True)
+@click.option('-m', '--method', default='KNN', help='Method of imputation.', type=click.Choice(['KNN', 'Mean', 'Zero', 'MICE', 'BiScaler', 'Soft', 'random', 'DeepCpG', 'DAPL']), show_default=True)
 @click.option('-s', '--solver', default='fancyimpute', help='Imputation library.', type=click.Choice(['fancyimpute', 'impyute', 'simple']), show_default=True)
 @click.option('-k', '--n_neighbors', default=5, help='Number neighbors for imputation if using KNN.', show_default=True)
-@click.option('-o', '--orientation', default='rows', help='Impute rows or columns, NOTE: Change this description to CpGs or samples.', type=click.Choice(['rows','columns']), show_default=True)
+@click.option('-r', '--orientation', default='Samples', help='Impute CpGs or samples.', type=click.Choice(['Samples','CpGs']), show_default=True)
 @click.option('-o', '--output_pkl', default='./imputed_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-def imputation_pipeline(methyl_array_pkl,split_by_subtype=True,method='knn', solver='fancyimpute', n_neighbors=5, orientation='rows', output_pkl=''): # wrap a class around this
+def imputation_pipeline(input_pkl,split_by_subtype=True,method='knn', solver='fancyimpute', n_neighbors=5, orientation='rows', output_pkl=''): # wrap a class around this
     """Imputation of subtype or no subtype using """
-    from sklearn.impute import SimpleImputer
-    from fancyimpute import KNN, NuclearNormMinimization, SoftImpute, IterativeImputer, BiScaler
+    orientation_dict = {'CpGs':'columns','Samples':'rows'}
+    orientation = orientation_dict[orientation]
+    print("Selecting orientation for imputation not implemented yet.")
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     if method in ['DeepCpG', 'DAPL', 'EM']:
         print('Method {} coming soon...'.format(method))
     elif solver in ['impyute']:
         print('Impyute coming soon...')
     else:
-        imputer = ImputerObject(solver, method, opts=dict(k=n_neighbors, orientation=orientation))
+        imputer = ImputerObject(solver, method, opts=dict(k=n_neighbors, orientation=orientation)).return_imputer()
         # methylationarray object impute after splitting? try to limit data usage, then export... try to limit csvs else huge data usage
     input_dict = pickle.load(open(input_pkl,'rb'))
 
@@ -687,7 +699,7 @@ def imputation_pipeline(methyl_array_pkl,split_by_subtype=True,method='knn', sol
 @click.option('-i', '--input_pkl', default='./imputed_outputs/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_pkl', default='./final_preprocessed/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-n', '--n_top_cpgs', default=300000, help='Number cpgs to include with highest variance across population.', show_default=True)
-def remove_MAD_threshold(n_top_cpgs=300000):
+def mad_filter(input_pkl,output_pkl,n_top_cpgs=300000):
     """Filter CpGs below MAD threshold"""
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     input_dict=pickle.load(open(input_pkl,'rb'))
@@ -714,6 +726,12 @@ def pkl_to_csv(input_pkl, output_dir):
 def backup_pkl(input_pkl, output_pkl):
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     subprocess.call('rsync {} {}'.format(input_pkl, output_pkl),shell=True)
+
+@preprocess.command()
+@click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+def print_na_rate(input_pkl):
+    df=pickle.load(open(input_pkl,'rb'))['beta']
+    print('NA Rate is on average: {}%'.format(sum(sum(pd.isna(df.values)))/float(df.shape[0]*df.shape[1])*100.))
 
 ## Build methylation class with above features ##
 

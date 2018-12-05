@@ -37,6 +37,10 @@ Getting Started:
                 * python preprocess.py create_sample_sheet -s geo -i test_idats/ -os ./test_idats/geo_minfi.csv -is test_idats/GSE104376_clinical_info.csv -d "gender:ch1" # gender is "disease" as mock test  
                 * python preprocess.py plot_qc -i ./test_idats/  
                 * python preprocess.py preprocess_pipeline -i ./test_idats/ -n 30  
+                * python preprocess.py imputation_pipeline -i ./preprocess_outputs/methyl_array.pkl
+                * python preprocess.py print_na_rate -i ./imputed_outputs/methyl_array.pkl
+                * python preprocess.py mad_filter -n 200000
+                * python preprocess.py pkl_to_csv # output in final_preprocessed
 1. Log into server ssh xxxxx@discovery7.hpcc.dartmouth.edu  
                 * ssh x01  
                 * module load python/3-Anaconda#module load python/3.6-Miniconda  
