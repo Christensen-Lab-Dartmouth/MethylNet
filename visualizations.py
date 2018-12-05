@@ -4,6 +4,8 @@ import plotly.offline as py
 import pandas as pd
 import numpy as np
 import networkx as nx
+import click
+import pickle
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 
@@ -70,7 +72,7 @@ def plotly_plot(t_data_df, output_fname, G=None, axes_off=False):
 @click.option('-nn', '--n_neighbors', default=5, show_default=True, help='Number of neighbors UMAP.')
 @click.option('-a', '--axes_off', is_flag=True, help='Whether to turn axes on or off.')
 def transform_plot(input_pkl, column_of_interest, output_file, n_neighbors,axes_off):
-    input_dict = pickle.load(open(input_pkl,'wb'))
+    input_dict = pickle.load(open(input_pkl,'rb'))
     t_data = umap_embed(input_dict['beta'], input_dict['pheno'][column_of_interest], n_neighbors)
     plotly_plot(t_data, output_file, axes_off=axes_off)
 

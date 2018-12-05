@@ -733,6 +733,9 @@ def print_na_rate(input_pkl):
     df=pickle.load(open(input_pkl,'rb'))['beta']
     print('NA Rate is on average: {}%'.format(sum(sum(pd.isna(df.values)))/float(df.shape[0]*df.shape[1])*100.))
 
+def modify_pheno_data():
+    """Use another spreadsheet to add more descriptive data"""
+    pass
 ## Build methylation class with above features ##
 
 ## Build MethylNet (sklearn interface) and Pickle ##
