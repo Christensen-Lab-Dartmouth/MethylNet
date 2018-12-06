@@ -42,6 +42,14 @@ class PackageInstaller:
         biocinstaller.biocLite(robjects.vectors.StrVector(["minfi","ENmix",
                                 "minfiData","sva","GEOquery","geneplotter"]))
 
+    def install_meffil(self):
+        base = importr('base')
+        base.source("http://www.bioconductor.org/biocLite.R")
+        biocinstaller = importr("BiocInstaller")
+        robjects.r('install.packages')('devtools')
+        devtools=importr('devtools')
+        devtools.install_github("perishky/meffil")
+
 class TCGADownloader:
     def __init__(self):
         pass
@@ -149,16 +157,30 @@ class PreProcessPhenoData:
         self.pheno_sheet = self.pheno_sheet[['Basename','geo_accession',disease_class_column]+(list(include_columns.keys()) if include_columns else [])].rename(columns=col_dict)
 
 
-    def format_tcga(self, mapping_file="barcode_mapping.txt"):
+    def format_tcga(self, mapping_file="idat_filename_case.txt"): # add case contro and new mapping keep pt id
+        def decide_case_control(barcode):
+            case_control_num = int(barcode.split('-')[3][:2])
+            if case_control_num < 10:
+                return 'case'
+            elif case_control_num < 20:
+                return 'normal'
+            else:
+                return 'control'
+            return 0
         idats = glob.glob("{}/*.idat".format(self.idat_dir))
-        barcode_mappings = np.loadtxt(mapping_file,dtype=str)
-        barcode_mappings[:,1] = np.vectorize(lambda x: '-'.join(x.split('-')[:4]))(barcode_mappings[:,1])
-        barcode_mappings = {v:k for k,v in dict(barcode_mappings.tolist()).items()}
-        self.pheno_sheet['Basename'] = self.pheno_sheet['bcr_patient_barcode'].map(barcode_mappings)
+        barcode_mappings = pd.read_csv(mapping_file,sep='\t')#np.loadtxt(mapping_file,dtype=str)
+        barcode_mappings['barcodes'] = np.vectorize(lambda x: '-'.join(x.split('-')[:3]))(barcode_mappings['cases'])
+        barcode_mappings['idats'] = barcode_mappings['file_name'].map(lambda x: x[:x.rfind('_')])
+        barcode_mappings_d1 = dict(barcode_mappings[['barcodes','idats']].values.tolist())
+        barcode_mappings['case_controls']= barcode_mappings['cases'].map(decide_case_control)
+        barcode_mappings_d2 = dict(barcode_mappings[['barcodes','case_controls']].values.tolist())
+        self.pheno_sheet['Basename'] = self.pheno_sheet['bcr_patient_barcode'].map(barcode_mappings_d1)
+        self.pheno_sheet['case_control'] = self.pheno_sheet['bcr_patient_barcode'].map(barcode_mappings_d2)
         idat_basenames = np.unique(np.vectorize(lambda x: '_'.join(x.split('/')[-1].split('_')[:2]))(idats))
         self.pheno_sheet = self.pheno_sheet[self.pheno_sheet['Basename'].isin(idat_basenames)]
         self.pheno_sheet.loc[:,['Basename']] = self.pheno_sheet['Basename'].map(lambda x: self.idat_dir+x)
-        self.pheno_sheet = self.pheno_sheet[['Basename', 'disease', 'tumor_stage', 'vital_status', 'age_at_diagnosis', 'gender', 'race', 'ethnicity']].rename(columns={'tumor_stage':'stage','vital_status':'vital','age_at_diagnosis':'age'})
+        self.pheno_sheet = self.pheno_sheet[['Basename', 'disease', 'tumor_stage', 'vital_status', 'age_at_diagnosis', 'gender', 'race', 'ethnicity','case_control']].rename(columns={'tumor_stage':'stage','vital_status':'vital','age_at_diagnosis':'age'})
+        print(self.pheno_sheet)
 
     def format_custom(self, basename_col, disease_class_column, include_columns={}):
         idats = glob.glob("{}/*.idat".format(self.idat_dir))
@@ -191,10 +213,15 @@ class PreProcessPhenoData:
         print("Please move all other sample sheets out of this directory.")
 
     def get_categorical_distribution(self, key, disease_only=False, subtype_delimiter=','):
-        if disease_only:
-            self.pheno_sheet['disease_only'] = self.pheno_sheet['disease'].map(lambda x: x.split(',')[0])
-            key='disease_only'
-        return Counter(self.pheno_sheet[key])
+        if type(key) == type('string'):
+            if disease_only:
+                self.pheno_sheet['disease_only'] = self.pheno_sheet['disease'].map(lambda x: x.split(',')[0])
+                key='disease_only'
+            return Counter(self.pheno_sheet[key])
+        else:
+            cols=self.pheno_sheet[list(key)].astype(str)
+            cols=reduce(lambda a,b: a+'_'+b,[cols.iloc[:,i] for i in range(cols.shape[1])])
+            return Counter(cols)
 
     def remove_diseases(self,exclude_disease_list, low_count, disease_only,subtype_delimiter):
         if low_count:
@@ -214,6 +241,10 @@ class PreProcessIDAT:
         self.idat_dir = idat_dir # can establish cases and controls
         self.minfi = importr('minfi')
         self.enmix = importr("ENmix")
+        try:
+            self.meffil = importr('meffil')
+        except:
+            self.meffil=None
 
 
     def load_idats(self, geo_query=''): # maybe have a larger parent class that subsets idats by subtype, then preprocess each subtype and combine the dataframes
@@ -232,6 +263,11 @@ class PreProcessIDAT:
     def preprocessRAW(self):
         self.MSet = self.minfi.preprocessRaw(self.RGset)
         return self.MSet
+
+    def preprocess_meffil(self, n_cores=6):
+        robjects.r('options')(mc_cores=n_cores)
+        sample_sheet = self.meffil.read_spreadsheet(self.idat_dir)
+        print("FINISH")
 
     def preprocessENmix(self, n_cores=6):
         self.qcinfo = self.enmix.QCinfo(self.RGset, detPthre=1e-7)
@@ -501,7 +537,7 @@ def download_geo(geo_query,output_dir):
 @click.option('-s', '--source_type', default='tcga', help='Source type of data.', type=click.Choice(['tcga','geo','custom']), show_default=True)
 @click.option('-i', '--idat_dir', default='./tcga_idats/', help='Idat directory.', type=click.Path(exists=False), show_default=True)
 @click.option('-os', '--output_sample_sheet', default='./tcga_idats/minfiSheet.csv', help='CSV for minfi input.', type=click.Path(exists=False), show_default=True)
-@click.option('-m', '--mapping_file', default='./barcode_mapping.txt', help='Mapping file from uuid to TCGA barcode.', type=click.Path(exists=False), show_default=True)
+@click.option('-m', '--mapping_file', default='./idat_filename_case.txt', help='Mapping file from uuid to TCGA barcode. Downloaded using download_tcga.', type=click.Path(exists=False), show_default=True)
 @click.option('-l', '--header_line', default=0, help='Line to begin reading csv/xlsx.', show_default=True)
 @click.option('-d', '--disease_class_column', default="methylation class:ch1", help='Disease classification column, for custom and geo datasets.', type=click.Path(exists=False), show_default=True)
 @click.option('-b', '--basename_col', default="Sentrix ID (.idat)", help='Basename classification column, for custom datasets.', type=click.Path(exists=False), show_default=True)
@@ -552,10 +588,12 @@ def concat_sample_sheets(sample_sheet1, sample_sheet2, output_sample_sheet):
 
 @preprocess.command()
 @click.option('-is', '--formatted_sample_sheet', default='./tcga_idats/minfiSheet.csv', help='Clinical information downloaded from tcga/geo/custom, formatted using create_sample_sheet.', type=click.Path(exists=False), show_default=True)
-@click.option('-k', '--key', default='disease', help='Column of csv to print statistics for.', type=click.Path(exists=False), show_default=True)
+@click.option('-k', '--key', multiple=True, default=['disease'], help='Column of csv to print statistics for.', type=click.Path(exists=False), show_default=True)
 @click.option('-d', '--disease_only', is_flag=True, help='Only look at disease, or text before subtype_delimiter.')
 @click.option('-sd', '--subtype_delimiter', default=',', help='Delimiter for disease extraction.', type=click.Path(exists=False), show_default=True)
 def get_categorical_distribution(formatted_sample_sheet,key,disease_only=False,subtype_delimiter=','):
+    if len(key) == 1:
+        key=key[0]
     print('\n'.join('{}:{}'.format(k,v) for k,v in PreProcessPhenoData(formatted_sample_sheet, idat_dir='', header_line=0).get_categorical_distribution(key,disease_only,subtype_delimiter).items()))
 
 @preprocess.command()
@@ -618,6 +656,7 @@ def plot_qc(idat_dir, geo_query, output_dir, split_by_subtype):
 @click.option('-o', '--output_pkl', default='./preprocess_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-ss', '--split_by_subtype', is_flag=True, help='If using formatted sample sheet csv, split by subtype and perform preprocessing. Will need to combine later.')
 def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subtype):
+    """FIXME consider adding funnorm method plus enmix outlier removal"""
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     if idat_dir.endswith('.csv') and split_by_subtype:
         pheno=pd.read_csv(idat_dir)

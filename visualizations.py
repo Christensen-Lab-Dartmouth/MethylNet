@@ -6,6 +6,7 @@ import numpy as np
 import networkx as nx
 import click
 import pickle
+from sklearn.preprocessing import LabelEncoder
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 
@@ -14,9 +15,9 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def visualize():
     pass
 
-def umap_embed(beta_df, outcome_col, n_neighbors):
+def umap_embed(beta_df, outcome_col, n_neighbors, supervised=False):
     umap=UMAP(n_components=3, random_state=42, n_neighbors=n_neighbors, min_dist=0.1)
-    t_data=pd.DataFrame(umap.fit_transform(beta_df),index=beta_df.index,columns=['x','y','z'])
+    t_data=pd.DataFrame(umap.fit_transform(beta_df) if not supervised else umap.fit_transform(beta_df,LabelEncoder().fit_transform(outcome_col)),index=beta_df.index,columns=['x','y','z'])
     print(outcome_col,t_data)
     t_data['color']=outcome_col
     return t_data
@@ -73,9 +74,10 @@ def plotly_plot(t_data_df, output_fname, G=None, axes_off=False):
 @click.option('-o', '--output_file', default='./visualization.html', help='Output visualization.', type=click.Path(exists=False), show_default=True)
 @click.option('-nn', '--n_neighbors', default=5, show_default=True, help='Number of neighbors UMAP.')
 @click.option('-a', '--axes_off', is_flag=True, help='Whether to turn axes on or off.')
-def transform_plot(input_pkl, column_of_interest, output_file, n_neighbors,axes_off):
+@click.option('-s', '--supervised', is_flag=True, help='Supervise umap embedding.')
+def transform_plot(input_pkl, column_of_interest, output_file, n_neighbors,axes_off,supervised):
     input_dict = pickle.load(open(input_pkl,'rb'))
-    t_data = umap_embed(input_dict['beta'], input_dict['pheno'][column_of_interest], n_neighbors)
+    t_data = umap_embed(input_dict['beta'], input_dict['pheno'][column_of_interest], n_neighbors, supervised)
     print(t_data)
     plotly_plot(t_data, output_file, axes_off=axes_off)
 

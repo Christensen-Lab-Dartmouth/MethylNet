@@ -46,7 +46,7 @@ Getting Started:
                 * python preprocess.py modify_pheno_data -is ./geo_pheno_data_backup/geo_minfi_more.csv
                 * python visualizations.py transform_plot -c anxiety -o anxiety.html -i ./modified_processed/methyl_array.pkl
                 * python embedding.py perform_embedding -lr 1e-6 -wd 0.01 -hlt 1000,500,200 -n 100
-                * python visualizations.py transform_plot -o vae.html -i ./embeddings/vae_methyl_arr.pkl -c anxiety
+                * python visualizations.py transform_plot -o vae.html -i ./embeddings/vae_methyl_arr.pkl -c anxiety # -s -nn 5
 1. Log into server ssh xxxxx@discovery7.hpcc.dartmouth.edu  
                 * ssh x01  
                 * module load python/3-Anaconda#module load python/3.6-Miniconda  
@@ -74,7 +74,7 @@ Getting Started:
                 * Prints out total number of cases/controls 3905  
 5. Preprocessing pipeline with minfi and enmix:  
                 * python preprocess.py plot_qc -i ./geo_idats/  
-                * python preprocess.py preprocess_pipeline -i ./geo_idats/  
+                * python preprocess.py preprocess_pipeline -i ./geo_idats/ -n 40 
 
 TODO:
 * Test Preprocessing tools   
