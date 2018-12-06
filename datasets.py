@@ -9,6 +9,12 @@ def _reshape(cpgs_per_row, l):
         return vector[:,:int(l[1]/cpgs_per_row)*cpgs_per_row].reshape((l[0],int(l[1]/cpgs_per_row),cpgs_per_row))
     return resize
 
+def convert_to_tensor():
+    def to_tensor(arr):
+        out= torch.FloatTensor(arr)
+        return out
+    return to_tensor
+
 class Transformer:
     def __init__(self, convolutional=False, cpg_per_row=30000, l=None):
         self.convolutional = convolutional
@@ -23,7 +29,7 @@ class Transformer:
         data_aug = []
         if self.convolutional and self.l != None:
             data_aug.append(_reshape(self.cpgs_per_row, self.l))
-        data_aug.append(ToTensor())
+        data_aug.append(convert_to_tensor())
         return Compose(data_aug)
 
 # From Titus
@@ -44,9 +50,10 @@ class MethylationDataSet(Dataset):
         self.transform = transform
         self.new_shape = self.transform.shape
 
-    def __getitem__(self, index):
+    def __getitem__(self, index):# .iloc[index,] [index] .iloc[index]
         transform = self.transform.generate()
-        return transform(self.methylation_array.beta.iloc[index,].values),self.samples[index],self.outcome_col.iloc[index]
+        #print(self.methylation_array.beta.values.shape)
+        return transform(self.methylation_array.beta.values),self.samples.tolist(),self.outcome_col.values.tolist()
 
     def __len__(self):
-        return self.methylation_array.beta.shape[0]
+        return 1#self.methylation_array.beta.shape[0]

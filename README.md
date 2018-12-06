@@ -45,6 +45,8 @@ Getting Started:
                 * python preprocess.py create_sample_sheet -s geo -l 0 -i test_idats/ -os ./geo_pheno_data_backup/geo_minfi_more.csv -is geo_pheno_data_backup/GSE104376_clinical_info.csv -d "gender:ch1" -c include_col3.txt
                 * python preprocess.py modify_pheno_data -is ./geo_pheno_data_backup/geo_minfi_more.csv
                 * python visualizations.py transform_plot -c anxiety -o anxiety.html -i ./modified_processed/methyl_array.pkl
+                * python embedding.py perform_embedding -lr 1e-6 -wd 0.01 -hlt 1000,500,200 -n 100
+                * python visualizations.py transform_plot -o vae.html -i ./embeddings/vae_methyl_arr.pkl -c anxiety
 1. Log into server ssh xxxxx@discovery7.hpcc.dartmouth.edu  
                 * ssh x01  
                 * module load python/3-Anaconda#module load python/3.6-Miniconda  

@@ -2,11 +2,14 @@ import copy
 from torch import nn
 import torch
 from torch.autograd import Variable
+import numpy as np
 
 def train(model, loader, loss_func, optimizer, cuda=True):
     model.train()
+    #print(model)
     for inputs, _, _ in loader:
-        inputs = Variable(inputs)
+        inputs = Variable(inputs).view(inputs.size()[1],-1,inputs.size()[2])
+        #print(inputs.size())
         if cuda:
             inputs = inputs.cuda
         output, mean, logvar = model(inputs)
@@ -18,11 +21,13 @@ def train(model, loader, loss_func, optimizer, cuda=True):
     return model, loss
 
 def project(model, loader, cuda=True):
+    model.eval()
+    print(model)
     for inputs, sample_names, outcomes in loader:
-        inputs = Variable(inputs)
+        inputs = Variable(inputs).view(inputs.size()[1],-1,inputs.size()[2])
         if cuda:
             inputs = inputs.cuda()
-        z = model.get_latent_z(inputs)
+        z = np.squeeze(model.get_latent_z(inputs).detach().numpy(),axis=1)
     return z, sample_names, outcomes
 
 class AutoEncoder:
@@ -37,7 +42,7 @@ class AutoEncoder:
 
     def fit(self, train_data):
         for epoch in range(self.n_epochs):
-            model, loss = train(self.model, self.train_data, self.loss_fn, self.optimizer, self.cuda)
+            model, loss = train(self.model, train_data, self.loss_fn, self.optimizer, self.cuda)
             print("Epoch {}: Loss {}".format(epoch,loss))
         self.model = model
         return model
@@ -52,12 +57,13 @@ def vae_loss(output, input, mean, logvar, loss_func):
     recon_loss = loss_func(output, input)
     kl_loss = torch.mean(0.5 * torch.sum(
         torch.exp(logvar) + mean**2 - 1. - logvar, 1))
+    print(recon_loss,kl_loss)
     return recon_loss + kl_loss
 
 class TybaltTitusVAE(nn.Module):
     def __init__(self, n_input, n_latent, hidden_layer_encoder_topology=[100,100,100]):
         super(TybaltTitusVAE, self).__init__()
-        self.in_shape = in_shape
+        self.n_input = n_input
         self.n_latent = n_latent
         self.pre_latent_topology = [n_input]+(hidden_layer_encoder_topology if hidden_layer_encoder_topology else [])
         self.post_latent_topology = [n_latent]+(hidden_layer_encoder_topology[::-1] if hidden_layer_encoder_topology else [])
@@ -66,7 +72,7 @@ class TybaltTitusVAE(nn.Module):
             for i in range(len(self.pre_latent_topology)-1):
                 layer = nn.Linear(self.pre_latent_topology[i],self.pre_latent_topology[i+1])
                 torch.nn.init.xavier_uniform(layer.weight)
-                self.encoder_layers.append(nn.Sequential(layer,nn.Relu()))
+                self.encoder_layers.append(nn.Sequential(layer,nn.ReLU()))
         self.encoder = nn.Sequential(*self.encoder_layers) if self.encoder_layers else nn.Dropout(p=0.)
         self.z_mean = nn.Linear(self.pre_latent_topology[-1],n_latent)
         self.z_var = nn.Linear(self.pre_latent_topology[-1],n_latent)
@@ -76,10 +82,13 @@ class TybaltTitusVAE(nn.Module):
             for i in range(len(self.post_latent_topology)-1):
                 layer = nn.Linear(self.post_latent_topology[i],self.post_latent_topology[i+1])
                 torch.nn.init.xavier_uniform(layer.weight)
-                self.decoder_layers.append(nn.Sequential(layer,nn.Relu()))
+                self.decoder_layers.append(nn.Sequential(layer,nn.ReLU()))
         self.decoder_layers = nn.Sequential(*self.decoder_layers)
         self.output_layer = nn.Sequential(nn.Linear(self.post_latent_topology[-1],n_input),nn.Sigmoid())
-        self.decoder = nn.Sequential(self.decoder_layers,self.output_layer)
+        if self.decoder_layers:
+            self.decoder = nn.Sequential(*[self.decoder_layers,self.output_layer])
+        else:
+            self.decoder = self.output_layer
 
     def sample_z(self, mean, logvar):
         stddev = torch.exp(0.5 * logvar)
@@ -88,15 +97,19 @@ class TybaltTitusVAE(nn.Module):
 
     def encode(self, x):
         x = self.encoder(x)
-        x = x.view(x.size(0), -1)
+        #print(x.size())
+        #x = x.view(x.size(0), -1)
         mean = self.z_mean(x)
         var = self.z_var(x)
+        #print('mean',mean.size())
         return mean, var
 
     def decode(self, z):
-        out = self.z_develop(z)
+        #out = self.z_develop(z)
+        #print('out',out.size())
         #out = out.view(z.size(0), 64, self.z_dim, self.z_dim)
-        out = self.decoder(out)
+        out = self.decoder(z)
+        #print(out)
         return out
 
     def forward(self, x):
