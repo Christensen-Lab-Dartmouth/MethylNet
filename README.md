@@ -42,6 +42,9 @@ Getting Started:
                 * python preprocess.py mad_filter -n 200000
                 * python preprocess.py pkl_to_csv # output in final_preprocessed
                 * python visualizations.py transform_plot
+                * python preprocess.py create_sample_sheet -s geo -l 0 -i test_idats/ -os ./geo_pheno_data_backup/geo_minfi_more.csv -is geo_pheno_data_backup/GSE104376_clinical_info.csv -d "gender:ch1" -c include_col3.txt
+                * python preprocess.py modify_pheno_data -is ./geo_pheno_data_backup/geo_minfi_more.csv
+                * python visualizations.py transform_plot -c anxiety -o anxiety.html -i ./modified_processed/methyl_array.pkl
 1. Log into server ssh xxxxx@discovery7.hpcc.dartmouth.edu  
                 * ssh x01  
                 * module load python/3-Anaconda#module load python/3.6-Miniconda  

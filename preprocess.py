@@ -137,14 +137,17 @@ class PreProcessPhenoData:
             self.pheno_sheet = pd.read_csv(pheno_sheet, header=header_line)
         self.idat_dir = idat_dir
 
-    def format_geo(self, disease_class_column="methylation class:ch1"):
+    def format_geo(self, disease_class_column="methylation class:ch1", include_columns={}):
         idats = glob.glob("{}/*.idat".format(self.idat_dir))
         idat_basenames = np.unique(np.vectorize(lambda x: '_'.join(x.split('/')[-1].split('_')[:3]))(idats))
         idat_geo_map = dict(zip(np.vectorize(lambda x: x.split('_')[0])(idat_basenames),np.array(idat_basenames)))
         self.pheno_sheet['Basename'] = self.pheno_sheet['geo_accession'].map(idat_geo_map)
         self.pheno_sheet = self.pheno_sheet[self.pheno_sheet['Basename'].isin(idat_basenames)]
         self.pheno_sheet.loc[:,'Basename'] = self.pheno_sheet['Basename'].map(lambda x: self.idat_dir+x)
-        self.pheno_sheet = self.pheno_sheet[['Basename','geo_accession',disease_class_column]].rename(columns={'geo_accession':'AccNum',disease_class_column:'disease'})
+        col_dict = {'geo_accession':'AccNum',disease_class_column:'disease'}
+        col_dict.update(include_columns)
+        self.pheno_sheet = self.pheno_sheet[['Basename','geo_accession',disease_class_column]+(list(include_columns.keys()) if include_columns else [])].rename(columns=col_dict)
+
 
     def format_tcga(self, mapping_file="barcode_mapping.txt"):
         idats = glob.glob("{}/*.idat".format(self.idat_dir))
@@ -380,6 +383,13 @@ class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_da
         top_mad_cpgs = np.array(list(mad_cpgs.iloc[:n_top_cpgs].index))
         self.beta = self.beta.loc[:, top_mad_cpgs]
 
+    def merge_preprocess_sheet(self, preprocess_sample_df):
+        self.pheno=self.pheno.merge(preprocess_sample_df,on=['Basename'],how='inner')
+        if 'disease_x' in list(self.pheno):
+            self.pheno = self.pheno.rename(columns={'disease_x':'disease'})
+        self.pheno = self.pheno[[col for col in list(self.pheno) if not col.startswith('Unnamed:')]]
+        self.pheno=self.pheno.set_index([np.vectorize(lambda x: x.split('/')[-1])(self.pheno['Basename'])],drop=False)
+
     def load(self, input_pickle):
         pass
 
@@ -499,15 +509,21 @@ def download_geo(geo_query,output_dir):
 def create_sample_sheet(input_sample_sheet, source_type, idat_dir, output_sample_sheet, mapping_file, header_line, disease_class_column, basename_col, include_columns_file):
     os.makedirs(output_sample_sheet[:output_sample_sheet.rfind('/')], exist_ok=True)
     pheno_sheet = PreProcessPhenoData(input_sample_sheet, idat_dir, header_line= (0 if source_type != 'custom' else header_line))
+    if include_columns_file:
+        include_columns=np.loadtxt(include_columns_file,dtype=str,delimiter='\t')
+        if '\t' in open(include_columns_file).read() and len(include_columns.shape)<2:
+            include_columns=dict(include_columns[np.newaxis,:].tolist())
+        elif len(include_columns.shape)<2:
+            include_columns=dict(zip(include_columns,include_columns))
+        else:
+            include_columns=dict(include_columns.tolist())
+    else:
+        include_columns={}
     if source_type == 'tcga':
         pheno_sheet.format_tcga(mapping_file)
     elif source_type == 'geo':
-        pheno_sheet.format_geo(disease_class_column)
+        pheno_sheet.format_geo(disease_class_column, include_columns)
     else:
-        if include_columns_file:
-            include_columns=dict(np.loadtxt(include_columns_file,dtype=str,delimiter='\t').tolist())
-        else:
-            include_columns={}
         pheno_sheet.format_custom(basename_col, disease_class_column, include_columns)
     pheno_sheet.export(output_sample_sheet)
     print("Please remove {} from {}, if it exists in that directory.".format(input_sample_sheet, idat_dir))
@@ -733,9 +749,18 @@ def print_na_rate(input_pkl):
     df=pickle.load(open(input_pkl,'rb'))['beta']
     print('NA Rate is on average: {}%'.format(sum(sum(pd.isna(df.values)))/float(df.shape[0]*df.shape[1])*100.))
 
-def modify_pheno_data():
+@preprocess.command()
+@click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-is', '--input_formatted_sample_sheet', default='./tcga_idats/minfi_sheet.csv', help='Information passed through function create_sample_sheet, has Basename and disease fields.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_pkl', default='./modified_processed/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+def modify_pheno_data(input_pkl,input_formatted_sample_sheet,output_pkl):
     """Use another spreadsheet to add more descriptive data"""
-    pass
+    os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
+    input_dict=pickle.load(open(input_pkl,'rb'))
+    methyl_array = MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
+    methyl_array.merge_preprocess_sheet(pd.read_csv(input_formatted_sample_sheet,header=0))
+    methyl_array.write_pickle(output_pkl)
+
 ## Build methylation class with above features ##
 
 ## Build MethylNet (sklearn interface) and Pickle ##

@@ -17,6 +17,7 @@ def visualize():
 def umap_embed(beta_df, outcome_col, n_neighbors):
     umap=UMAP(n_components=3, random_state=42, n_neighbors=n_neighbors, min_dist=0.1)
     t_data=pd.DataFrame(umap.fit_transform(beta_df),index=beta_df.index,columns=['x','y','z'])
+    print(outcome_col,t_data)
     t_data['color']=outcome_col
     return t_data
 
@@ -35,6 +36,7 @@ def plotly_plot(t_data_df, output_fname, G=None, axes_off=False):
         color_dict = {name: c[i] for i,name in enumerate(sorted(colors))}
 
         for name,col in color_dict.items():
+            print(name,col)
             plots.append(
                 go.Scatter3d(x=t_data_df['x'][t_data_df['color']==name], y=t_data_df['y'][t_data_df['color']==name],
                              z=t_data_df['z'][t_data_df['color']==name],
@@ -74,6 +76,7 @@ def plotly_plot(t_data_df, output_fname, G=None, axes_off=False):
 def transform_plot(input_pkl, column_of_interest, output_file, n_neighbors,axes_off):
     input_dict = pickle.load(open(input_pkl,'rb'))
     t_data = umap_embed(input_dict['beta'], input_dict['pheno'][column_of_interest], n_neighbors)
+    print(t_data)
     plotly_plot(t_data, output_file, axes_off=axes_off)
 
 #################
