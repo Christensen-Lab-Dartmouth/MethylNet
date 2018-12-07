@@ -42,11 +42,14 @@ class PackageInstaller:
         biocinstaller.biocLite(robjects.vectors.StrVector(["minfi","ENmix",
                                 "minfiData","sva","GEOquery","geneplotter"]))
 
-    def install_meffil(self):
-        base = importr('base')
-        base.source("http://www.bioconductor.org/biocLite.R")
-        biocinstaller = importr("BiocInstaller")
+    def install_devtools(self):
         robjects.r('install.packages')('devtools')
+
+    def install_meffil(self):
+        subprocess.call('conda install -y -c r r-cairo=1.5_9 r-devtools=1.13.6',shell=True)
+        #base = importr('base')
+        #base.source("http://www.bioconductor.org/biocLite.R")
+        #biocinstaller = importr("BiocInstaller")
         devtools=importr('devtools')
         devtools.install_github("perishky/meffil")
 
@@ -264,10 +267,17 @@ class PreProcessIDAT:
         self.MSet = self.minfi.preprocessRaw(self.RGset)
         return self.MSet
 
-    def preprocess_meffil(self, n_cores=6):
+    def preprocessMeffil(self, n_cores=6):
         robjects.r('options')(mc_cores=n_cores)
-        sample_sheet = self.meffil.read_spreadsheet(self.idat_dir)
-        print("FINISH")
+        self.pheno = self.meffil.meffil_read_samplesheet(self.idat_dir)
+        self.beta_final = self.meffil.meffil_normalize_dataset(self.pheno, qc_file="qc/report.html", author="Analyst", study="Illumina450", number_pcs=10)
+        #self.beta_final = robjects.r['as'](self.beta_final,'data.frame'))
+        #print(robjects.r['as'](self.beta_final,'data.frame'))
+        #b=pandas2ri.ri2py(robjects.r['as'](self.beta_final,'data.frame'))
+        #print(b)
+        #print(pandas2ri.ri2py(robjects.r['as'](self.pheno,'data.frame'))[b.index])
+
+
 
     def preprocessENmix(self, n_cores=6):
         self.qcinfo = self.enmix.QCinfo(self.RGset, detPthre=1e-7)
@@ -508,6 +518,12 @@ def install_tcga_biolinks():
     installer = PackageInstaller()
     installer.install_tcga_biolinks()
 
+@preprocess.command()
+def install_meffil():
+    installer = PackageInstaller()
+    installer.install_meffil()
+
+
 ## Download ##
 
 @preprocess.command()
@@ -655,7 +671,8 @@ def plot_qc(idat_dir, geo_query, output_dir, split_by_subtype):
 @click.option('-n', '--n_cores', default=6, help='Number cores to use for preprocessing.', show_default=True)
 @click.option('-o', '--output_pkl', default='./preprocess_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-ss', '--split_by_subtype', is_flag=True, help='If using formatted sample sheet csv, split by subtype and perform preprocessing. Will need to combine later.')
-def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subtype):
+@click.option('-m', '--meffil', is_flag=True, help='Preprocess using meffil, only available if not splitting by subtype for now.')
+def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subtype, meffil):
     """FIXME consider adding funnorm method plus enmix outlier removal"""
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     if idat_dir.endswith('.csv') and split_by_subtype:
@@ -674,7 +691,10 @@ def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subty
             print("Please use combine_split_methylation_arrays")
     else:
         preprocesser = PreProcessIDAT(idat_dir)
-        preprocesser.preprocess(geo_query, n_cores)
+        if meffil:
+            preprocesser.preprocessMeffil(n_cores=6)
+        else:
+            preprocesser.preprocess(geo_query, n_cores)
         preprocesser.output_pheno_beta()
         preprocesser.export_pickle(output_pkl)
 
