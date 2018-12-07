@@ -183,7 +183,7 @@ class PreProcessPhenoData:
         self.pheno_sheet = self.pheno_sheet[self.pheno_sheet['Basename'].isin(idat_basenames)]
         self.pheno_sheet.loc[:,['Basename']] = self.pheno_sheet['Basename'].map(lambda x: self.idat_dir+x)
         self.pheno_sheet = self.pheno_sheet[['Basename', 'disease', 'tumor_stage', 'vital_status', 'age_at_diagnosis', 'gender', 'race', 'ethnicity','case_control']].rename(columns={'tumor_stage':'stage','vital_status':'vital','age_at_diagnosis':'age'})
-        print(self.pheno_sheet)
+        #print(self.pheno_sheet)
 
     def format_custom(self, basename_col, disease_class_column, include_columns={}):
         idats = glob.glob("{}/*.idat".format(self.idat_dir))
@@ -244,6 +244,7 @@ class PreProcessIDAT:
         self.idat_dir = idat_dir # can establish cases and controls
         self.minfi = importr('minfi')
         self.enmix = importr("ENmix")
+        self.base = importr('base')
         try:
             self.meffil = importr('meffil')
         except:
@@ -269,15 +270,17 @@ class PreProcessIDAT:
 
     def preprocessMeffil(self, n_cores=6):
         robjects.r('options')(mc_cores=n_cores)
+        dollar = self.base.__dict__["$"]
         self.pheno = self.meffil.meffil_read_samplesheet(self.idat_dir)
-        self.beta_final = self.meffil.meffil_normalize_dataset(self.pheno, qc_file="qc/report.html", author="Analyst", study="Illumina450", number_pcs=10)
+        self.beta_final = dollar(self.meffil.meffil_normalize_dataset(self.pheno, qc_file="qc/report.html", author="", study="Illumina450", number_pcs=2),'beta')#10
+        #robjects.r('saveRDS')(self.beta_final,'r_obj.rds')
+        #print(numpy2ri.ri2py(robjects.r("colnames")(self.beta_final)))
+        #print(self.beta_final.slots)
         #self.beta_final = robjects.r['as'](self.beta_final,'data.frame'))
         #print(robjects.r['as'](self.beta_final,'data.frame'))
         #b=pandas2ri.ri2py(robjects.r['as'](self.beta_final,'data.frame'))
         #print(b)
         #print(pandas2ri.ri2py(robjects.r['as'](self.pheno,'data.frame'))[b.index])
-
-
 
     def preprocessENmix(self, n_cores=6):
         self.qcinfo = self.enmix.QCinfo(self.RGset, detPthre=1e-7)
@@ -351,9 +354,15 @@ class PreProcessIDAT:
         self.get_beta()
         self.plot_qc_metrics(output_dir)
 
-    def output_pheno_beta(self):
+    def output_pheno_beta(self, meffil=False):
         self.pheno_py=pandas2ri.ri2py(robjects.r['as'](self.pheno,'data.frame'))
-        self.beta_py=pd.DataFrame(pandas2ri.ri2py(self.beta_final),index=numpy2ri.ri2py(robjects.r("featureNames")(self.RSet)),columns=numpy2ri.ri2py(robjects.r("sampleNames")(self.RSet))).transpose()
+        if not meffil: # FIXME
+            self.beta_py=pd.DataFrame(pandas2ri.ri2py(self.beta_final),index=numpy2ri.ri2py(robjects.r("featureNames")(self.RSet)),columns=numpy2ri.ri2py(robjects.r("sampleNames")(self.RSet))).transpose()
+        else:
+            self.beta_final=self.enmix.rm_outlier(self.beta) # FIXME does this work?
+            self.beta_py=pd.DataFrame(pandas2ri.ri2py(self.beta_final),index=robjects.r("rownames")(self.beta_final),columns=robjects.r("colnames")(self.beta_final))
+            print(self.beta_py)
+            self.pheno_py = self.pheno_py.loc[self.beta_py.index,:]
 
     def export_pickle(self, output_pickle, disease=''):
         output_dict = {}
@@ -372,6 +381,9 @@ class PreProcessIDAT:
     def export_csv(self, output_dir):
         self.pheno_py.to_csv('{}/pheno.csv'.format(output_dir))
         self.beta_py.to_csv('{}/beta.csv'.format(output_dir))
+
+    def to_methyl_array(self,disease=''):
+        return MethylationArray(self.pheno_py,self.beta_py, disease)
 
 
 class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_data, rework indexing
@@ -674,28 +686,38 @@ def plot_qc(idat_dir, geo_query, output_dir, split_by_subtype):
 @click.option('-m', '--meffil', is_flag=True, help='Preprocess using meffil, only available if not splitting by subtype for now.')
 def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subtype, meffil):
     """FIXME consider adding funnorm method plus enmix outlier removal"""
-    os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
+    output_dir = output_pkl[:output_pkl.rfind('/')]
+    os.makedirs(output_dir,exist_ok=True)
     if idat_dir.endswith('.csv') and split_by_subtype:
         pheno=pd.read_csv(idat_dir)
+        methyl_arrays = []
+        idat_dir_basename = idat_dir.split('/')[-1]
         for name, group in pheno.groupby('disease'):
             name=name.replace(' ','')
-            new_sheet = idat_dir.replace('.csv','_{}.csv'.format(name))
-            #new_out_dir = '{}/{}/'.format(output_dir,name)
+            new_sheet = idat_dir_basename.replace('.csv','_{}.csv'.format(name))
+            new_out_dir = '{}/{}/'.format(output_dir,name)
             os.makedirs(new_out_dir, exist_ok=True)
             group.to_csv('{}/{}'.format(new_out_dir,new_sheet))
             #os.makedirs(new_out_dir, exist_ok=True)
             preprocesser = PreProcessIDAT(new_out_dir)
-            preprocesser.preprocess(geo_query='', n_cores=n_cores)
-            preprocesser.output_pheno_beta()
-            preprocesser.export_pickle(output_pkl,name)
-            print("Please use combine_split_methylation_arrays")
+            if meffil:
+                preprocesser.preprocessMeffil(n_cores=n_cores)
+            else:
+                preprocesser.preprocess(geo_query='', n_cores=n_cores)
+            preprocesser.output_pheno_beta(meffil=meffil)
+            methyl_arrays.append(preprocesser.to_methyl_array(name))
+        methyl_arrays=MethylationArrays(methyl_arrays)
+        methyl_arrays=methyl_arrays.combine()
+        methyl_arrays.write_pickle(output_pkl)
+        #preprocesser.export_pickle(output_pkl,name)
+        print("Please use combine_split_methylation_arrays")
     else:
         preprocesser = PreProcessIDAT(idat_dir)
         if meffil:
-            preprocesser.preprocessMeffil(n_cores=6)
+            preprocesser.preprocessMeffil(n_cores=n_cores)
         else:
             preprocesser.preprocess(geo_query, n_cores)
-        preprocesser.output_pheno_beta()
+        preprocesser.output_pheno_beta(meffil=meffil)
         preprocesser.export_pickle(output_pkl)
 
 @preprocess.command()
