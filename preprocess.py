@@ -43,10 +43,10 @@ class PackageInstaller:
                                 "minfiData","sva","GEOquery","geneplotter"]))
 
     def install_devtools(self):
+        subprocess.call('conda install -y -c r r-cairo=1.5_9 r-devtools=1.13.6',shell=True)
         robjects.r('install.packages')('devtools')
 
     def install_meffil(self):
-        subprocess.call('conda install -y -c r r-cairo=1.5_9 r-devtools=1.13.6',shell=True)
         #base = importr('base')
         #base.source("http://www.bioconductor.org/biocLite.R")
         #biocinstaller = importr("BiocInstaller")
@@ -215,11 +215,15 @@ class PreProcessPhenoData:
         self.pheno_sheet.to_csv(output_sheet_name)
         print("Please move all other sample sheets out of this directory.")
 
+    def split_key(self, key, subtype_delimiter):
+        new_key = '{}_only'.format(key)
+        self.pheno_sheet[new_key] = self.pheno_sheet[key].map(lambda x: x.split(subtype_delimiter)[0])
+        return new_key
+
     def get_categorical_distribution(self, key, disease_only=False, subtype_delimiter=','):
         if type(key) == type('string'):
             if disease_only:
-                self.pheno_sheet['disease_only'] = self.pheno_sheet['disease'].map(lambda x: x.split(',')[0])
-                key='disease_only'
+                key=self.split_key(key,subtype_delimiter)
             return Counter(self.pheno_sheet[key])
         else:
             cols=self.pheno_sheet[list(key)].astype(str)
@@ -268,11 +272,11 @@ class PreProcessIDAT:
         self.MSet = self.minfi.preprocessRaw(self.RGset)
         return self.MSet
 
-    def preprocessMeffil(self, n_cores=6):
+    def preprocessMeffil(self, n_cores=6, n_pcs=4):
         robjects.r('options')(mc_cores=n_cores)
         dollar = self.base.__dict__["$"]
         self.pheno = self.meffil.meffil_read_samplesheet(self.idat_dir)
-        self.beta_final = dollar(self.meffil.meffil_normalize_dataset(self.pheno, qc_file="qc/report.html", author="", study="Illumina450", number_pcs=10),'beta')#10
+        self.beta_final = dollar(self.meffil.meffil_normalize_dataset(self.pheno, qc_file="qc/report.html", author="", study="Illumina450", number_pcs=n_pcs),'beta')#10
         #robjects.r('saveRDS')(self.beta_final,'r_obj.rds')
         #print(numpy2ri.ri2py(robjects.r("colnames")(self.beta_final)))
         #print(self.beta_final.slots)
@@ -429,7 +433,7 @@ class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_da
 
     def split_by_subtype(self, write_pkl=False, out_pkl=None):
         methyl_arrays = []
-        for disease, pheno_df in self.pheno.groupby('diseases'):
+        for disease, pheno_df in self.pheno.groupby('disease'):
             new_disease_name = disease.replace(' ','')
             beta_df = self.beta.loc[:,pheno_df.index]
             methyl_arrays.append(MethylationArray(pheno_df,beta_df,new_disease_name))
@@ -537,6 +541,13 @@ def install_meffil():
     installer = PackageInstaller()
     installer.install_meffil()
 
+@preprocess.command()
+def install_all_deps():
+    installer = PackageInstaller()
+    installer.install_bioconductor()
+    installer.install_minfi_others()
+    installer.install_tcga_biolinks()
+    installer.install_meffil()
 
 ## Download ##
 
@@ -593,6 +604,20 @@ def create_sample_sheet(input_sample_sheet, source_type, idat_dir, output_sample
         pheno_sheet.format_custom(basename_col, disease_class_column, include_columns)
     pheno_sheet.export(output_sample_sheet)
     print("Please remove {} from {}, if it exists in that directory.".format(input_sample_sheet, idat_dir))
+
+@preprocess.command()
+@click.option('-is', '--input_sample_sheet', default='./tcga_idats/minfiSheet.csv', help='CSV for minfi input.', type=click.Path(exists=False), show_default=True)
+@click.option('-os', '--output_sample_sheet', default='./tcga_idats/minfiSheet.csv', help='CSV for minfi input.', type=click.Path(exists=False), show_default=True)
+def meffil_encode(input_sample_sheet,output_sample_sheet):
+    """Work in progress."""
+    from collections import defaultdict
+    pheno=pd.read_csv(input_sample_sheet)
+    sex_dict=defaultdict(lambda:'NA')
+    sex_dict.update({'male':'M','female':'F'})
+    k='Sex' if 'Sex' in list(pheno) else 'sex'
+    if k in list(pheno):
+        pheno.loc[:,k] = pheno[k].map(lambda x: sex_dict[x.lower()])
+    pheno.to_csv(output_sample_sheet)
 
 @preprocess.command()
 @click.option('-s1', '--sample_sheet1', default='./tcga_idats/clinical_info1.csv', help='Clinical information downloaded from tcga/geo/custom, formatted using create_sample_sheet.', type=click.Path(exists=False), show_default=True)
@@ -686,15 +711,18 @@ def plot_qc(idat_dir, geo_query, output_dir, split_by_subtype):
 @click.option('-o', '--output_pkl', default='./preprocess_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-ss', '--split_by_subtype', is_flag=True, help='If using formatted sample sheet csv, split by subtype and perform preprocessing. Will need to combine later.')
 @click.option('-m', '--meffil', is_flag=True, help='Preprocess using meffil, only available if not splitting by subtype for now.')
-def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subtype, meffil):
+@click.option('-d', '--disease_only', is_flag=True, help='Only look at disease, or text before subtype_delimiter.')
+@click.option('-sd', '--subtype_delimiter', default=',', help='Delimiter for disease extraction.', type=click.Path(exists=False), show_default=True)
+def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subtype, meffil, disease_only, subtype_delimiter):
     """FIXME consider adding funnorm method plus enmix outlier removal"""
     output_dir = output_pkl[:output_pkl.rfind('/')]
     os.makedirs(output_dir,exist_ok=True)
     if idat_dir.endswith('.csv') and split_by_subtype:
-        pheno=pd.read_csv(idat_dir)
+        pData=PreProcessPhenoData(idat_dir,'')
         methyl_arrays = []
         idat_dir_basename = idat_dir.split('/')[-1]
-        for name, group in pheno.groupby('disease'):
+        group_by_key = (pData.split_key('disease',subtype_delimiter) if disease_only else 'disease')
+        for name, group in pData.pheno_sheet.groupby(group_by_key):
             name=name.replace(' ','')
             new_sheet = idat_dir_basename.replace('.csv','_{}.csv'.format(name))
             new_out_dir = '{}/{}/'.format(output_dir,name)
@@ -843,6 +871,7 @@ def modify_pheno_data(input_pkl,input_formatted_sample_sheet,output_pkl):
     methyl_array = MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
     methyl_array.merge_preprocess_sheet(pd.read_csv(input_formatted_sample_sheet,header=0))
     methyl_array.write_pickle(output_pkl)
+
 
 ## Build methylation class with above features ##
 
