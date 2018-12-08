@@ -272,7 +272,7 @@ class PreProcessIDAT:
         robjects.r('options')(mc_cores=n_cores)
         dollar = self.base.__dict__["$"]
         self.pheno = self.meffil.meffil_read_samplesheet(self.idat_dir)
-        self.beta_final = dollar(self.meffil.meffil_normalize_dataset(self.pheno, qc_file="qc/report.html", author="", study="Illumina450", number_pcs=2),'beta')#10
+        self.beta_final = dollar(self.meffil.meffil_normalize_dataset(self.pheno, qc_file="qc/report.html", author="", study="Illumina450", number_pcs=10),'beta')#10
         #robjects.r('saveRDS')(self.beta_final,'r_obj.rds')
         #print(numpy2ri.ri2py(robjects.r("colnames")(self.beta_final)))
         #print(self.beta_final.slots)
@@ -359,10 +359,12 @@ class PreProcessIDAT:
         if not meffil: # FIXME
             self.beta_py=pd.DataFrame(pandas2ri.ri2py(self.beta_final),index=numpy2ri.ri2py(robjects.r("featureNames")(self.RSet)),columns=numpy2ri.ri2py(robjects.r("sampleNames")(self.RSet))).transpose()
         else:
-            self.beta_final=self.enmix.rm_outlier(self.beta) # FIXME does this work?
+            self.beta_final=self.enmix.rm_outlier(self.beta_final).transpose() # FIXME does this work?
             self.beta_py=pd.DataFrame(pandas2ri.ri2py(self.beta_final),index=robjects.r("rownames")(self.beta_final),columns=robjects.r("colnames")(self.beta_final))
             print(self.beta_py)
-            self.pheno_py = self.pheno_py.loc[self.beta_py.index,:]
+            print(self.beta_py.index)
+            print(self.pheno_py)
+            self.pheno_py = self.pheno_py.set_index('Sample_Name').loc[self.beta_py.index,:]
 
     def export_pickle(self, output_pickle, disease=''):
         output_dict = {}

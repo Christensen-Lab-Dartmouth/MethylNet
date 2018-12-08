@@ -39,7 +39,7 @@ Getting Started:
                 * python preprocess.py preprocess_pipeline -i ./test_idats/ -n 30  
                 * python preprocess.py imputation_pipeline -i ./preprocess_outputs/methyl_array.pkl
                 * python preprocess.py print_na_rate -i ./imputed_outputs/methyl_array.pkl
-                * python preprocess.py mad_filter -n 200000
+                * python preprocess.py mad_filter -n 100000
                 * python preprocess.py pkl_to_csv # output in final_preprocessed
                 * python visualizations.py transform_plot
                 * python preprocess.py create_sample_sheet -s geo -l 0 -i test_idats/ -os ./geo_pheno_data_backup/geo_minfi_more.csv -is geo_pheno_data_backup/GSE104376_clinical_info.csv -d "gender:ch1" -c include_col3.txt
@@ -74,7 +74,7 @@ Getting Started:
                 * Prints out total number of cases/controls 3905  
 5. Preprocessing pipeline with minfi and enmix:  
                 * python preprocess.py plot_qc -i ./geo_idats/  
-                * python preprocess.py preprocess_pipeline -i ./geo_idats/ -n 40 
+                * python preprocess.py preprocess_pipeline -i ./geo_idats/ -n 40
 
 TODO:
 * Test Preprocessing tools   
