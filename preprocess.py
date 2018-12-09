@@ -48,7 +48,7 @@ class PackageInstaller:
             biocinstaller.biocLite(robjects.vectors.StrVector(custom),suppressUpdates=True)
         else:
             biocinstaller = importr("BiocManager")
-            biocinstaller.install(robjects.vectors.StrVector(custom),suppressUpdates=True)
+            biocinstaller.install(custom[0],suppressUpdates=True)
 
     def install_devtools(self):
         subprocess.call('conda install -y -c r r-cairo=1.5_9 r-devtools=1.13.6',shell=True)
