@@ -42,9 +42,13 @@ class PackageInstaller:
         biocinstaller.biocLite(robjects.vectors.StrVector(["minfi","ENmix",
                                 "minfiData","sva","GEOquery","geneplotter"]))
 
-    def install_custom(self, custom):
-        biocinstaller = importr("BiocInstaller")
-        biocinstaller.biocLite(robjects.vectors.StrVector(custom),suppressUpdates=True)
+    def install_custom(self, custom, manager):
+        if not manager:
+            biocinstaller = importr("BiocInstaller")
+            biocinstaller.biocLite(robjects.vectors.StrVector(custom),suppressUpdates=True)
+        else:
+            biocinstaller = importr("BiocManager")
+            biocinstaller.install(robjects.vectors.StrVector(custom),suppressUpdates=True)
 
     def install_devtools(self):
         subprocess.call('conda install -y -c r r-cairo=1.5_9 r-devtools=1.13.6',shell=True)
@@ -536,9 +540,10 @@ def install_bioconductor():
 
 @preprocess.command()
 @click.option('-p', '--package', multiple=True, default=['ENmix'], help='Custom packages.', type=click.Path(exists=False), show_default=True)
-def install_custom(package):
+@click.option('-m', '--manager', is_flag=True, help='Manager.', type=click.Path(exists=False), show_default=True)
+def install_custom(package,manager):
     installer = PackageInstaller()
-    installer.install_custom(package)
+    installer.install_custom(package,manager)
 
 @preprocess.command()
 @click.option('-p', '--package', multiple=True, default=[''], help='Custom packages.', type=click.Path(exists=False), show_default=True)

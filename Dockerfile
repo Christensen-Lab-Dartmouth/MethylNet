@@ -36,9 +36,13 @@ COPY *.py /scripts/
 
 RUN chmod 777 -R /scripts/
 
-RUN python /scripts/preprocess.py install_r_packages -p knitr -p markdown -p gridExtra -p multcomp -p fastICA -p statmod -p lme4
+RUN python /scripts/preprocess.py install_r_packages -p knitr -p markdown -p gridExtra -p multcomp -p fastICA -p statmod -p lme4 -p BiocManager
 
-RUN python /scripts/preprocess.py install_custom -p minfi -p sva -p ENmix -p DNAcopy -p gdsfmt
+RUN python /scripts/preprocess.py install_custom -m -p sva
+
+RUN python /scripts/preprocess.py install_custom -p DNAcopy -p gdsfmt
+
+RUN python /scripts/preprocess.py install_custom -p minfi -p ENmix
 
 RUN python /scripts/preprocess.py install_meffil
 
