@@ -34,20 +34,21 @@ RUN mkdir /scripts/
 
 COPY *.py /scripts/
 
-RUN chmod 777 -R /scripts/
+RUN chmod 755 -R /scripts/
 
-RUN python /scripts/preprocess.py install_custom -m -p sva
+RUN python /scripts/preprocess.py install_r_packages -p BiocManager -p remotes -p knitr -p markdown -p gridExtra -p multcomp -p fastICA -p statmod -p lme4 -p Cairo -p BiocManager
 
-RUN python /scripts/preprocess.py install_r_packages -p knitr -p markdown -p gridExtra -p multcomp -p fastICA -p statmod -p lme4 -p BiocManager
+RUN python /scripts/preprocess.py install_custom -m -p sva -p S4Vectors -p DNAcopy -p gdsfmt -p ENmix
 
-RUN python /scripts/preprocess.py install_custom -p DNAcopy -p gdsfmt
+RUN conda install -y -c conda-forge unzip=6.0 xorg-libx11=1.6.6 python=3.6.7
 
-RUN python /scripts/preprocess.py install_custom -p minfi -p ENmix
+RUN apt-get install -y libcairo2-dev libxt-dev
 
-RUN python /scripts/preprocess.py install_meffil
+RUN python /scripts/preprocess.py install_custom -m -p illuminaio
 
+RUN  wget https://github.com/perishky/meffil/archive/master.zip && unzip master.zip && mv meffil-master meffil && R CMD INSTALL meffil
 
-
+#python /scripts/preprocess.py install_meffil
 
 RUN apt-get install -y xvfb
 

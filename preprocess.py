@@ -48,7 +48,8 @@ class PackageInstaller:
             biocinstaller.biocLite(robjects.vectors.StrVector(custom),suppressUpdates=True)
         else:
             biocinstaller = importr("BiocManager")
-            biocinstaller.install(custom[0],suppressUpdates=True)
+            for c in custom:
+                biocinstaller.install(c,ask=False)
 
     def install_devtools(self):
         subprocess.call('conda install -y -c r r-cairo=1.5_9 r-devtools=1.13.6',shell=True)
@@ -62,8 +63,10 @@ class PackageInstaller:
         #base = importr('base')
         #base.source("http://www.bioconductor.org/biocLite.R")
         #biocinstaller = importr("BiocInstaller")
-        devtools=importr('devtools')
-        devtools.install_git("https://github.com/perishky/meffil.git")
+        remotes=importr('remotes')
+        remotes.install_github('perishky/meffil')
+        #devtools=importr('devtools')
+        #devtools.install_git("https://github.com/perishky/meffil.git")
 
 class TCGADownloader:
     def __init__(self):
@@ -540,7 +543,7 @@ def install_bioconductor():
 
 @preprocess.command()
 @click.option('-p', '--package', multiple=True, default=['ENmix'], help='Custom packages.', type=click.Path(exists=False), show_default=True)
-@click.option('-m', '--manager', is_flag=True, help='Manager.', type=click.Path(exists=False), show_default=True)
+@click.option('-m', '--manager', is_flag=True, help='Manager.')
 def install_custom(package,manager):
     installer = PackageInstaller()
     installer.install_custom(package,manager)
