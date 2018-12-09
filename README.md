@@ -75,6 +75,7 @@ Getting Started:
 5. Preprocessing pipeline with minfi and enmix:  
                 * python preprocess.py plot_qc -i ./geo_idats/  
                 * python preprocess.py preprocess_pipeline -i ./geo_idats/ -n 40
+                * add udocker to toil
 
 TODO:
 * Test Preprocessing tools   

@@ -42,16 +42,24 @@ class PackageInstaller:
         biocinstaller.biocLite(robjects.vectors.StrVector(["minfi","ENmix",
                                 "minfiData","sva","GEOquery","geneplotter"]))
 
+    def install_custom(self, custom):
+        biocinstaller = importr("BiocInstaller")
+        biocinstaller.biocLite(robjects.vectors.StrVector(custom),suppressUpdates=True)
+
     def install_devtools(self):
         subprocess.call('conda install -y -c r r-cairo=1.5_9 r-devtools=1.13.6',shell=True)
         robjects.r('install.packages')('devtools')
+
+    def install_r_packages(self, custom):
+        robjects.r["options"](repos=robjects.r('structure(c(CRAN="http://cran.wustl.edu/"))'))
+        robjects.r('install.packages')(robjects.vectors.StrVector(custom))
 
     def install_meffil(self):
         #base = importr('base')
         #base.source("http://www.bioconductor.org/biocLite.R")
         #biocinstaller = importr("BiocInstaller")
         devtools=importr('devtools')
-        devtools.install_github("perishky/meffil")
+        devtools.install_git("https://github.com/perishky/meffil.git")
 
 class TCGADownloader:
     def __init__(self):
@@ -182,7 +190,7 @@ class PreProcessPhenoData:
         idat_basenames = np.unique(np.vectorize(lambda x: '_'.join(x.split('/')[-1].split('_')[:2]))(idats))
         self.pheno_sheet = self.pheno_sheet[self.pheno_sheet['Basename'].isin(idat_basenames)]
         self.pheno_sheet.loc[:,['Basename']] = self.pheno_sheet['Basename'].map(lambda x: self.idat_dir+x)
-        self.pheno_sheet = self.pheno_sheet[['Basename', 'disease', 'tumor_stage', 'vital_status', 'age_at_diagnosis', 'gender', 'race', 'ethnicity','case_control']].rename(columns={'tumor_stage':'stage','vital_status':'vital','age_at_diagnosis':'age'})
+        self.pheno_sheet = self.pheno_sheet[['Basename', 'disease', 'tumor_stage', 'vital_status', 'age_at_diagnosis', 'gender', 'race', 'ethnicity','case_control']].rename(columns={'tumor_stage':'stage','vital_status':'vital','gender':'Sex','age_at_diagnosis':'age'})
         #print(self.pheno_sheet)
 
     def format_custom(self, basename_col, disease_class_column, include_columns={}):
@@ -373,10 +381,10 @@ class PreProcessIDAT:
     def export_pickle(self, output_pickle, disease=''):
         output_dict = {}
         if os.path.exists(output_pickle):
-            output_dict = pickle.load(open(output_pickle,'rb'))
+            output_dict = pickle.load(open(output_pickle,'rb'),protocol=4)
         output_dict['pheno' if not disease else 'pheno_{}'.format(disease)] = self.pheno_py
         output_dict['beta' if not disease else 'beta_{}'.format(disease)] = self.beta_py
-        pickle.dump(output_dict, open(output_pickle,'wb'))
+        pickle.dump(output_dict, open(output_pickle,'wb'),protocol=4)
 
     def export_sql(self, output_db, disease=''):
         conn = sqlite3.connect(output_db)#'{}/methyl_array.db'.format(output_dir))
@@ -408,10 +416,10 @@ class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_da
     def write_pickle(self, output_pickle, disease=''):
         output_dict = {}
         if os.path.exists(output_pickle):
-            output_dict = pickle.load(open(output_pickle,'rb'))
+            output_dict = pickle.load(open(output_pickle,'rb'),protocol=4)
         output_dict['pheno' if not disease else 'pheno_{}'.format(disease)] = self.pheno
         output_dict['beta' if not disease else 'beta_{}'.format(disease)] = self.beta
-        pickle.dump(output_dict, open(output_pickle,'wb'))
+        pickle.dump(output_dict, open(output_pickle,'wb'),protocol=4)
 
     def write_db(self, conn, disease=''):
         self.pheno.to_sql('pheno' if not disease else 'pheno_{}'.format(disease), con=conn, if_exists='replace')
@@ -527,6 +535,18 @@ def install_bioconductor():
     installer.install_bioconductor()
 
 @preprocess.command()
+@click.option('-p', '--package', multiple=True, default=['ENmix'], help='Custom packages.', type=click.Path(exists=False), show_default=True)
+def install_custom(package):
+    installer = PackageInstaller()
+    installer.install_custom(package)
+
+@preprocess.command()
+@click.option('-p', '--package', multiple=True, default=[''], help='Custom packages.', type=click.Path(exists=False), show_default=True)
+def install_r_packages(package):
+    installer = PackageInstaller()
+    installer.install_r_packages(package)
+
+@preprocess.command()
 def install_minfi_others():
     installer = PackageInstaller()
     installer.install_minfi_others()
@@ -613,10 +633,11 @@ def meffil_encode(input_sample_sheet,output_sample_sheet):
     from collections import defaultdict
     pheno=pd.read_csv(input_sample_sheet)
     sex_dict=defaultdict(lambda:'NA')
-    sex_dict.update({'male':'M','female':'F'})
+    sex_dict.update({'m':'M','f':'F','M':'M','F':'F','male':'M','female':'F','nan':'NA',np.nan:'NA'})
     k='Sex' if 'Sex' in list(pheno) else 'sex'
     if k in list(pheno):
-        pheno.loc[:,k] = pheno[k].map(lambda x: sex_dict[x.lower()])
+        pheno.loc[:,k] = pheno[k].map(lambda x: sex_dict[str(x).lower()])
+    pheno = pheno[[col for col in list(pheno) if not col.startswith('Unnamed:')]].rename(columns={'sex':'Sex'})
     pheno.to_csv(output_sample_sheet)
 
 @preprocess.command()
@@ -715,6 +736,7 @@ def plot_qc(idat_dir, geo_query, output_dir, split_by_subtype):
 @click.option('-sd', '--subtype_delimiter', default=',', help='Delimiter for disease extraction.', type=click.Path(exists=False), show_default=True)
 def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subtype, meffil, disease_only, subtype_delimiter):
     """FIXME consider adding funnorm method plus enmix outlier removal"""
+    from collections import defaultdict
     output_dir = output_pkl[:output_pkl.rfind('/')]
     os.makedirs(output_dir,exist_ok=True)
     if idat_dir.endswith('.csv') and split_by_subtype:
@@ -727,21 +749,28 @@ def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subty
             new_sheet = idat_dir_basename.replace('.csv','_{}.csv'.format(name))
             new_out_dir = '{}/{}/'.format(output_dir,name)
             os.makedirs(new_out_dir, exist_ok=True)
+            print(new_out_dir)
+            if 'Sex' in list(group):
+                d=defaultdict(lambda:'NA')
+                d.update({'M':'M','F':'F'})
+                group.loc[:,'Sex'] = group['Sex'].map(d)
             group.to_csv('{}/{}'.format(new_out_dir,new_sheet))
             #os.makedirs(new_out_dir, exist_ok=True)
             preprocesser = PreProcessIDAT(new_out_dir)
             if meffil:
-                preprocesser.preprocessMeffil(n_cores=n_cores)
+                preprocesser.preprocessMeffil(n_cores=n_cores,n_pcs=4)
             else:
                 preprocesser.preprocess(geo_query='', n_cores=n_cores)
             preprocesser.output_pheno_beta(meffil=meffil)
             methyl_arrays.append(preprocesser.to_methyl_array(name))
+            subprocess.call('rsync -r figure/ *.md qc/ {}/qc/'.format(new_out_dir),shell=True)
         methyl_arrays=MethylationArrays(methyl_arrays)
         methyl_arrays=methyl_arrays.combine()
         methyl_arrays.write_pickle(output_pkl)
         #preprocesser.export_pickle(output_pkl,name)
         print("Please use combine_split_methylation_arrays")
     else:
+        exit()
         preprocesser = PreProcessIDAT(idat_dir)
         if meffil:
             preprocesser.preprocessMeffil(n_cores=n_cores)
@@ -766,7 +795,7 @@ def move_jpg(input_dir, output_dir):
 def combine_split_methylation_arrays(input_pkl, output_pkl):
     """If split MethylationArrays by subtype for either preprocessing or imputation, can use to recombine data for downstream step."""
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
-    input_dict = pickle.load(open(input_pkl,'rb'))
+    input_dict = pickle.load(open(input_pkl,'rb'),protocol=4)
     tables = [table[table.find('_')+1:] for table in input_dict.keys() if '_' in table]
     diseases = np.unique(tables)
     list_methyl_arrays = []
@@ -798,7 +827,7 @@ def imputation_pipeline(input_pkl,split_by_subtype=True,method='knn', solver='fa
     else:
         imputer = ImputerObject(solver, method, opts=dict(k=n_neighbors, orientation=orientation)).return_imputer()
         # methylationarray object impute after splitting? try to limit data usage, then export... try to limit csvs else huge data usage
-    input_dict = pickle.load(open(input_pkl,'rb'))
+    input_dict = pickle.load(open(input_pkl,'rb'),protocol=4)
 
     if split_by_subtype:
 
@@ -829,7 +858,7 @@ def imputation_pipeline(input_pkl,split_by_subtype=True,method='knn', solver='fa
 def mad_filter(input_pkl,output_pkl,n_top_cpgs=300000):
     """Filter CpGs below MAD threshold"""
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
-    input_dict=pickle.load(open(input_pkl,'rb'))
+    input_dict=pickle.load(open(input_pkl,'rb'),protocol=4)
     methyl_array = MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
 
     methyl_array.mad_filter(n_top_cpgs)
@@ -841,7 +870,7 @@ def mad_filter(input_pkl,output_pkl,n_top_cpgs=300000):
 @click.option('-o', '--output_dir', default='./final_preprocessed/', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 def pkl_to_csv(input_pkl, output_dir):
     os.makedirs(output_dir,exist_ok=True)
-    input_dict=pickle.load(open(input_pkl,'rb'))
+    input_dict=pickle.load(open(input_pkl,'rb'),protocol=4)
     #tables=list(map(lambda t: t,list(input_dict.keys())))
     for k in input_dict.keys():
         input_dict[k].to_csv('{}/{}.csv'.format(output_dir,k))
@@ -857,7 +886,7 @@ def backup_pkl(input_pkl, output_pkl):
 @preprocess.command()
 @click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 def print_na_rate(input_pkl):
-    df=pickle.load(open(input_pkl,'rb'))['beta']
+    df=pickle.load(open(input_pkl,'rb'),protocol=4)['beta']
     print('NA Rate is on average: {}%'.format(sum(sum(pd.isna(df.values)))/float(df.shape[0]*df.shape[1])*100.))
 
 @preprocess.command()
@@ -867,7 +896,7 @@ def print_na_rate(input_pkl):
 def modify_pheno_data(input_pkl,input_formatted_sample_sheet,output_pkl):
     """Use another spreadsheet to add more descriptive data"""
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
-    input_dict=pickle.load(open(input_pkl,'rb'))
+    input_dict=pickle.load(open(input_pkl,'rb'),protocol=4)
     methyl_array = MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
     methyl_array.merge_preprocess_sheet(pd.read_csv(input_formatted_sample_sheet,header=0))
     methyl_array.write_pickle(output_pkl)
