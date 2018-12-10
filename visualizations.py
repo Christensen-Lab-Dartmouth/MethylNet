@@ -76,6 +76,7 @@ def plotly_plot(t_data_df, output_fname, G=None, axes_off=False):
 @click.option('-a', '--axes_off', is_flag=True, help='Whether to turn axes on or off.')
 @click.option('-s', '--supervised', is_flag=True, help='Supervise umap embedding.')
 def transform_plot(input_pkl, column_of_interest, output_file, n_neighbors,axes_off,supervised):
+    """Dimensionality reduce VAE or original beta values using UMAP and plot using plotly."""
     input_dict = pickle.load(open(input_pkl,'rb'),protocol=4)
     t_data = umap_embed(input_dict['beta'], input_dict['pheno'][column_of_interest], n_neighbors, supervised)
     print(t_data)

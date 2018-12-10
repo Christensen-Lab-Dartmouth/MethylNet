@@ -2,36 +2,37 @@ class: CommandLineTool
 cwlVersion: v1.0
 $namespaces:
   sbg: 'https://www.sevenbridges.com/'
-id: download_geo
+id: mad_filter
 baseCommand:
   - python /scripts/preprocess.py
-  - download_geo
+  - mad_filter
 inputs:
-  - id: query
-    type: string
+  - id: input_pkl
+    type: File
     inputBinding:
       position: 0
-      prefix: '-g'
+      prefix: '-i'
+      shellQuote: false
+  - id: n_top_cpgs
+    type: int?
+    inputBinding:
+      position: 0
+      prefix: '-n'
       shellQuote: false
 outputs:
-  - id: idat_dir
-    type: Directory
-    outputBinding:
-      glob: geo_idats/
-  - id: initial_sample_sheet
+  - id: output_pkl
     type: File
     outputBinding:
-      glob: geo_idats/*.csv
-label: download_geo
+      glob: ./final_preprocessed/methyl_array.pkl
+label: mad_filter
 arguments:
   - position: 0
     prefix: '-o'
     shellQuote: false
-    valueFrom: geo_idats/
+    valueFrom: ./final_preprocessed/methyl_array.pkl
 requirements:
   - class: ShellCommandRequirement
   - class: ResourceRequirement
-    ramMin: 8000
-    coresMin: 0
+    ramMin: 2000
   - class: DockerRequirement
     dockerPull: 'methylnet:0.1'

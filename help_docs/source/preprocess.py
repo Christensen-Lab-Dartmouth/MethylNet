@@ -538,39 +538,46 @@ def extract_pheno_beta_df_from_sql(conn, disease=''):
 ## Install ##
 @preprocess.command()
 def install_bioconductor():
+    """Installs bioconductor."""
     installer = PackageInstaller()
     installer.install_bioconductor()
 
 @preprocess.command()
 @click.option('-p', '--package', multiple=True, default=['ENmix'], help='Custom packages.', type=click.Path(exists=False), show_default=True)
-@click.option('-m', '--manager', is_flag=True, help='Manager.')
+@click.option('-m', '--manager', is_flag=True, help='Use BiocManager (recommended).')
 def install_custom(package,manager):
+    """Installs bioconductor packages."""
     installer = PackageInstaller()
     installer.install_custom(package,manager)
 
 @preprocess.command()
 @click.option('-p', '--package', multiple=True, default=[''], help='Custom packages.', type=click.Path(exists=False), show_default=True)
 def install_r_packages(package):
+    """Installs r packages."""
     installer = PackageInstaller()
     installer.install_r_packages(package)
 
 @preprocess.command()
 def install_minfi_others():
+    """Installs minfi and other dependencies."""
     installer = PackageInstaller()
     installer.install_minfi_others()
 
 @preprocess.command()
 def install_tcga_biolinks():
+    """Installs tcga biolinks."""
     installer = PackageInstaller()
     installer.install_tcga_biolinks()
 
 @preprocess.command()
 def install_meffil():
+    """Installs meffil (update!)."""
     installer = PackageInstaller()
     installer.install_meffil()
 
 @preprocess.command()
 def install_all_deps():
+    """Installs bioconductor, minfi, enmix, tcga biolinks, and meffil."""
     installer = PackageInstaller()
     installer.install_bioconductor()
     installer.install_minfi_others()
@@ -582,6 +589,7 @@ def install_all_deps():
 @preprocess.command()
 @click.option('-o', '--output_dir', default='./tcga_idats/', help='Output directory for exported idats.', type=click.Path(exists=False), show_default=True)
 def download_tcga(output_dir):
+    """Download all tcga 450k data."""
     os.makedirs(output_dir, exist_ok=True)
     downloader = TCGADownloader()
     downloader.download_tcga(output_dir)
@@ -589,6 +597,7 @@ def download_tcga(output_dir):
 @preprocess.command()
 @click.option('-o', '--output_dir', default='./tcga_idats/', help='Output directory for exported idats.', type=click.Path(exists=False), show_default=True)
 def download_clinical(output_dir):
+    """Download all 450k clinical info."""
     os.makedirs(output_dir, exist_ok=True)
     downloader = TCGADownloader()
     downloader.download_clinical(output_dir)
@@ -597,6 +606,7 @@ def download_clinical(output_dir):
 @click.option('-g', '--geo_query', default='', help='GEO study to query.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./geo_idats/', help='Output directory for exported idats.', type=click.Path(exists=False), show_default=True)
 def download_geo(geo_query,output_dir):
+    """Download geo methylation study idats and clinical info."""
     os.makedirs(output_dir, exist_ok=True)
     downloader = TCGADownloader()
     downloader.download_geo(geo_query,output_dir)
@@ -612,6 +622,7 @@ def download_geo(geo_query,output_dir):
 @click.option('-b', '--basename_col', default="Sentrix ID (.idat)", help='Basename classification column, for custom datasets.', type=click.Path(exists=False), show_default=True)
 @click.option('-c', '--include_columns_file', default="", help='Custom columns file containing columns to keep, separated by \\n. Add a tab for each line if you wish to rename columns: original_name \\t new_column_name', type=click.Path(exists=False), show_default=True)
 def create_sample_sheet(input_sample_sheet, source_type, idat_dir, output_sample_sheet, mapping_file, header_line, disease_class_column, basename_col, include_columns_file):
+    """Create sample sheet for input to minfi, meffil, or enmix."""
     os.makedirs(output_sample_sheet[:output_sample_sheet.rfind('/')], exist_ok=True)
     pheno_sheet = PreProcessPhenoData(input_sample_sheet, idat_dir, header_line= (0 if source_type != 'custom' else header_line))
     if include_columns_file:
@@ -637,7 +648,7 @@ def create_sample_sheet(input_sample_sheet, source_type, idat_dir, output_sample
 @click.option('-is', '--input_sample_sheet', default='./tcga_idats/minfiSheet.csv', help='CSV for minfi input.', type=click.Path(exists=False), show_default=True)
 @click.option('-os', '--output_sample_sheet', default='./tcga_idats/minfiSheet.csv', help='CSV for minfi input.', type=click.Path(exists=False), show_default=True)
 def meffil_encode(input_sample_sheet,output_sample_sheet):
-    """Work in progress."""
+    """Reformat file for meffil input."""
     from collections import defaultdict
     pheno=pd.read_csv(input_sample_sheet)
     sex_dict=defaultdict(lambda:'NA')
@@ -654,6 +665,7 @@ def meffil_encode(input_sample_sheet,output_sample_sheet):
 @click.option('-os', '--output_sample_sheet', default='./tcga_idats/minfiSheet.csv', help='CSV for minfi input.', type=click.Path(exists=False), show_default=True)
 @click.option('-d', '--second_sheet_disease', is_flag=True, help='Use second sheet\'s disease column.')
 def merge_sample_sheets(sample_sheet1, sample_sheet2, output_sample_sheet, second_sheet_disease):
+    """Merge two sample files for more fields for minfi+ input."""
     s1 = PreProcessPhenoData(sample_sheet1, idat_dir='', header_line=0)
     s2 = PreProcessPhenoData(sample_sheet2, idat_dir='', header_line=0)
     s1.merge(s2,second_sheet_disease)
@@ -664,6 +676,7 @@ def merge_sample_sheets(sample_sheet1, sample_sheet2, output_sample_sheet, secon
 @click.option('-s2', '--sample_sheet2', default='./tcga_idats/clinical_info2.csv', help='Clinical information downloaded from tcga/geo/custom, formatted using create_sample_sheet.', type=click.Path(exists=False), show_default=True)
 @click.option('-os', '--output_sample_sheet', default='./tcga_idats/minfiSheet.csv', help='CSV for minfi input.', type=click.Path(exists=False), show_default=True)
 def concat_sample_sheets(sample_sheet1, sample_sheet2, output_sample_sheet):
+    """Concat two sample files for more fields for minfi+ input, adds more samples."""
     # FIXME add ability to concat more sample sheets; dump to sql!!!
     s1 = PreProcessPhenoData(sample_sheet1, idat_dir='', header_line=0)
     s2 = PreProcessPhenoData(sample_sheet2, idat_dir='', header_line=0)
@@ -676,6 +689,7 @@ def concat_sample_sheets(sample_sheet1, sample_sheet2, output_sample_sheet):
 @click.option('-d', '--disease_only', is_flag=True, help='Only look at disease, or text before subtype_delimiter.')
 @click.option('-sd', '--subtype_delimiter', default=',', help='Delimiter for disease extraction.', type=click.Path(exists=False), show_default=True)
 def get_categorical_distribution(formatted_sample_sheet,key,disease_only=False,subtype_delimiter=','):
+    """Get categorical distribution of columns of sample sheet."""
     if len(key) == 1:
         key=key[0]
     print('\n'.join('{}:{}'.format(k,v) for k,v in PreProcessPhenoData(formatted_sample_sheet, idat_dir='', header_line=0).get_categorical_distribution(key,disease_only,subtype_delimiter).items()))
@@ -688,6 +702,7 @@ def get_categorical_distribution(formatted_sample_sheet,key,disease_only=False,s
 @click.option('-d', '--disease_only', is_flag=True, help='Only look at disease, or text before subtype_delimiter.')
 @click.option('-sd', '--subtype_delimiter', default=',', help='Delimiter for disease extraction.', type=click.Path(exists=False), show_default=True)
 def remove_diseases(formatted_sample_sheet, exclude_disease_list, output_sheet_name, low_count, disease_only=False,subtype_delimiter=','):
+    """Exclude diseases from study by count number or exclusion list."""
     exclude_disease_list = exclude_disease_list.split(',')
     pData = PreProcessPhenoData(formatted_sample_sheet, idat_dir='', header_line=0)
     pData.remove_diseases(exclude_disease_list,low_count, disease_only,subtype_delimiter)
@@ -717,6 +732,7 @@ def remove_low_sample_number():
 @click.option('-o', '--output_dir', default='./preprocess_outputs/', help='Output directory for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-ss', '--split_by_subtype', is_flag=True, help='If using formatted sample sheet csv, split by subtype and perform preprocessing. Will need to combine later.')
 def plot_qc(idat_dir, geo_query, output_dir, split_by_subtype):
+    """Plot QC metrics using raw preprocessing via minfi and enmix."""
     os.makedirs(output_dir, exist_ok=True)
     if idat_dir.endswith('.csv') and split_by_subtype:
         pheno=pd.read_csv(idat_dir)
@@ -743,7 +759,7 @@ def plot_qc(idat_dir, geo_query, output_dir, split_by_subtype):
 @click.option('-d', '--disease_only', is_flag=True, help='Only look at disease, or text before subtype_delimiter.')
 @click.option('-sd', '--subtype_delimiter', default=',', help='Delimiter for disease extraction.', type=click.Path(exists=False), show_default=True)
 def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subtype, meffil, disease_only, subtype_delimiter):
-    """FIXME consider adding funnorm method plus enmix outlier removal"""
+    """Perform preprocessing of idats using enmix or meffil."""
     from collections import defaultdict
     output_dir = output_pkl[:output_pkl.rfind('/')]
     os.makedirs(output_dir,exist_ok=True)
@@ -791,6 +807,7 @@ def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subty
 @click.option('-i', '--input_dir', default='./', help='Directory containing jpg.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./preprocess_output_images/', help='Output directory for images.', type=click.Path(exists=False), show_default=True)
 def move_jpg(input_dir, output_dir):
+    """Move preprocessing jpegs to preprocessing output directory."""
     os.makedirs(output_dir, exist_ok=True)
     subprocess.call('mv {} {}'.format(os.path.join(input_dir,'*.jpg'),os.path.abspath(output_dir)),shell=True)
 
@@ -823,7 +840,7 @@ def combine_split_methylation_arrays(input_pkl, output_pkl):
 @click.option('-r', '--orientation', default='Samples', help='Impute CpGs or samples.', type=click.Choice(['Samples','CpGs']), show_default=True)
 @click.option('-o', '--output_pkl', default='./imputed_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 def imputation_pipeline(input_pkl,split_by_subtype=True,method='knn', solver='fancyimpute', n_neighbors=5, orientation='rows', output_pkl=''): # wrap a class around this
-    """Imputation of subtype or no subtype using """
+    """Imputation of subtype or no subtype using various imputation methods."""
     orientation_dict = {'CpGs':'columns','Samples':'rows'}
     orientation = orientation_dict[orientation]
     print("Selecting orientation for imputation not implemented yet.")
@@ -864,7 +881,7 @@ def imputation_pipeline(input_pkl,split_by_subtype=True,method='knn', solver='fa
 @click.option('-o', '--output_pkl', default='./final_preprocessed/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-n', '--n_top_cpgs', default=300000, help='Number cpgs to include with highest variance across population.', show_default=True)
 def mad_filter(input_pkl,output_pkl,n_top_cpgs=300000):
-    """Filter CpGs below MAD threshold"""
+    """Filter CpGs by taking x top CpGs with highest mean absolute deviation scores."""
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     input_dict=pickle.load(open(input_pkl,'rb'),protocol=4)
     methyl_array = MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
@@ -877,6 +894,7 @@ def mad_filter(input_pkl,output_pkl,n_top_cpgs=300000):
 @click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./final_preprocessed/', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 def pkl_to_csv(input_pkl, output_dir):
+    """Output methylarray pickle to csv."""
     os.makedirs(output_dir,exist_ok=True)
     input_dict=pickle.load(open(input_pkl,'rb'),protocol=4)
     #tables=list(map(lambda t: t,list(input_dict.keys())))
@@ -888,12 +906,14 @@ def pkl_to_csv(input_pkl, output_dir):
 @click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_pkl', default='./backup/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 def backup_pkl(input_pkl, output_pkl):
+    """Copy methylarray pickle to new location to backup."""
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     subprocess.call('rsync {} {}'.format(input_pkl, output_pkl),shell=True)
 
 @preprocess.command()
 @click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 def print_na_rate(input_pkl):
+    """Print proportion of missing values throughout dataset."""
     df=pickle.load(open(input_pkl,'rb'),protocol=4)['beta']
     print('NA Rate is on average: {}%'.format(sum(sum(pd.isna(df.values)))/float(df.shape[0]*df.shape[1])*100.))
 
@@ -902,7 +922,7 @@ def print_na_rate(input_pkl):
 @click.option('-is', '--input_formatted_sample_sheet', default='./tcga_idats/minfi_sheet.csv', help='Information passed through function create_sample_sheet, has Basename and disease fields.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_pkl', default='./modified_processed/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 def modify_pheno_data(input_pkl,input_formatted_sample_sheet,output_pkl):
-    """Use another spreadsheet to add more descriptive data"""
+    """Use another spreadsheet to add more descriptive data to methylarray."""
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     input_dict=pickle.load(open(input_pkl,'rb'),protocol=4)
     methyl_array = MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
