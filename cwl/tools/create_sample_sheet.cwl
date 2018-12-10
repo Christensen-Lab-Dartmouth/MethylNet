@@ -3,9 +3,7 @@ cwlVersion: v1.0
 $namespaces:
   sbg: 'https://www.sevenbridges.com/'
 id: create_sample_sheet
-baseCommand:
-  - python /scripts/preprocess.py
-  - create_sample_sheet
+baseCommand: []
 inputs:
   - id: input_sample_sheet
     type: File
@@ -68,7 +66,7 @@ outputs:
 label: create_sample_sheet
 arguments:
   - position: 0
-    prefix: '-os'
+    prefix: python /scripts/preprocess.py create_sample_sheet -os
     shellQuote: false
     valueFrom: $(inputs.idat_dir.path)/$(inputs.input_sample_sheet.nameroot)_final.csv
   - position: 1

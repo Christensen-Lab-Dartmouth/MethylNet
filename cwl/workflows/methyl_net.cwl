@@ -29,15 +29,6 @@ inputs:
     type: boolean?
     'sbg:x': 417.051025390625
     'sbg:y': -205.59689331054688
-  - id: subtype_delimiter
-    type: string?
-    'sbg:exposed': true
-  - id: imputation_method
-    type: string?
-    'sbg:exposed': true
-  - id: solver
-    type: string?
-    'sbg:exposed': true
   - id: n_neighbors
     type: int?
     'sbg:x': 852.6881713867188
@@ -46,13 +37,20 @@ inputs:
     type: int?
     'sbg:x': 1103.4071044921875
     'sbg:y': -121.16587829589844
-  - id: cuda
-    type: boolean?
-    'sbg:exposed': true
   - id: n_latent
     type: int?
     'sbg:x': 1326.7222900390625
     'sbg:y': -137.82904052734375
+  - id: n_neighbor
+    type: int?
+    'sbg:x': 1610.08251953125
+    'sbg:y': -127.23672485351562
+  - id: subtype_delimiter_1
+    type: string?
+    'sbg:exposed': true
+  - id: cuda
+    type: boolean?
+    'sbg:exposed': true
   - id: learning_rate
     type: float?
     'sbg:exposed': true
@@ -64,66 +62,68 @@ inputs:
     'sbg:exposed': true
   - id: hidden_layer_encoder_topology
     type: string?
-    'sbg:x': 1329.37060546875
-    'sbg:y': 267.35101318359375
-  - id: column_of_interest
+    'sbg:exposed': true
+  - id: column_of_interest_1
     type: string?
     'sbg:exposed': true
-  - id: n_neighbor
-    type: int?
-    'sbg:x': 1610.08251953125
-    'sbg:y': -127.23672485351562
-  - id: axes_off
+  - id: axes_off_1
     type: boolean?
     'sbg:exposed': true
-  - id: supervised
+  - id: supervised_1
     type: boolean?
     'sbg:exposed': true
 outputs:
+  - id: output_visual
+    outputSource:
+      - transform_plot_1/output_visual
+    type: File
+    'sbg:x': 1972.8907470703125
+    'sbg:y': -10.714360237121582
+  - id: idat_dir_out_1
+    outputSource:
+      - create_sample_sheet/idat_dir_out
+    type: Directory
+    'sbg:x': 315.25701904296875
+    'sbg:y': -593.8656616210938
   - id: pytorch_model
     outputSource:
       - vae_embed/pytorch_model
     type: File?
-    'sbg:x': 1752.6168212890625
-    'sbg:y': 113.90625
-  - id: idat_dir
-    outputSource:
-      - meffil_encode/idat_dir
-    type: Directory
-    'sbg:x': 788.0591430664062
-    'sbg:y': 113.90625
-  - id: idat_dir_out
-    outputSource:
-      - create_sample_sheet/idat_dir_out
-    type: Directory
-    'sbg:x': 467.06390380859375
-    'sbg:y': 113.90625
-  - id: output_visual
-    outputSource:
-      - transform_plot/output_visual
-    type: File
-    'sbg:x': 1972.8907470703125
-    'sbg:y': -10.714360237121582
+    'sbg:x': 1477.431396484375
+    'sbg:y': 21.976003646850586
 steps:
-  - id: download_geo
+  - id: preprocess_pipeline_1
     in:
-      - id: query
-        source: query
-    out:
+      - id: idat_dir_csv
+        source: meffil_encode_1/output_sample_sheet
+      - id: n_cores
+        default: 6
+        source: n_cores
+      - id: split_by_subtype
+        default: true
+        source: split_by_subtype
+      - id: disease_only
+        default: true
+        source: disease_only
+      - id: subtype_delimiter
+        default: ','
+        source: subtype_delimiter_1
       - id: idat_dir
-      - id: initial_sample_sheet
-    run: ../tools/download_geo.cwl
-    label: download_geo
-    'sbg:x': 0
-    'sbg:y': 53.453125
+        source: meffil_encode_1/idat_dir
+    out:
+      - id: output_pkl
+    run: ../tools/preprocess_pipeline.cwl
+    label: preprocess_pipeline
+    'sbg:x': 794.6327514648438
+    'sbg:y': 16.874027252197266
   - id: create_sample_sheet
     in:
       - id: input_sample_sheet
-        source: download_geo/initial_sample_sheet
+        source: download_geo_1/initial_sample_sheet
       - id: source_type
         default: geo
       - id: idat_dir
-        source: download_geo/idat_dir
+        source: download_geo_1/idat_dir
       - id: header_line
         default: 0
       - id: disease_class_column
@@ -135,9 +135,9 @@ steps:
       - id: final_csv
     run: ../tools/create_sample_sheet.cwl
     label: create_sample_sheet
-    'sbg:x': 200.4014892578125
-    'sbg:y': 53.453125
-  - id: meffil_encode
+    'sbg:x': 274.3111877441406
+    'sbg:y': -175.69915771484375
+  - id: meffil_encode_1
     in:
       - id: input_sample_sheet
         source: create_sample_sheet/final_csv
@@ -146,27 +146,36 @@ steps:
       - id: idat_dir
     run: ../tools/meffil_encode.cwl
     label: meffil_encode
-    'sbg:x': 467.06390380859375
-    'sbg:y': 0
-  - id: preprocess_pipeline
+    'sbg:x': 492.94610595703125
+    'sbg:y': -71.00813293457031
+  - id: imputation
     in:
-      - id: idat_dir_csv
-        source: meffil_encode/output_sample_sheet
-      - id: n_cores
-        source: n_cores
-      - id: split_by_subtype
-        source: split_by_subtype
-      - id: disease_only
-        source: disease_only
-      - id: subtype_delimiter
-        default: ','
-        source: subtype_delimiter
+      - id: input_pkl
+        source: preprocess_pipeline_1/output_pkl
+      - id: imputation_method
+        default: KNN
+      - id: solver
+        default: fancyimpute
+      - id: n_neighbors
+        source: n_neighbors
+    out:
+      - id: imputed_methylarray
+    run: ../tools/imputation.cwl
+    label: imputation
+    'sbg:x': 965.3180541992188
+    'sbg:y': 86.1338119506836
+  - id: mad_filter
+    in:
+      - id: input_pkl
+        source: imputation/imputed_methylarray
+      - id: n_top_cpgs
+        source: n_top_cpgs
     out:
       - id: output_pkl
-    run: ../tools/preprocess_pipeline.cwl
-    label: preprocess_pipeline
-    'sbg:x': 788.0591430664062
-    'sbg:y': 7
+    run: ../tools/mad_filter.cwl
+    label: mad_filter
+    'sbg:x': 1090.9664306640625
+    'sbg:y': 105.3855972290039
   - id: vae_embed
     in:
       - id: input_pkl
@@ -174,60 +183,23 @@ steps:
       - id: cuda
         source: cuda
       - id: n_latent
-        default: 100
         source: n_latent
       - id: learning_rate
-        default: 0.000005
         source: learning_rate
       - id: weight_decay
-        default: 0.0001
         source: weight_decay
       - id: n_epochs
-        default: 50
         source: n_epochs
       - id: hidden_layer_encoder_topology
-        default: '1000,500'
         source: hidden_layer_encoder_topology
     out:
       - id: output_methyl_array_encoded
       - id: pytorch_model
     run: ../tools/vae_embed.cwl
     label: vae_embed
-    'sbg:x': 1443.34033203125
-    'sbg:y': 53.453125
-  - id: imputation
-    in:
-      - id: input_pkl
-        source: preprocess_pipeline/output_pkl
-      - id: imputation_method
-        default: KNN
-        source: imputation_method
-      - id: solver
-        default: fancyimpute
-        source: solver
-      - id: n_neighbors
-        default: 5
-        source: n_neighbors
-    out:
-      - id: imputed_methylarray
-    run: ../tools/imputation.cwl
-    label: imputation
-    'sbg:x': 998.46533203125
-    'sbg:y': 60.453125
-  - id: mad_filter
-    in:
-      - id: input_pkl
-        source: imputation/imputed_methylarray
-      - id: n_top_cpgs
-        default: 200000
-        source: n_top_cpgs
-    out:
-      - id: output_pkl
-    run: ../tools/mad_filter.cwl
-    label: mad_filter
-    'sbg:x': 1248.52783203125
-    'sbg:y': 60.453125
-  - id: transform_plot
+    'sbg:x': 1353.5640869140625
+    'sbg:y': 113.09715270996094
+  - id: transform_plot_1
     in:
       - id: input_pkl
         source:
@@ -235,14 +207,13 @@ steps:
           - mad_filter/output_pkl
       - id: column_of_interest
         default: disease
-        source: column_of_interest
+        source: column_of_interest_1
       - id: n_neighbor
-        default: 5
         source: n_neighbor
       - id: axes_off
-        source: axes_off
+        source: axes_off_1
       - id: supervised
-        source: supervised
+        source: supervised_1
     out:
       - id: output_visual
     run: ../tools/transform_plot.cwl
@@ -250,8 +221,19 @@ steps:
     scatter:
       - input_pkl
     scatterMethod: dotproduct
-    'sbg:x': 1758.0106201171875
-    'sbg:y': -8.01528263092041
+    'sbg:x': 1703.8648681640625
+    'sbg:y': 18.198997497558594
+  - id: download_geo_1
+    in:
+      - id: query
+        source: query
+    out:
+      - id: idat_dir
+      - id: initial_sample_sheet
+    run: ../tools/download_geo.cwl
+    label: download_geo
+    'sbg:x': 22.760889053344727
+    'sbg:y': -245.91883850097656
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement

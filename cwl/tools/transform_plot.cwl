@@ -3,8 +3,7 @@ cwlVersion: v1.0
 $namespaces:
   sbg: 'https://www.sevenbridges.com/'
 id: transform_plot
-baseCommand:
-  - python /scripts/visualizations.py transform_plot
+baseCommand: []
 inputs:
   - id: input_pkl
     type: File
@@ -59,7 +58,7 @@ outputs:
 label: transform_plot
 arguments:
   - position: 0
-    prefix: '-o'
+    prefix: python /scripts/visualizations.py transform_plot -o
     shellQuote: false
     valueFrom: visualization.html
 requirements:

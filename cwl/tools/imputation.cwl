@@ -3,9 +3,7 @@ cwlVersion: v1.0
 $namespaces:
   sbg: 'https://www.sevenbridges.com/'
 id: imputation
-baseCommand:
-  - python /scripts/preprocess.py
-  - imputation_pipeline
+baseCommand: []
 inputs:
   - id: input_pkl
     type: File
@@ -39,7 +37,7 @@ outputs:
 label: imputation
 arguments:
   - position: 0
-    prefix: '-o'
+    prefix: python /scripts/preprocess.py imputation_pipeline -o
     shellQuote: false
     valueFrom: ./imputed_outputs/methyl_array.pkl
 requirements:

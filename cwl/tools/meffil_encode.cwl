@@ -3,9 +3,7 @@ cwlVersion: v1.0
 $namespaces:
   sbg: 'https://www.sevenbridges.com/'
 id: meffil_encode
-baseCommand:
-  - python /scripts/preprocess.py
-  - meffil_encode
+baseCommand: []
 inputs:
   - id: input_sample_sheet
     type: File
@@ -25,7 +23,7 @@ outputs:
 label: meffil_encode
 arguments:
   - position: 0
-    prefix: '-os'
+    prefix: python /scripts/preprocess.py meffil_encode -os
     shellQuote: false
     valueFrom: $(inputs.input_sample_sheet.path)
 requirements:

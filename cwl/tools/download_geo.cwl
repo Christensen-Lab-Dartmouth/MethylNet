@@ -3,9 +3,7 @@ cwlVersion: v1.0
 $namespaces:
   sbg: 'https://www.sevenbridges.com/'
 id: download_geo
-baseCommand:
-  - python /scripts/preprocess.py
-  - download_geo
+baseCommand: []
 inputs:
   - id: query
     type: string
@@ -17,7 +15,7 @@ outputs:
   - id: idat_dir
     type: Directory
     outputBinding:
-      glob: geo_idats/
+      glob: geo_idats
   - id: initial_sample_sheet
     type: File
     outputBinding:
@@ -25,7 +23,7 @@ outputs:
 label: download_geo
 arguments:
   - position: 0
-    prefix: '-o'
+    prefix: python /scripts/preprocess.py download_geo -o
     shellQuote: false
     valueFrom: geo_idats/
 requirements:

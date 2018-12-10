@@ -25,7 +25,7 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     outcome_dict_file = join(output_dir,'output_outcomes.p')
     output_pkl = join(output_dir, 'vae_methyl_arr.pkl')
 
-    input_dict = pickle.load(open(input_pkl,'rb'),protocol=4)
+    input_dict = pickle.load(open(input_pkl,'rb'))
     methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
 
     methyl_dataset = get_methylation_dataset(methyl_array,'disease') # train, test split? Add val set?

@@ -28,7 +28,7 @@ RUN conda install -y -c anaconda cudatoolkit=9.0
 
 RUN pip install pandas==0.23.4
 
-RUN conda install -y -c bioconda bioconductor-biocinstaller=1.30.0 bioconductor-geneplotter=1.58.0 bioconductor-geoquery=2.48.0
+RUN conda install -y -c bioconda bioconductor-biocinstaller=1.30.0 bioconductor-geneplotter=1.58.0
 
 RUN mkdir /scripts/
 
@@ -38,7 +38,7 @@ RUN chmod 755 -R /scripts/
 
 RUN python /scripts/preprocess.py install_r_packages -p BiocManager -p remotes -p knitr -p markdown -p gridExtra -p multcomp -p fastICA -p statmod -p lme4 -p Cairo -p BiocManager
 
-RUN python /scripts/preprocess.py install_custom -m -p sva -p S4Vectors -p DNAcopy -p gdsfmt -p ENmix
+RUN python /scripts/preprocess.py install_custom -m -p GEOquery=3.8 -p sva -p S4Vectors -p DNAcopy -p gdsfmt -p ENmix
 
 RUN conda install -y -c conda-forge unzip=6.0 xorg-libx11=1.6.6 python=3.6.7
 
@@ -52,6 +52,10 @@ RUN  wget https://github.com/perishky/meffil/archive/master.zip && unzip master.
 
 RUN apt-get install -y xvfb
 
+RUN conda install -y -c conda-forge tar=1.29 python=3.6.7
+
+RUN conda install -y -c ostrokach gzip=1.7 python=3.6.7
+
 WORKDIR /root
 
-#ENTRYPOINT ["/usr/bin/tini","-s","--"]
+ENTRYPOINT ["/usr/bin/tini","-s","--"]

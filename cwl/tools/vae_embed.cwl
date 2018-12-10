@@ -3,9 +3,7 @@ cwlVersion: v1.0
 $namespaces:
   sbg: 'https://www.sevenbridges.com/'
 id: vae_embed
-baseCommand:
-  - python /scripts/embedding.py
-  - perform_embedding
+baseCommand: []
 inputs:
   - id: input_pkl
     type: File
@@ -69,7 +67,7 @@ outputs:
 label: vae_embed
 arguments:
   - position: 0
-    prefix: '-o'
+    prefix: python /scripts/embedding.py perform_embedding -o
     shellQuote: false
     valueFrom: ./embeddings/
 requirements:

@@ -3,9 +3,7 @@ cwlVersion: v1.0
 $namespaces:
   sbg: 'https://www.sevenbridges.com/'
 id: mad_filter
-baseCommand:
-  - python /scripts/preprocess.py
-  - mad_filter
+baseCommand: []
 inputs:
   - id: input_pkl
     type: File
@@ -27,7 +25,7 @@ outputs:
 label: mad_filter
 arguments:
   - position: 0
-    prefix: '-o'
+    prefix: python /scripts/preprocess.py mad_filter -o
     shellQuote: false
     valueFrom: ./final_preprocessed/methyl_array.pkl
 requirements:
