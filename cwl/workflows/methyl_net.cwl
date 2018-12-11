@@ -83,8 +83,8 @@ outputs:
     outputSource:
       - create_sample_sheet/idat_dir_out
     type: Directory
-    'sbg:x': 315.25701904296875
-    'sbg:y': -593.8656616210938
+    'sbg:x': 462.83819580078125
+    'sbg:y': -351.2410583496094
   - id: pytorch_model
     outputSource:
       - vae_embed/pytorch_model
@@ -232,8 +232,8 @@ steps:
       - id: initial_sample_sheet
     run: ../tools/download_geo.cwl
     label: download_geo
-    'sbg:x': 22.760889053344727
-    'sbg:y': -245.91883850097656
+    'sbg:x': 55.04618453979492
+    'sbg:y': -248.47854614257812
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement

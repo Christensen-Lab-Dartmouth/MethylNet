@@ -4,7 +4,7 @@ import torch
 from torch.autograd import Variable
 import numpy as np
 
-def train(model, loader, loss_func, optimizer, cuda=True):
+def train(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
     model.train()
     #print(model)
     for inputs, _, _ in loader:
@@ -13,7 +13,7 @@ def train(model, loader, loss_func, optimizer, cuda=True):
         if cuda:
             inputs = inputs.cuda
         output, mean, logvar = model(inputs)
-        loss = vae_loss(output, inputs, mean, logvar, loss_func)
+        loss = vae_loss(output, inputs, mean, logvar, loss_func, epoch, kl_warm_up, beta)
 
         optimizer.zero_grad()
         loss.backward()
@@ -31,7 +31,7 @@ def project(model, loader, cuda=True):
     return z, sample_names, outcomes
 
 class AutoEncoder:
-    def __init__(self, autoencoder_model, n_epochs, loss_fn, optimizer, cuda=True):
+    def __init__(self, autoencoder_model, n_epochs, loss_fn, optimizer, cuda=True, kl_warm_up=0,beta=1.):
         self.model=autoencoder_model
         if cuda:
             self.model = self.model.cuda()
@@ -39,10 +39,12 @@ class AutoEncoder:
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.cuda = cuda
+        self.kl_warm_up = kl_warm_up
+        self.beta=beta
 
     def fit(self, train_data):
         for epoch in range(self.n_epochs):
-            model, loss = train(self.model, train_data, self.loss_fn, self.optimizer, self.cuda)
+            model, loss = train(self.model, train_data, self.loss_fn, self.optimizer, self.cuda, epoch, self.kl_warm_up, self.beta)
             print("Epoch {}: Loss {}".format(epoch,loss))
         self.model = model
         return model
@@ -53,12 +55,15 @@ class AutoEncoder:
     def fit_transform(self, train_data):
         return self.fit(train_data).transform(train_data)
 
-def vae_loss(output, input, mean, logvar, loss_func):
+def vae_loss(output, input, mean, logvar, loss_func, epoch, kl_warm_up=0, beta=1.):
     recon_loss = loss_func(output, input)
-    kl_loss = torch.mean(0.5 * torch.sum(
-        torch.exp(logvar) + mean**2 - 1. - logvar, 1))
+    if epoch >= kl_warm_up:
+        kl_loss = torch.mean(0.5 * torch.sum(
+            torch.exp(logvar) + mean**2 - 1. - logvar, 1))
+    else:
+        kl_loss=0.
     print(recon_loss,kl_loss)
-    return recon_loss + kl_loss
+    return recon_loss + kl_loss * beta
 
 class TybaltTitusVAE(nn.Module):
     def __init__(self, n_input, n_latent, hidden_layer_encoder_topology=[100,100,100]):

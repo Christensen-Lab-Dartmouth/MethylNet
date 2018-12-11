@@ -31,5 +31,5 @@ requirements:
   - class: ResourceRequirement
     ramMin: 2000
   - class: DockerRequirement
-    dockerPull: 'methylnet:0.1'
+    dockerPull: 'methylnet:dev'
   - class: InlineJavascriptRequirement

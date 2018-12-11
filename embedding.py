@@ -1,5 +1,5 @@
 from preprocess import MethylationArray, extract_pheno_beta_df_from_pickle_dict
-from models import AutoEncoder, TybaltTitusVAE
+from models import AutoEncoder, TybaltTitusVAE, CVAE
 from datasets import get_methylation_dataset
 import torch
 from torch.utils.data import DataLoader
@@ -17,7 +17,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def embed():
     pass
 
-def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology, convolutional = False):
+def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology, convolutional = False, kl_warm_up=0, beta=1.):
     os.makedirs(output_dir,exist_ok=True)
 
     output_file = join(output_dir,'output_latent.csv')
@@ -45,7 +45,7 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 
     loss_fn = MSELoss()
 
-    auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=n_epochs,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda)
+    auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=n_epochs,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda,kl_warm_up=kl_warm_up,beta=beta)
     auto_encoder_snapshot = auto_encoder.fit(methyl_dataloader)
     latent_projection, sample_names, outcomes = auto_encoder.transform(methyl_dataloader)
     print(latent_projection.shape)
@@ -71,14 +71,16 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 @click.option('-wd', '--weight_decay', default=1e-4, help='Weight decay of adam optimizer.', show_default=True)
 @click.option('-e', '--n_epochs', default=50, help='Number of epochs to train over.', show_default=True)
 @click.option('-hlt', '--hidden_layer_encoder_topology', default='', help='Topology of hidden layers, comma delimited, leave empty for one layer encoder, eg. 100,100 is example of 5-hidden layer topology.', type=click.Path(exists=False), show_default=True)
-def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology):
+@click.option('-kl', '--kl_warm_up', default=0, help='Number of epochs before introducing kl_loss.', show_default=True)
+@click.option('-b', '--beta', default=1., help='Weighting of kl divergence.', show_default=True)
+def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up, beta):
     """Perform variational autoencoding on methylation dataset."""
     hlt_list=filter(None,hidden_layer_encoder_topology.split(','))
     if hlt_list:
         hidden_layer_encoder_topology=list(map(int,hlt_list))
     else:
         hidden_layer_encoder_topology=[]
-    embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology)
+    embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,False,kl_warm_up,beta)
 
 #################
 

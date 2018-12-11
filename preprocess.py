@@ -23,55 +23,6 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def preprocess():
     pass
 
-class PackageInstaller:
-    def __init__(self):
-        pass
-
-    def install_bioconductor(self):
-        #robjects.r['install.packages']("BiocInstaller",repos="http://bioconductor.org/packages/3.7/bioc")
-        base = importr('base')
-        base.source("http://www.bioconductor.org/biocLite.R")
-
-    def install_tcga_biolinks(self):
-        #robjects.r('source("https://bioconductor.org/biocLite.R")\n')
-        biocinstaller = importr("BiocInstaller")
-        biocinstaller.biocLite("TCGAbiolinks")
-
-    def install_minfi_others(self):
-        biocinstaller = importr("BiocInstaller")
-        biocinstaller.biocLite(robjects.vectors.StrVector(["minfi","ENmix",
-                                "minfiData","sva","GEOquery","geneplotter"]))
-
-    def install_custom(self, custom, manager):
-        if not manager:
-            biocinstaller = importr("BiocInstaller")
-            biocinstaller.biocLite(robjects.vectors.StrVector(custom),suppressUpdates=True)
-        else:
-            biocinstaller = importr("BiocManager")
-            for c in custom:
-                if '=' in c:
-                    pkg,version= tuple(c.split('='))
-                    biocinstaller.install(pkg,ask=False,version=version)
-                else:
-                    biocinstaller.install(c,ask=False)
-
-    def install_devtools(self):
-        subprocess.call('conda install -y -c r r-cairo=1.5_9 r-devtools=1.13.6',shell=True)
-        robjects.r('install.packages')('devtools')
-
-    def install_r_packages(self, custom):
-        robjects.r["options"](repos=robjects.r('structure(c(CRAN="http://cran.wustl.edu/"))'))
-        robjects.r('install.packages')(robjects.vectors.StrVector(custom))
-
-    def install_meffil(self):
-        #base = importr('base')
-        #base.source("http://www.bioconductor.org/biocLite.R")
-        #biocinstaller = importr("BiocInstaller")
-        remotes=importr('remotes')
-        remotes.install_github('perishky/meffil')
-        #devtools=importr('devtools')
-        #devtools.install_git("https://github.com/perishky/meffil.git")
-
 class TCGADownloader:
     def __init__(self):
         pass
@@ -542,55 +493,6 @@ def extract_pheno_beta_df_from_sql(conn, disease=''):
 
 #### COMMANDS ####
 
-## Install ##
-@preprocess.command()
-def install_bioconductor():
-    """Installs bioconductor."""
-    installer = PackageInstaller()
-    installer.install_bioconductor()
-
-@preprocess.command()
-@click.option('-p', '--package', multiple=True, default=['ENmix'], help='Custom packages.', type=click.Path(exists=False), show_default=True)
-@click.option('-m', '--manager', is_flag=True, help='Use BiocManager (recommended).')
-def install_custom(package,manager):
-    """Installs bioconductor packages."""
-    installer = PackageInstaller()
-    installer.install_custom(package,manager)
-
-@preprocess.command()
-@click.option('-p', '--package', multiple=True, default=[''], help='Custom packages.', type=click.Path(exists=False), show_default=True)
-def install_r_packages(package):
-    """Installs r packages."""
-    installer = PackageInstaller()
-    installer.install_r_packages(package)
-
-@preprocess.command()
-def install_minfi_others():
-    """Installs minfi and other dependencies."""
-    installer = PackageInstaller()
-    installer.install_minfi_others()
-
-@preprocess.command()
-def install_tcga_biolinks():
-    """Installs tcga biolinks."""
-    installer = PackageInstaller()
-    installer.install_tcga_biolinks()
-
-@preprocess.command()
-def install_meffil():
-    """Installs meffil (update!)."""
-    installer = PackageInstaller()
-    installer.install_meffil()
-
-@preprocess.command()
-def install_all_deps():
-    """Installs bioconductor, minfi, enmix, tcga biolinks, and meffil."""
-    installer = PackageInstaller()
-    installer.install_bioconductor()
-    installer.install_minfi_others()
-    installer.install_tcga_biolinks()
-    installer.install_meffil()
-
 ## Download ##
 
 @preprocess.command()
@@ -757,7 +659,7 @@ def plot_qc(idat_dir, geo_query, output_dir, split_by_subtype):
         preprocesser.plot_original_qc(output_dir)
 
 @preprocess.command()
-@click.option('-i', '--idat_dir', default='./tcga_idats/', help='Idat directory if one sample sheet, alternatively can be your phenotype sample sheet.', type=click.Path(exists=False), show_default=True)
+@click.option('-i', '--idat_dir', default='./tcga_idats/minfiSheet.csv', help='Idat directory if one sample sheet, alternatively can be your phenotype sample sheet.', type=click.Path(exists=False), show_default=True)
 @click.option('-g', '--geo_query', default='', help='GEO study to query, do not use if already created geo sample sheet.', type=click.Path(exists=False), show_default=True)
 @click.option('-n', '--n_cores', default=6, help='Number cores to use for preprocessing.', show_default=True)
 @click.option('-o', '--output_pkl', default='./preprocess_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
@@ -801,7 +703,6 @@ def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subty
         #preprocesser.export_pickle(output_pkl,name)
         print("Please use combine_split_methylation_arrays")
     else:
-        exit()
         preprocesser = PreProcessIDAT(idat_dir)
         if meffil:
             preprocesser.preprocessMeffil(n_cores=n_cores)
@@ -846,7 +747,8 @@ def combine_split_methylation_arrays(input_pkl, output_pkl):
 @click.option('-k', '--n_neighbors', default=5, help='Number neighbors for imputation if using KNN.', show_default=True)
 @click.option('-r', '--orientation', default='Samples', help='Impute CpGs or samples.', type=click.Choice(['Samples','CpGs']), show_default=True)
 @click.option('-o', '--output_pkl', default='./imputed_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-def imputation_pipeline(input_pkl,split_by_subtype=True,method='knn', solver='fancyimpute', n_neighbors=5, orientation='rows', output_pkl=''): # wrap a class around this
+@click.option('-n', '--n_top_cpgs', default=0, help='Number cpgs to include with highest variance across population. Greater than 0 allows for mad filtering during imputation to skip mad step.', show_default=True)
+def imputation_pipeline(input_pkl,split_by_subtype=True,method='knn', solver='fancyimpute', n_neighbors=5, orientation='rows', output_pkl='', n_top_cpgs=0): # wrap a class around this
     """Imputation of subtype or no subtype using various imputation methods."""
     orientation_dict = {'CpGs':'columns','Samples':'rows'}
     orientation = orientation_dict[orientation]
@@ -880,6 +782,9 @@ def imputation_pipeline(input_pkl,split_by_subtype=True,method='knn', solver='fa
         methyl_array = MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
 
         methyl_array.impute(imputer)
+
+    if n_top_cpgs:
+        methyl_array.mad_filter(n_top_cpgs)
 
     methyl_array.write_pickle(output_pkl)
 

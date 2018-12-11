@@ -43,4 +43,4 @@ arguments:
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'methylnet:0.1'
+    dockerPull: 'methylnet:dev'

@@ -76,5 +76,5 @@ requirements:
     ramMin: 8000
     coresMin: 0
   - class: DockerRequirement
-    dockerPull: 'methylnet:0.1'
+    dockerPull: 'methylnet:dev'
   - class: InlineJavascriptRequirement

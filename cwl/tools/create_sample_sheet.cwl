@@ -40,6 +40,7 @@ inputs:
     inputBinding:
       position: 0
       prefix: '-d'
+      shellQuote: false
       valueFrom: '''$(inputs.disease_class_column)'''
   - id: base_name_col
     type: string?
@@ -78,5 +79,5 @@ requirements:
   - class: ResourceRequirement
     ramMin: 4000
   - class: DockerRequirement
-    dockerPull: 'methylnet:0.1'
+    dockerPull: 'methylnet:dev'
   - class: InlineJavascriptRequirement
