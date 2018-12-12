@@ -15,8 +15,8 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def visualize():
     pass
 
-def umap_embed(beta_df, outcome_col, n_neighbors, supervised=False):
-    umap=UMAP(n_components=3, random_state=42, n_neighbors=n_neighbors, min_dist=0.1)
+def umap_embed(beta_df, outcome_col, n_neighbors, supervised=False, min_dist=0.1, metric='euclidean'):
+    umap=UMAP(n_components=3, random_state=42, metric=metric, n_neighbors=n_neighbors, min_dist=min_dist)
     t_data=pd.DataFrame(umap.fit_transform(beta_df) if not supervised else umap.fit_transform(beta_df,LabelEncoder().fit_transform(outcome_col)),index=beta_df.index,columns=['x','y','z'])
     print(outcome_col,t_data)
     t_data['color']=outcome_col
@@ -75,10 +75,12 @@ def plotly_plot(t_data_df, output_fname, G=None, axes_off=False):
 @click.option('-nn', '--n_neighbors', default=5, show_default=True, help='Number of neighbors UMAP.')
 @click.option('-a', '--axes_off', is_flag=True, help='Whether to turn axes on or off.')
 @click.option('-s', '--supervised', is_flag=True, help='Supervise umap embedding.')
-def transform_plot(input_pkl, column_of_interest, output_file, n_neighbors,axes_off,supervised):
+@click.option('-d', '--min_dist', default=0.1, show_default=True, help='UMAP min distance.')
+@click.option('-m', '--metric', default='euclidean', help='Reduction metric.', type=click.Choice(['euclidean','cosine']), show_default=True)
+def transform_plot(input_pkl, column_of_interest, output_file, n_neighbors,axes_off,supervised,min_dist, metric):
     """Dimensionality reduce VAE or original beta values using UMAP and plot using plotly."""
     input_dict = pickle.load(open(input_pkl,'rb'))
-    t_data = umap_embed(input_dict['beta'], input_dict['pheno'][column_of_interest], n_neighbors, supervised)
+    t_data = umap_embed(input_dict['beta'], input_dict['pheno'][column_of_interest], n_neighbors, supervised,min_dist, metric)
     print(t_data)
     plotly_plot(t_data, output_file, axes_off=axes_off)
 

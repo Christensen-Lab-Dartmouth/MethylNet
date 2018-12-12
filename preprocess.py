@@ -170,7 +170,7 @@ class PreProcessPhenoData:
         basic_idat=dict(zip(basic_basename_fn(idat_basenames),idat_basenames))
         complete_mapping={basic_basename[basename]:basic_idat[basename] for basename in basic_basename}
         self.pheno_sheet.loc[:,'Basename']=self.pheno_sheet['Basename'].map(complete_mapping).map(lambda x: self.idat_dir+x)
-        self.pheno_sheet['disease'] = self.pheno_sheet[disease_class_column]
+        self.pheno_sheet['disease'] = self.pheno_sheet[disease_class_column.replace("'",'')]
         self.pheno_sheet = self.pheno_sheet[np.unique(['Basename', 'disease']+list(include_columns.keys()))].rename(columns=include_columns)
 
     def merge(self, other_formatted_sheet, use_second_sheet_disease=True):
@@ -826,8 +826,13 @@ def backup_pkl(input_pkl, output_pkl):
 @click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 def print_na_rate(input_pkl):
     """Print proportion of missing values throughout dataset."""
+    import matplotlib.pyplot as plt
     df=pickle.load(open(input_pkl,'rb'))['beta']
-    print('NA Rate is on average: {}%'.format(sum(sum(pd.isna(df.values)))/float(df.shape[0]*df.shape[1])*100.))
+    na_frame = pd.isna(df.values)
+    print('NA Rate is on average: {}%'.format(sum(sum(na_frame))/float(df.shape[0]*df.shape[1])*100.))
+    plt.figure()
+    na_frame.sum(axis=1).map(lambda x: x/float(df.shape[1])).hist()
+    plt.savefig('nan_dist.png')
 
 @preprocess.command()
 @click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)

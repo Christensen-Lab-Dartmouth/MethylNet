@@ -7,7 +7,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 
 @click.group(context_settings= CONTEXT_SETTINGS)
 @click.version_option(version='0.1')
-def installer():
+def install():
     pass
 
 class PackageInstaller:
@@ -58,16 +58,16 @@ class PackageInstaller:
         remotes.install_github('perishky/meffil')
         #devtools=importr('devtools')
         #devtools.install_git("https://github.com/perishky/meffil.git")
-    
+
 
 ## Install ##
-@preprocess.command()
+@install.command()
 def install_bioconductor():
     """Installs bioconductor."""
     installer = PackageInstaller()
     installer.install_bioconductor()
 
-@preprocess.command()
+@install.command()
 @click.option('-p', '--package', multiple=True, default=['ENmix'], help='Custom packages.', type=click.Path(exists=False), show_default=True)
 @click.option('-m', '--manager', is_flag=True, help='Use BiocManager (recommended).')
 def install_custom(package,manager):
@@ -75,32 +75,32 @@ def install_custom(package,manager):
     installer = PackageInstaller()
     installer.install_custom(package,manager)
 
-@preprocess.command()
+@install.command()
 @click.option('-p', '--package', multiple=True, default=[''], help='Custom packages.', type=click.Path(exists=False), show_default=True)
 def install_r_packages(package):
     """Installs r packages."""
     installer = PackageInstaller()
     installer.install_r_packages(package)
 
-@preprocess.command()
+@install.command()
 def install_minfi_others():
     """Installs minfi and other dependencies."""
     installer = PackageInstaller()
     installer.install_minfi_others()
 
-@preprocess.command()
+@install.command()
 def install_tcga_biolinks():
     """Installs tcga biolinks."""
     installer = PackageInstaller()
     installer.install_tcga_biolinks()
 
-@preprocess.command()
+@install.command()
 def install_meffil():
     """Installs meffil (update!)."""
     installer = PackageInstaller()
     installer.install_meffil()
 
-@preprocess.command()
+@install.command()
 def install_all_deps():
     """Installs bioconductor, minfi, enmix, tcga biolinks, and meffil."""
     installer = PackageInstaller()
@@ -112,4 +112,4 @@ def install_all_deps():
 
 
 if __name__ == '__main__':
-    installer()
+    install()
