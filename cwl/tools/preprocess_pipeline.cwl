@@ -11,6 +11,7 @@ inputs:
       position: 0
       prefix: '-i'
       shellQuote: false
+      valueFrom: geo_idats/$(inputs.idat_dir_csv.basename)
   - id: n_cores
     type: int
     inputBinding:
@@ -21,6 +22,7 @@ inputs:
     type: boolean?
     inputBinding:
       position: 0
+      shellQuote: false
       valueFrom: |-
         ${
             if (inputs.split_by_subtype) {
@@ -48,13 +50,11 @@ inputs:
     type: string?
     inputBinding:
       position: 0
+      prefix: '-sd'
       shellQuote: false
       valueFrom: '''$(inputs.subtype_delimiter)'''
   - id: idat_dir
     type: Directory?
-    inputBinding:
-      position: 0
-      shellQuote: false
 outputs:
   - id: output_pkl
     type: File
@@ -63,7 +63,12 @@ outputs:
 label: preprocess_pipeline
 arguments:
   - position: 0
-    prefix: python /scripts/preprocess.py preprocess_pipeline -m -o
+    prefix: mkdir geo_idats && mv
+    shellQuote: false
+    valueFrom: $(inputs.idat_dir.path+'/*') geo_idats
+  - position: 0
+    prefix: '&& python /scripts/preprocess.py preprocess_pipeline -m -o'
+    shellQuote: false
     valueFrom: ./preprocess_outputs/methyl_array.pkl
 requirements:
   - class: ShellCommandRequirement

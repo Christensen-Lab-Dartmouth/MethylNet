@@ -11,6 +11,7 @@ inputs:
       position: 0
       prefix: '-is'
       shellQuote: false
+      valueFrom: geo_idats/$(inputs.input_sample_sheet.basename)
   - id: source_type
     type: string?
     inputBinding:
@@ -23,6 +24,7 @@ inputs:
       position: 0
       prefix: '-i'
       shellQuote: false
+      valueFrom: geo_idats/
   - id: mapping_file
     type: File?
     inputBinding:
@@ -59,21 +61,24 @@ outputs:
   - id: idat_dir_out
     type: Directory
     outputBinding:
-      glob: $(inputs.idat_dir.path)
+      glob: geo_idats
   - id: final_csv
     type: File
     outputBinding:
-      glob: $(inputs.idat_dir.path)/$(inputs.input_sample_sheet.nameroot)_final.csv
+      glob: geo_idats/$(inputs.input_sample_sheet.nameroot)_final.csv
 label: create_sample_sheet
 arguments:
   - position: 0
-    prefix: python /scripts/preprocess.py create_sample_sheet -os
+    prefix: ''
     shellQuote: false
-    valueFrom: $(inputs.idat_dir.path)/$(inputs.input_sample_sheet.nameroot)_final.csv
+    valueFrom: >-
+      mkdir geo_idats && mv $(inputs.idat_dir.path+'/*') geo_idats && python
+      /scripts/preprocess.py create_sample_sheet -os
+      geo_idats/$(inputs.input_sample_sheet.nameroot)_final.csv
   - position: 1
     prefix: '&& mkdir backup_sheets && mv'
     shellQuote: false
-    valueFrom: $(inputs.input_sample_sheet.path) backup_sheets
+    valueFrom: geo_idats/$(inputs.input_sample_sheet.basename) backup_sheets
 requirements:
   - class: ShellCommandRequirement
   - class: ResourceRequirement

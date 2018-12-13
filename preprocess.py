@@ -217,13 +217,25 @@ class PreProcessPhenoData:
 class PreProcessIDAT:
     # https://kasperdanielhansen.github.io/genbioconductor/html/minfi.html
     # https://www.bioconductor.org/help/course-materials/2015/BioC2015/methylation450k.html#dependencies
-    def __init__(self, idat_dir):
+    def __init__(self, idat_dir, minfi=None, enmix=None, base=None, meffil=None):
         self.idat_dir = idat_dir # can establish cases and controls
-        self.minfi = importr('minfi')
-        self.enmix = importr("ENmix")
-        self.base = importr('base')
+        if minfi == None:
+            self.minfi = importr('minfi')
+        else:
+            self.minfi = minfi
+        if enmix == None:
+            self.enmix = importr("ENmix")
+        else:
+            self.enmix = enmix
+        if base == None:
+            self.base = importr('base')
+        else:
+            self.base = base
         try:
-            self.meffil = importr('meffil')
+            if meffil==None:
+                self.meffil = importr('meffil')
+            else:
+                self.meffil = meffil
         except:
             self.meffil=None
 
@@ -433,6 +445,9 @@ class MethylationArray: # FIXME arrays should be samplesxCpG or samplesxpheno_da
 class MethylationArrays:
     def __init__(self, list_methylation_arrays):
         self.methylation_arrays = list_methylation_arrays
+
+    def __len__(self):
+        return len(self.methylation_arrays)
 
     def combine(self): # FIXME add sort based on samples
         pheno_df=pd.concat([methylArr.pheno for methylArr in self.methylation_arrays], join='inner')#.sort()
@@ -667,17 +682,24 @@ def plot_qc(idat_dir, geo_query, output_dir, split_by_subtype):
 @click.option('-m', '--meffil', is_flag=True, help='Preprocess using meffil.')
 @click.option('-d', '--disease_only', is_flag=True, help='Only look at disease, or text before subtype_delimiter.')
 @click.option('-sd', '--subtype_delimiter', default=',', help='Delimiter for disease extraction.', type=click.Path(exists=False), show_default=True)
-def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subtype, meffil, disease_only, subtype_delimiter):
+@click.option('-p', '--parallelize', is_flag=True, help='Parallelize subtype computations using pathos.')
+def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subtype, meffil, disease_only, subtype_delimiter, parallelize):
     """Perform preprocessing of idats using enmix or meffil."""
     from collections import defaultdict
+    subtype_delimiter=subtype_delimiter.replace('"','').replace("'","")
     output_dir = output_pkl[:output_pkl.rfind('/')]
     os.makedirs(output_dir,exist_ok=True)
     if idat_dir.endswith('.csv') and split_by_subtype:
         pData=PreProcessPhenoData(idat_dir,'')
         methyl_arrays = []
         idat_dir_basename = idat_dir.split('/')[-1]
-        group_by_key = (pData.split_key('disease',subtype_delimiter) if disease_only else 'disease')
-        for name, group in pData.pheno_sheet.groupby(group_by_key): # use pathos to paralellize
+        minfi, enmix, base = importr('minfi'), importr('ENmix'), importr('base')
+        try:
+            meffil = importr('meffil')
+        except:
+            meffil = None
+        def return_methyl_array_subtype(name_group):
+            name, group = name_group
             name=name.replace(' ','')
             new_sheet = idat_dir_basename.replace('.csv','_{}.csv'.format(name))
             new_out_dir = '{}/{}/'.format(output_dir,name)
@@ -689,16 +711,35 @@ def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subty
                 group.loc[:,'Sex'] = group['Sex'].map(d)
             group.to_csv('{}/{}'.format(new_out_dir,new_sheet))
             #os.makedirs(new_out_dir, exist_ok=True)
-            preprocesser = PreProcessIDAT(new_out_dir)
+            preprocesser = PreProcessIDAT(new_out_dir, minfi, enmix, base, meffil)
             if meffil:
                 preprocesser.preprocessMeffil(n_cores=n_cores,n_pcs=4)
             else:
                 preprocesser.preprocess(geo_query='', n_cores=n_cores)
             preprocesser.output_pheno_beta(meffil=meffil)
-            methyl_arrays.append(preprocesser.to_methyl_array(name))
-            subprocess.call('rsync -r figure/ *.md qc/ {}/qc/'.format(new_out_dir),shell=True)
-        methyl_arrays=MethylationArrays(methyl_arrays)
-        methyl_arrays=methyl_arrays.combine()
+            return preprocesser.to_methyl_array(name)
+        group_by_key = (pData.split_key('disease',subtype_delimiter) if disease_only else 'disease')
+        pData_grouped = pData.pheno_sheet.groupby(group_by_key)
+        if parallelize:
+            import dill
+            dill.detect.trace(True)
+            from pathos.pools import ProcessPool as Pool
+            #from pathos.helpers import mp as pathos_multiprocess
+            p = Pool()
+            r=p.amap(lambda g: return_methyl_array_subtype(g),pData_grouped)
+            #r =
+            r.wait()
+            methyl_arrays = r.get()
+            p.close()
+        else:
+            for name, group in pData_grouped: # use pathos to paralellize
+                methyl_arrays.append(return_methyl_array_subtype((name,group)))
+                #subprocess.call('rsync -r figure/ *.md qc/ {}/qc/'.format(new_out_dir),shell=True)
+        if len(methyl_arrays) > 1:
+            methyl_arrays=MethylationArrays(methyl_arrays)
+            methyl_arrays=methyl_arrays.combine()
+        else:
+            methyl_arrays = methyl_arrays[0]
         methyl_arrays.write_pickle(output_pkl)
         #preprocesser.export_pickle(output_pkl,name)
         print("Please use combine_split_methylation_arrays")
@@ -831,7 +872,7 @@ def print_na_rate(input_pkl):
     na_frame = pd.isna(df.values)
     print('NA Rate is on average: {}%'.format(sum(sum(na_frame))/float(df.shape[0]*df.shape[1])*100.))
     plt.figure()
-    na_frame.sum(axis=1).map(lambda x: x/float(df.shape[1])).hist()
+    pd.DataFrame(na_frame.sum(axis=1)).apply(lambda x: x/float(df.shape[1])).hist()
     plt.savefig('nan_dist.png')
 
 @preprocess.command()

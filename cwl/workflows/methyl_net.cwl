@@ -79,12 +79,6 @@ outputs:
     type: File
     'sbg:x': 1972.8907470703125
     'sbg:y': -10.714360237121582
-  - id: idat_dir_out_1
-    outputSource:
-      - create_sample_sheet/idat_dir_out
-    type: Directory
-    'sbg:x': 462.83819580078125
-    'sbg:y': -351.2410583496094
   - id: pytorch_model
     outputSource:
       - vae_embed/pytorch_model
@@ -141,6 +135,8 @@ steps:
     in:
       - id: input_sample_sheet
         source: create_sample_sheet/final_csv
+      - id: idat_dir_input
+        source: create_sample_sheet/idat_dir_out
     out:
       - id: output_sample_sheet
       - id: idat_dir
