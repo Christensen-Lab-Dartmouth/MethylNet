@@ -5,56 +5,34 @@ $namespaces:
 id: preprocess_pipeline
 baseCommand: []
 inputs:
-  - id: idat_dir_csv
-    type: File
+  - id: idat_csv_dir_input
+    type: Directory
     inputBinding:
       position: 0
       prefix: '-i'
       shellQuote: false
-      valueFrom: geo_idats/$(inputs.idat_dir_csv.basename)
+  - id: idat_dir
+    type: Directory?
   - id: n_cores
-    type: int
+    type: int?
     inputBinding:
       position: 0
       prefix: '-n'
       shellQuote: false
-  - id: split_by_subtype
+  - id: meffil
     type: boolean?
     inputBinding:
       position: 0
       shellQuote: false
       valueFrom: |-
         ${
-            if (inputs.split_by_subtype) {
-                return '-ss'
+            if (inputs.meffil){
+                return '-m'
             }
             else {
                 return ''
             }
         }
-  - id: disease_only
-    type: boolean?
-    inputBinding:
-      position: 0
-      shellQuote: false
-      valueFrom: |-
-        ${
-            if (inputs.disease_only) {
-                return '-d'
-            }
-            else {
-                return ''
-            }
-        }
-  - id: subtype_delimiter
-    type: string?
-    inputBinding:
-      position: 0
-      prefix: '-sd'
-      shellQuote: false
-      valueFrom: '''$(inputs.subtype_delimiter)'''
-  - id: idat_dir
-    type: Directory?
 outputs:
   - id: output_pkl
     type: File
@@ -63,9 +41,9 @@ outputs:
 label: preprocess_pipeline
 arguments:
   - position: 0
-    prefix: mkdir geo_idats && mv
+    prefix: ln -s
     shellQuote: false
-    valueFrom: $(inputs.idat_dir.path+'/*') geo_idats
+    valueFrom: $(inputs.idat_dir.path) geo_idats/
   - position: 0
     prefix: '&& python /scripts/preprocess.py preprocess_pipeline -m -o'
     shellQuote: false

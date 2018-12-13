@@ -128,10 +128,10 @@ class PreProcessPhenoData:
         self.pheno_sheet['Basename'] = self.pheno_sheet['geo_accession'].map(idat_geo_map)
         self.pheno_sheet = self.pheno_sheet[self.pheno_sheet['Basename'].isin(idat_basenames)]
         self.pheno_sheet.loc[:,'Basename'] = self.pheno_sheet['Basename'].map(lambda x: self.idat_dir+x)
+        self.pheno_sheet['Sample_Name']=self.pheno_sheet['Basename']
         col_dict = {'geo_accession':'AccNum',disease_class_column:'disease'}
         col_dict.update(include_columns)
-        self.pheno_sheet = self.pheno_sheet[['Basename','geo_accession',disease_class_column]+(list(include_columns.keys()) if include_columns else [])].rename(columns=col_dict)
-
+        self.pheno_sheet = self.pheno_sheet[['Basename', 'Sample_Name','geo_accession',disease_class_column]+(list(include_columns.keys()) if include_columns else [])].rename(columns=col_dict)
 
     def format_tcga(self, mapping_file="idat_filename_case.txt"): # add case contro and new mapping keep pt id
         def decide_case_control(barcode):
@@ -155,7 +155,8 @@ class PreProcessPhenoData:
         idat_basenames = np.unique(np.vectorize(lambda x: '_'.join(x.split('/')[-1].split('_')[:2]))(idats))
         self.pheno_sheet = self.pheno_sheet[self.pheno_sheet['Basename'].isin(idat_basenames)]
         self.pheno_sheet.loc[:,['Basename']] = self.pheno_sheet['Basename'].map(lambda x: self.idat_dir+x)
-        self.pheno_sheet = self.pheno_sheet[['Basename', 'disease', 'tumor_stage', 'vital_status', 'age_at_diagnosis', 'gender', 'race', 'ethnicity','case_control']].rename(columns={'tumor_stage':'stage','vital_status':'vital','gender':'Sex','age_at_diagnosis':'age'})
+        self.pheno_sheet['Sample_Name']=self.pheno_sheet['Basename']
+        self.pheno_sheet = self.pheno_sheet[['Basename', 'Sample_Name', 'disease', 'tumor_stage', 'vital_status', 'age_at_diagnosis', 'gender', 'race', 'ethnicity','case_control']].rename(columns={'tumor_stage':'stage','vital_status':'vital','gender':'Sex','age_at_diagnosis':'age'})
         #print(self.pheno_sheet)
 
     def format_custom(self, basename_col, disease_class_column, include_columns={}):
@@ -171,7 +172,8 @@ class PreProcessPhenoData:
         complete_mapping={basic_basename[basename]:basic_idat[basename] for basename in basic_basename}
         self.pheno_sheet.loc[:,'Basename']=self.pheno_sheet['Basename'].map(complete_mapping).map(lambda x: self.idat_dir+x)
         self.pheno_sheet['disease'] = self.pheno_sheet[disease_class_column.replace("'",'')]
-        self.pheno_sheet = self.pheno_sheet[np.unique(['Basename', 'disease']+list(include_columns.keys()))].rename(columns=include_columns)
+        self.pheno_sheet['Sample_Name']=self.pheno_sheet['Basename']
+        self.pheno_sheet = self.pheno_sheet[np.unique(['Basename', 'disease','Sample_Name']+list(include_columns.keys()))].rename(columns=include_columns)
 
     def merge(self, other_formatted_sheet, use_second_sheet_disease=True):
         disease_dict = {False:'disease_x',True:'disease_y'}
@@ -260,8 +262,8 @@ class PreProcessIDAT:
     def preprocessMeffil(self, n_cores=6, n_pcs=4):
         robjects.r('options')(mc_cores=n_cores)
         dollar = self.base.__dict__["$"]
-        self.pheno = self.meffil.meffil_read_samplesheet(self.idat_dir)
-        self.beta_final = dollar(self.meffil.meffil_normalize_dataset(self.pheno, qc_file="qc/report.html", author="", study="Illumina450", number_pcs=n_pcs),'beta')#10
+        self.pheno = self.meffil.meffil_read_samplesheet(self.idat_dir, verbose=True)
+        self.beta_final = dollar(self.meffil.meffil_normalize_dataset(self.pheno, qc_file="qc/report.html", author="", study="Illumina450", number_pcs=n_pcs, verbose=True),'beta')#10
         #robjects.r('saveRDS')(self.beta_final,'r_obj.rds')
         #print(numpy2ri.ri2py(robjects.r("colnames")(self.beta_final)))
         #print(self.beta_final.slots)
@@ -674,83 +676,89 @@ def plot_qc(idat_dir, geo_query, output_dir, split_by_subtype):
         preprocesser.plot_original_qc(output_dir)
 
 @preprocess.command()
-@click.option('-i', '--idat_dir', default='./tcga_idats/minfiSheet.csv', help='Idat directory if one sample sheet, alternatively can be your phenotype sample sheet.', type=click.Path(exists=False), show_default=True)
+@click.option('-i', '--idat_csv', default='./tcga_idats/minfiSheet.csv', help='Idat csv for one sample sheet, alternatively can be your phenotype sample sheet.', type=click.Path(exists=False), show_default=True)
 @click.option('-g', '--geo_query', default='', help='GEO study to query, do not use if already created geo sample sheet.', type=click.Path(exists=False), show_default=True)
-@click.option('-n', '--n_cores', default=6, help='Number cores to use for preprocessing.', show_default=True)
-@click.option('-o', '--output_pkl', default='./preprocess_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-@click.option('-ss', '--split_by_subtype', is_flag=True, help='If using formatted sample sheet csv, split by subtype and perform preprocessing. Will need to combine later.')
-@click.option('-m', '--meffil', is_flag=True, help='Preprocess using meffil.')
 @click.option('-d', '--disease_only', is_flag=True, help='Only look at disease, or text before subtype_delimiter.')
 @click.option('-sd', '--subtype_delimiter', default=',', help='Delimiter for disease extraction.', type=click.Path(exists=False), show_default=True)
-@click.option('-p', '--parallelize', is_flag=True, help='Parallelize subtype computations using pathos.')
-def preprocess_pipeline(idat_dir, geo_query, n_cores, output_pkl, split_by_subtype, meffil, disease_only, subtype_delimiter, parallelize):
-    """Perform preprocessing of idats using enmix or meffil."""
+@click.option('-o', '--subtype_output_dir', default='./preprocess_outputs/', help='Output subtypes pheno csv.', type=click.Path(exists=False), show_default=True)
+def split_preprocess_input_by_subtype(idat_csv,geo_query,disease_only,subtype_delimiter, subtype_output_dir):
     from collections import defaultdict
     subtype_delimiter=subtype_delimiter.replace('"','').replace("'","")
+    os.makedirs(subtype_output_dir,exist_ok=True)
+    pData=PreProcessPhenoData(idat_csv,'')
+    idat_csv_basename = idat_csv.split('/')[-1]
+    group_by_key = (pData.split_key('disease',subtype_delimiter) if disease_only else 'disease')
+    pData_grouped = pData.pheno_sheet.groupby(group_by_key)
+    for name, group in pData_grouped:
+        name=name.replace(' ','')
+        new_sheet = idat_csv_basename.replace('.csv','_{}.csv'.format(name))
+        new_out_dir = '{}/{}/'.format(subtype_output_dir,name)
+        os.makedirs(new_out_dir, exist_ok=True)
+        print(new_out_dir)
+        if 'Sex' in list(group):
+            d=defaultdict(lambda:'NA')
+            d.update({'M':'M','F':'F'})
+            group.loc[:,'Sex'] = group['Sex'].map(d)
+            #print(group['Sex'].mode().values[0][0])
+            if (group['Sex']==group['Sex'].mode().values[0][0]).all():
+                group=group.rename(columns={'Sex':'gender'})
+                #print(name)
+        group.to_csv('{}/{}'.format(new_out_dir,new_sheet))
+
+@preprocess.command()
+@click.option('-n', '--n_cores', default=6, help='Number cores to use for preprocessing.', show_default=True)
+@click.option('-i', '--subtype_output_dir', default='./preprocess_outputs/', help='Output subtypes pheno csv.', type=click.Path(exists=False), show_default=True)
+@click.option('-m', '--meffil', is_flag=True, help='Preprocess using meffil.')
+def batch_deploy_preprocess(n_cores,subtype_output_dir,meffil):
+    pheno_csvs = glob.glob(os.path.join(subtype_output_dir,'*','*.csv'))
+    opts = {'-n':n_cores}
+    if meffil:
+        opts['-m']=''
+    for pheno_csv in pheno_csvs:
+        pheno_path = os.path.abspath(pheno_csv)
+        opts['-i']=pheno_path[:pheno_path.rfind('/')+1]
+        opts['-o']=pheno_path[:pheno_path.rfind('/')+1]+'methyl_array.pkl'
+        command='nohup python preprocess.py preprocess_pipeline {} &'.format(' '.join('{} {}'.format(k,v) for k,v in opts.items()))
+        click.echo(command)
+        subprocess.call(command,shell=True)
+
+@preprocess.command()
+@click.option('-i', '--idat_dir', default='./tcga_idats/', help='Idat dir for one sample sheet, alternatively can be your phenotype sample sheet.', type=click.Path(exists=False), show_default=True)
+@click.option('-n', '--n_cores', default=6, help='Number cores to use for preprocessing.', show_default=True)
+@click.option('-o', '--output_pkl', default='./preprocess_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-m', '--meffil', is_flag=True, help='Preprocess using meffil.')
+def preprocess_pipeline(idat_dir, n_cores, output_pkl, meffil):
+    """Perform preprocessing of idats using enmix or meffil."""
     output_dir = output_pkl[:output_pkl.rfind('/')]
     os.makedirs(output_dir,exist_ok=True)
-    if idat_dir.endswith('.csv') and split_by_subtype:
-        pData=PreProcessPhenoData(idat_dir,'')
-        methyl_arrays = []
-        idat_dir_basename = idat_dir.split('/')[-1]
-        minfi, enmix, base = importr('minfi'), importr('ENmix'), importr('base')
-        try:
-            meffil = importr('meffil')
-        except:
-            meffil = None
-        def return_methyl_array_subtype(name_group):
-            name, group = name_group
-            name=name.replace(' ','')
-            new_sheet = idat_dir_basename.replace('.csv','_{}.csv'.format(name))
-            new_out_dir = '{}/{}/'.format(output_dir,name)
-            os.makedirs(new_out_dir, exist_ok=True)
-            print(new_out_dir)
-            if 'Sex' in list(group):
-                d=defaultdict(lambda:'NA')
-                d.update({'M':'M','F':'F'})
-                group.loc[:,'Sex'] = group['Sex'].map(d)
-            group.to_csv('{}/{}'.format(new_out_dir,new_sheet))
-            #os.makedirs(new_out_dir, exist_ok=True)
-            preprocesser = PreProcessIDAT(new_out_dir, minfi, enmix, base, meffil)
-            if meffil:
-                preprocesser.preprocessMeffil(n_cores=n_cores,n_pcs=4)
-            else:
-                preprocesser.preprocess(geo_query='', n_cores=n_cores)
-            preprocesser.output_pheno_beta(meffil=meffil)
-            return preprocesser.to_methyl_array(name)
-        group_by_key = (pData.split_key('disease',subtype_delimiter) if disease_only else 'disease')
-        pData_grouped = pData.pheno_sheet.groupby(group_by_key)
-        if parallelize:
-            import dill
-            dill.detect.trace(True)
-            from pathos.pools import ProcessPool as Pool
-            #from pathos.helpers import mp as pathos_multiprocess
-            p = Pool()
-            r=p.amap(lambda g: return_methyl_array_subtype(g),pData_grouped)
-            #r =
-            r.wait()
-            methyl_arrays = r.get()
-            p.close()
-        else:
-            for name, group in pData_grouped: # use pathos to paralellize
-                methyl_arrays.append(return_methyl_array_subtype((name,group)))
-                #subprocess.call('rsync -r figure/ *.md qc/ {}/qc/'.format(new_out_dir),shell=True)
-        if len(methyl_arrays) > 1:
-            methyl_arrays=MethylationArrays(methyl_arrays)
-            methyl_arrays=methyl_arrays.combine()
-        else:
-            methyl_arrays = methyl_arrays[0]
-        methyl_arrays.write_pickle(output_pkl)
-        #preprocesser.export_pickle(output_pkl,name)
-        print("Please use combine_split_methylation_arrays")
+    preprocesser = PreProcessIDAT(idat_dir)
+    if meffil:
+        preprocesser.preprocessMeffil(n_cores=n_cores,n_pcs=4)
     else:
-        preprocesser = PreProcessIDAT(idat_dir)
-        if meffil:
-            preprocesser.preprocessMeffil(n_cores=n_cores)
-        else:
-            preprocesser.preprocess(geo_query, n_cores)
-        preprocesser.output_pheno_beta(meffil=meffil)
-        preprocesser.export_pickle(output_pkl)
+        preprocesser.preprocess(geo_query='', n_cores=n_cores)
+    preprocesser.output_pheno_beta(meffil=meffil)
+    preprocesser.to_methyl_array('').write_pickle(output_pkl)
+
+# FIXME add all below
+
+@preprocess.command()
+@click.option('-i', '--input_pkls', default=['./preprocess_outputs/methyl_array.pkl'], multiple=True, help='Input pickles for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-d', '--optional_input_pkl_dir', default='', multiple=True, help='Auto grab input pkls.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_pkl', default='./combined_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+def combine_methylation_arrays(input_pkls, optional_input_pkl_dir, output_pkl):
+    """If split MethylationArrays by subtype for either preprocessing or imputation, can use to recombine data for downstream step."""
+    os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
+    list_methyl_arrays = []
+    if optional_input_pkl_dir:
+        input_pkls=glob.glob(os.path.join(optional_input_pkl_dir,'*','methyl_array.pkl'))
+    if len(input_pkls) > 0:
+        for input_pkl in input_pkls:
+            list_methyl_arrays.append(MethylationArray(*extract_pheno_beta_df_from_pickle_dict(pickle.load(open(input_pkl,'rb')), '')))
+            list_methyl_arrays = MethylationArrays(list_methyl_arrays)
+            combined_methyl_array = list_methyl_arrays.combine()
+    else:
+        combined_methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(pickle.load(open(input_pkls[0],'rb')), ''))
+    combined_methyl_array.write_pickle(output_pkl)
 
 @preprocess.command()
 @click.option('-i', '--input_dir', default='./', help='Directory containing jpg.', type=click.Path(exists=False), show_default=True)
@@ -759,26 +767,6 @@ def move_jpg(input_dir, output_dir):
     """Move preprocessing jpegs to preprocessing output directory."""
     os.makedirs(output_dir, exist_ok=True)
     subprocess.call('mv {} {}'.format(os.path.join(input_dir,'*.jpg'),os.path.abspath(output_dir)),shell=True)
-
-
-# FIXME add all below
-
-@preprocess.command()
-@click.option('-i', '--input_pkl', default='./preprocess_outputs/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-@click.option('-o', '--output_pkl', default='./combined_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-def combine_split_methylation_arrays(input_pkl, output_pkl):
-    """If split MethylationArrays by subtype for either preprocessing or imputation, can use to recombine data for downstream step."""
-    os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
-    input_dict = pickle.load(open(input_pkl,'rb'))
-    tables = [table[table.find('_')+1:] for table in input_dict.keys() if '_' in table]
-    diseases = np.unique(tables)
-    list_methyl_arrays = []
-    for disease in diseases:
-        pheno_df, beta_df = extract_pheno_beta_df_from_pickle_dict(input_dict, disease)
-        list_methyl_arrays.append(MethylationArray(pheno_df, beta_df))
-    list_methyl_arrays = MethylationArrays(list_methyl_arrays)
-    combined_methyl_array = list_methyl_arrays.combine()
-    combined_methyl_array.write_pickle(output_pkl)
 
 @preprocess.command()
 @click.option('-i', '--input_pkl', default='./combined_outputs/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)

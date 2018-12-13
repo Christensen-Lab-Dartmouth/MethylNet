@@ -17,18 +17,6 @@ inputs:
     type: string?
     'sbg:x': 95.18537139892578
     'sbg:y': 165.68411254882812
-  - id: n_cores
-    type: int
-    'sbg:x': 671.5182495117188
-    'sbg:y': -99.33586120605469
-  - id: split_by_subtype
-    type: boolean?
-    'sbg:x': 592.386474609375
-    'sbg:y': -261
-  - id: disease_only
-    type: boolean?
-    'sbg:x': 417.051025390625
-    'sbg:y': -205.59689331054688
   - id: n_neighbors
     type: int?
     'sbg:x': 852.6881713867188
@@ -45,9 +33,6 @@ inputs:
     type: int?
     'sbg:x': 1610.08251953125
     'sbg:y': -127.23672485351562
-  - id: subtype_delimiter_1
-    type: string?
-    'sbg:exposed': true
   - id: cuda
     type: boolean?
     'sbg:exposed': true
@@ -72,6 +57,18 @@ inputs:
   - id: supervised_1
     type: boolean?
     'sbg:exposed': true
+  - id: n_cores
+    type: int?
+    'sbg:exposed': true
+  - id: meffil
+    type: boolean?
+    'sbg:exposed': true
+  - id: disease_only
+    type: boolean?
+    'sbg:exposed': true
+  - id: subtype_delimiter
+    type: string?
+    'sbg:exposed': true
 outputs:
   - id: output_visual
     outputSource:
@@ -86,30 +83,6 @@ outputs:
     'sbg:x': 1477.431396484375
     'sbg:y': 21.976003646850586
 steps:
-  - id: preprocess_pipeline_1
-    in:
-      - id: idat_dir_csv
-        source: meffil_encode_1/output_sample_sheet
-      - id: n_cores
-        default: 6
-        source: n_cores
-      - id: split_by_subtype
-        default: true
-        source: split_by_subtype
-      - id: disease_only
-        default: true
-        source: disease_only
-      - id: subtype_delimiter
-        default: ','
-        source: subtype_delimiter_1
-      - id: idat_dir
-        source: meffil_encode_1/idat_dir
-    out:
-      - id: output_pkl
-    run: ../tools/preprocess_pipeline.cwl
-    label: preprocess_pipeline
-    'sbg:x': 794.6327514648438
-    'sbg:y': 16.874027252197266
   - id: create_sample_sheet
     in:
       - id: input_sample_sheet
@@ -142,12 +115,12 @@ steps:
       - id: idat_dir
     run: ../tools/meffil_encode.cwl
     label: meffil_encode
-    'sbg:x': 492.94610595703125
-    'sbg:y': -71.00813293457031
+    'sbg:x': 413.171630859375
+    'sbg:y': -98.21781921386719
   - id: imputation
     in:
       - id: input_pkl
-        source: preprocess_pipeline_1/output_pkl
+        source: combine_methyl_arrays/output_methyl_array
       - id: imputation_method
         default: KNN
       - id: solver
@@ -230,6 +203,55 @@ steps:
     label: download_geo
     'sbg:x': 55.04618453979492
     'sbg:y': -248.47854614257812
+  - id: preprocess_pipeline
+    in:
+      - id: idat_csv_dir_input
+        source: split_by_subtype/output_dirs
+      - id: idat_dir
+        source: meffil_encode_1/idat_dir
+      - id: n_cores
+        default: 6
+        source: n_cores
+      - id: meffil
+        default: true
+        source: meffil
+    out:
+      - id: output_pkl
+    run: ../tools/preprocess_pipeline.cwl
+    label: preprocess_pipeline
+    scatter:
+      - idat_csv_dir_input
+    scatterMethod: dotproduct
+    'sbg:x': 695.3563842773438
+    'sbg:y': 90.52800750732422
+  - id: split_by_subtype
+    in:
+      - id: idat_csv
+        source: meffil_encode_1/output_sample_sheet
+      - id: disease_only
+        default: false
+        source: disease_only
+      - id: subtype_delimiter
+        default: ','
+        source: subtype_delimiter
+    out:
+      - id: output_dirs
+    run: ../tools/split_by_subtype.cwl
+    label: split_by_subtype
+    'sbg:x': 526.2178344726562
+    'sbg:y': 32.24433517456055
+  - id: combine_methyl_arrays
+    in:
+      - id: input_pkls
+        linkMerge: merge_flattened
+        source:
+          - preprocess_pipeline/output_pkl
+    out:
+      - id: output_methyl_array
+    run: ../tools/combine_methyl_arrays.cwl
+    label: combine_methyl_arrays
+    'sbg:x': 837.650146484375
+    'sbg:y': 113.59088134765625
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
