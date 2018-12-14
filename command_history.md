@@ -24,3 +24,5 @@
     * brew tap caskroom/versions
 brew cask install java8
     * docker build . -t methylnet:0.1
+4. embed
+        * python embedding.py perform_embedding -n 300 -hlt 500 -kl 5 -b 4. -s warm_restarts -lr 1e-4 -bce

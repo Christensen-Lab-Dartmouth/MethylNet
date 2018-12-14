@@ -103,7 +103,7 @@ class TCGADownloader:
         robjects.r["sapply"](idatFiles, robjects.r["gunzip"], overwrite = True)
         subprocess.call('mv {}/idat/*.idat {}/'.format(query, output_dir),shell=True)
         # FIXME Table, dataTable import
-        pandas2ri.ri2py(robjects.r['as'](robjects.r('phenoData')(robjects.r("getGEO('{}')[[1]]".format(query))),'data.frame')).to_csv('{}/{}_clinical_info.csv'.format(output_dir,query))# ,GSEMatrix = FALSE
+        pandas2ri.ri2py(robjects.r['as'](robjects.r("phenoData(getGEO('{}')[[1]])".format(query)),'data.frame')).to_csv('{}/{}_clinical_info.csv'.format(output_dir,query))# ,GSEMatrix = FALSE
         # geo_query="GSE109381"
         # geo = importr("GEOquery")
         # base=importr('base')
@@ -780,7 +780,7 @@ def batch_deploy_preprocess(n_cores,subtype_output_dir,meffil,torque,run,series)
             else:
                 subprocess.call(command,shell=True)
     else:
-        run_command = lambda command: subprocess.call('module load module load python/3-Anaconda && source activate py36 && {}'.format(command),shell=True)
+        run_command = lambda command: subprocess.call('module load cuda && module load python/3-Anaconda && source activate py36 && {}'.format(command),shell=True)
         from pyina.schedulers import Torque
         from pyina.launchers import Mpi
         config = {'nodes':'10:ppn=6', 'queue':'default', 'timelimit':'01:00'}
@@ -811,12 +811,15 @@ def preprocess_pipeline(idat_dir, n_cores, output_pkl, meffil):
 @click.option('-i', '--input_pkls', default=['./preprocess_outputs/methyl_array.pkl'], multiple=True, help='Input pickles for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-d', '--optional_input_pkl_dir', default='', multiple=True, help='Auto grab input pkls.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_pkl', default='./combined_outputs/methyl_array.pkl', help='Output database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
-def combine_methylation_arrays(input_pkls, optional_input_pkl_dir, output_pkl):
+@click.option('-e', '--exclude', default=[], multiple=True, help='If -d selected, these diseases will be excluded from study.', type=click.Path(exists=False), show_default=True)
+def combine_methylation_arrays(input_pkls, optional_input_pkl_dir, output_pkl, exclude):
     """If split MethylationArrays by subtype for either preprocessing or imputation, can use to recombine data for downstream step."""
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     list_methyl_arrays = []
     if optional_input_pkl_dir:
         input_pkls=glob.glob(os.path.join(optional_input_pkl_dir,'*','methyl_array.pkl'))
+        if exclude:
+            input_pkls=(np.array(input_pkls)[~np.isin(np.vectorize(lambda x: x.split('/')[-2])(input_pkls),np.array(exclude))]).tolist()
     if len(input_pkls) > 0:
         for input_pkl in input_pkls:
             list_methyl_arrays.append(MethylationArray(*extract_pheno_beta_df_from_pickle_dict(pickle.load(open(input_pkl,'rb')), '')))
