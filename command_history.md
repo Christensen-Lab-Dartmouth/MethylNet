@@ -19,7 +19,7 @@
     python embedding.py perform_embedding -lr 1e-4 -wd 0.01 -hlt 500 -n 100 -kl 20
     python visualizations.py transform_plot -o vae.html -i ./embeddings/vae_methyl_arr.pkl
     nohup python embedding.py perform_embedding -lr 5e-5 -wd 0.01 -hlt 500 -n 100 -kl 20 -b 5. &
-3.
+3. python preprocess.py create_sample_sheet -is clinical_info.csv  && python preprocess.py meffil_encode && python preprocess.py split_preprocess_input_by_subtype && python preprocess.py  batch_deploy_preprocess -n 1 -i preprocess_outputs/ -m
 3. Setup
     * brew tap caskroom/versions
 brew cask install java8

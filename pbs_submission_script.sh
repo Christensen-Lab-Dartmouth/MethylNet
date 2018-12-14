@@ -3,7 +3,8 @@
 # Specify the gpuq queue
 #PBS -q gpuq
 # Specify the number of gpus
-#PBS -l nodes=8:ppn=1:gpus=1
+#PBS -l nodes=8:ppn=1
+#PBS -l gpus=1
 # Specify the gpu feature
 #PBS -l feature=gpu
 # request 4 hours and 30 minutes of cpu time

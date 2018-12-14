@@ -1,7 +1,7 @@
 import rpy2.robjects as robjects
+from rpy2.robjects.packages import importr
 import rpy2.interactive as r
 import rpy2.robjects.packages as rpackages
-from rpy2.robjects.packages import importr
 import os, subprocess
 import click
 import glob
@@ -128,10 +128,10 @@ class PreProcessPhenoData:
         self.pheno_sheet['Basename'] = self.pheno_sheet['geo_accession'].map(idat_geo_map)
         self.pheno_sheet = self.pheno_sheet[self.pheno_sheet['Basename'].isin(idat_basenames)]
         self.pheno_sheet.loc[:,'Basename'] = self.pheno_sheet['Basename'].map(lambda x: self.idat_dir+x)
-        self.pheno_sheet['Sample_Name']=self.pheno_sheet['Basename']
+        #self.pheno_sheet['Sample_Name']=self.pheno_sheet['Basename'].map(lambda x: x.split('/')[-1])
         col_dict = {'geo_accession':'AccNum',disease_class_column:'disease'}
         col_dict.update(include_columns)
-        self.pheno_sheet = self.pheno_sheet[['Basename', 'Sample_Name','geo_accession',disease_class_column]+(list(include_columns.keys()) if include_columns else [])].rename(columns=col_dict)
+        self.pheno_sheet = self.pheno_sheet[['Basename', 'geo_accession',disease_class_column]+(list(include_columns.keys()) if include_columns else [])].rename(columns=col_dict)
 
     def format_tcga(self, mapping_file="idat_filename_case.txt"): # add case contro and new mapping keep pt id
         def decide_case_control(barcode):
@@ -155,8 +155,8 @@ class PreProcessPhenoData:
         idat_basenames = np.unique(np.vectorize(lambda x: '_'.join(x.split('/')[-1].split('_')[:2]))(idats))
         self.pheno_sheet = self.pheno_sheet[self.pheno_sheet['Basename'].isin(idat_basenames)]
         self.pheno_sheet.loc[:,['Basename']] = self.pheno_sheet['Basename'].map(lambda x: self.idat_dir+x)
-        self.pheno_sheet['Sample_Name']=self.pheno_sheet['Basename']
-        self.pheno_sheet = self.pheno_sheet[['Basename', 'Sample_Name', 'disease', 'tumor_stage', 'vital_status', 'age_at_diagnosis', 'gender', 'race', 'ethnicity','case_control']].rename(columns={'tumor_stage':'stage','vital_status':'vital','gender':'Sex','age_at_diagnosis':'age'})
+        #self.pheno_sheet['Sample_Name']=self.pheno_sheet['Basename'].map(lambda x: x.split('/')[-1])
+        self.pheno_sheet = self.pheno_sheet[['Basename', 'disease', 'tumor_stage', 'vital_status', 'age_at_diagnosis', 'gender', 'race', 'ethnicity','case_control']].rename(columns={'tumor_stage':'stage','vital_status':'vital','gender':'Sex','age_at_diagnosis':'age'})
         #print(self.pheno_sheet)
 
     def format_custom(self, basename_col, disease_class_column, include_columns={}):
@@ -172,8 +172,8 @@ class PreProcessPhenoData:
         complete_mapping={basic_basename[basename]:basic_idat[basename] for basename in basic_basename}
         self.pheno_sheet.loc[:,'Basename']=self.pheno_sheet['Basename'].map(complete_mapping).map(lambda x: self.idat_dir+x)
         self.pheno_sheet['disease'] = self.pheno_sheet[disease_class_column.replace("'",'')]
-        self.pheno_sheet['Sample_Name']=self.pheno_sheet['Basename']
-        self.pheno_sheet = self.pheno_sheet[np.unique(['Basename', 'disease','Sample_Name']+list(include_columns.keys()))].rename(columns=include_columns)
+        #self.pheno_sheet['Sample_Name']=self.pheno_sheet['Basename'].map(lambda x: x.split('/')[-1])
+        self.pheno_sheet = self.pheno_sheet[np.unique(['Basename', 'disease']+list(include_columns.keys()))].rename(columns=include_columns)
 
     def merge(self, other_formatted_sheet, use_second_sheet_disease=True):
         disease_dict = {False:'disease_x',True:'disease_y'}
@@ -259,19 +259,65 @@ class PreProcessIDAT:
         self.MSet = self.minfi.preprocessRaw(self.RGset)
         return self.MSet
 
-    def preprocessMeffil(self, n_cores=6, n_pcs=4):
-        robjects.r('options')(mc_cores=n_cores)
-        dollar = self.base.__dict__["$"]
+    def preprocessMeffil(self, n_cores=6, n_pcs=4): # Deploy fewer jobs, less memory
+        #robjects.r['options'](mc_cores=n_cores)
+        #dollar = self.base.__dict__["$"]
         self.pheno = self.meffil.meffil_read_samplesheet(self.idat_dir, verbose=True)
-        self.beta_final = dollar(self.meffil.meffil_normalize_dataset(self.pheno, qc_file="qc/report.html", author="", study="Illumina450", number_pcs=n_pcs, verbose=True),'beta')#10
-        #robjects.r('saveRDS')(self.beta_final,'r_obj.rds')
-        #print(numpy2ri.ri2py(robjects.r("colnames")(self.beta_final)))
-        #print(self.beta_final.slots)
-        #self.beta_final = robjects.r['as'](self.beta_final,'data.frame'))
-        #print(robjects.r['as'](self.beta_final,'data.frame'))
-        #b=pandas2ri.ri2py(robjects.r['as'](self.beta_final,'data.frame'))
-        #print(b)
-        #print(pandas2ri.ri2py(robjects.r['as'](self.pheno,'data.frame'))[b.index])
+        print(self.pheno)
+        # Background and dye bias correction, sexprediction, cell counts estimates
+        self.beta_final = robjects.r("""function(samplesheet,n.cores,n.pcs){
+            qc.objects<-meffil.qc(samplesheet,mc.cores=n.cores,verbose=F)
+            qc.summary<-meffil.qc.summary(qc.objects,verbose=F)
+            if (nrow(qc.summary$bad.samples) > 0) {
+            qc.objects <- meffil.remove.samples(qc.objects, qc.summary$bad.samples$sample.name)
+            }
+            norm.objects <- meffil.normalize.quantiles(qc.objects, number.pcs=n.pcs, verbose=F)
+            norm <- meffil.normalize.samples(norm.objects, just.beta=F, cpglist.remove=qc.summary$bad.cpgs$name)
+            beta <- meffil.get.beta(norm$M, norm$U)
+            return(beta)}""")(self.pheno,n_cores, n_pcs)
+        #print(self.beta_final)
+        if 0:
+            qc_objects = self.meffil.meffil_qc(self.pheno, mc_cores=n_cores, verbose=False) # , number_quantiles=500, detection_threshold=0.01, bead_threshold=3, sex_cutoff=-2, chip="450k",
+            #print(qc_objects)
+            robjects.r('saveRDS')(qc_objects,'{}/r_obj.rds'.format(self.idat_dir))
+            # Generate QC report
+            qc_summary = self.meffil.meffil_qc_summary(qc_objects, verbose=False)
+
+            #print(qc_summary)
+
+            #self.meffil.meffil_qc_report(qc_summary, output_file="qc/report.html")
+
+            # Remove outlier samples if necessary
+            qc_objects = self.meffil.meffil_remove_samples(qc_objects, dollar(dollar(qc_summary,'bad.samples'),'sample.name'))
+
+            #print(qc_objects)
+
+            # Plot residuals remaining after fitting control matrix to decide on the number PCs
+            # to include in the normalization below.
+            #print(self.meffil.meffil_plot_pc_fit(qc_objects)$plot)
+
+            # Perform quantile normalization
+            norm_objects = self.meffil.meffil_normalize_quantiles(qc_objects, number_pcs=n_pcs, mc_cores=n_cores, verbose=False)
+
+            # Generate normalized probe values
+            norm_beta = self.meffil.meffil_normalize_samples(norm_objects, just_beta=True, mc_cores=n_cores, cpglist_remove=dollar(dollar(qc_summary,'bad.cpgs'),'name'))
+            #beta <- meffil.get.beta(norm.dataset$M, norm.dataset$U)
+            # Generate normalization report
+            #pcs = self.meffil.meffil_methylation_pcs(norm_beta)
+            #norm_summary = self.meffil.meffil_normalization_summary(norm_objects, pcs=pcs)
+            #self.meffil.meffil_normalization_report(norm_summary, output_file="normalization/report.html")
+
+            self.beta_final = dollar(norm_beta,'beta')
+
+            #self.beta_final = dollar(self.meffil.meffil_normalize_dataset(self.pheno, qc_file="qc/report.html", author="", study="Illumina450", number_pcs=n_pcs, mc_cores=n_cores, verbose=True),'beta')#10
+            #robjects.r('saveRDS')(self.beta_final,'r_obj.rds')
+            #print(numpy2ri.ri2py(robjects.r("colnames")(self.beta_final)))
+            #print(self.beta_final.slots)
+            #self.beta_final = robjects.r['as'](self.beta_final,'data.frame'))
+            #print(robjects.r['as'](self.beta_final,'data.frame'))
+            #b=pandas2ri.ri2py(robjects.r['as'](self.beta_final,'data.frame'))
+            #print(b)
+            #print(pandas2ri.ri2py(robjects.r['as'](self.pheno,'data.frame'))[b.index])
 
     def preprocessENmix(self, n_cores=6):
         self.qcinfo = self.enmix.QCinfo(self.RGset, detPthre=1e-7)
@@ -350,8 +396,8 @@ class PreProcessIDAT:
         if not meffil: # FIXME
             self.beta_py=pd.DataFrame(pandas2ri.ri2py(self.beta_final),index=numpy2ri.ri2py(robjects.r("featureNames")(self.RSet)),columns=numpy2ri.ri2py(robjects.r("sampleNames")(self.RSet))).transpose()
         else:
-            self.beta_final=self.enmix.rm_outlier(self.beta_final).transpose() # FIXME does this work?
-            self.beta_py=pd.DataFrame(pandas2ri.ri2py(self.beta_final),index=robjects.r("rownames")(self.beta_final),columns=robjects.r("colnames")(self.beta_final))
+            #self.beta_final=self.enmix.rm_outlier(self.beta_final).transpose() # FIXME does this work?
+            self.beta_py=pd.DataFrame(pandas2ri.ri2py(self.beta_final),index=robjects.r("rownames")(self.beta_final),columns=robjects.r("colnames")(self.beta_final)).transpose()
             print(self.beta_py)
             print(self.beta_py.index)
             print(self.pheno_py)
@@ -709,18 +755,38 @@ def split_preprocess_input_by_subtype(idat_csv,geo_query,disease_only,subtype_de
 @click.option('-n', '--n_cores', default=6, help='Number cores to use for preprocessing.', show_default=True)
 @click.option('-i', '--subtype_output_dir', default='./preprocess_outputs/', help='Output subtypes pheno csv.', type=click.Path(exists=False), show_default=True)
 @click.option('-m', '--meffil', is_flag=True, help='Preprocess using meffil.')
-def batch_deploy_preprocess(n_cores,subtype_output_dir,meffil):
+@click.option('-t', '--torque', is_flag=True, help='Job submission torque.')
+@click.option('-r', '--run', is_flag=True, help='Actually run local job or just print out command.')
+@click.option('-s', '--series', is_flag=True, help='Run commands in series.')
+def batch_deploy_preprocess(n_cores,subtype_output_dir,meffil,torque,run,series):
     pheno_csvs = glob.glob(os.path.join(subtype_output_dir,'*','*.csv'))
     opts = {'-n':n_cores}
     if meffil:
         opts['-m']=''
+    commands=[]
     for pheno_csv in pheno_csvs:
         pheno_path = os.path.abspath(pheno_csv)
         opts['-i']=pheno_path[:pheno_path.rfind('/')+1]
         opts['-o']=pheno_path[:pheno_path.rfind('/')+1]+'methyl_array.pkl'
-        command='nohup python preprocess.py preprocess_pipeline {} &'.format(' '.join('{} {}'.format(k,v) for k,v in opts.items()))
-        click.echo(command)
-        subprocess.call(command,shell=True)
+        command='python preprocess.py preprocess_pipeline {}'.format(' '.join('{} {}'.format(k,v) for k,v in opts.items()))
+        commands.append(command)
+        #click.echo(command)
+    if not torque:
+        for command in commands:
+            if not series:
+                command="nohup {} &".format(command)
+            if not run:
+                click.echo(command)
+            else:
+                subprocess.call(command,shell=True)
+    else:
+        run_command = lambda command: subprocess.call('module load module load python/3-Anaconda && source activate py36 && {}'.format(command),shell=True)
+        from pyina.schedulers import Torque
+        from pyina.launchers import Mpi
+        config = {'nodes':'10:ppn=6', 'queue':'default', 'timelimit':'01:00'}
+        torque = Torque(**config)
+        pool = Mpi(scheduler=torque)
+        pool.map(run_command, commands)
 
 @preprocess.command()
 @click.option('-i', '--idat_dir', default='./tcga_idats/', help='Idat dir for one sample sheet, alternatively can be your phenotype sample sheet.', type=click.Path(exists=False), show_default=True)

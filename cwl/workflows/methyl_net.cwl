@@ -238,8 +238,8 @@ steps:
       - id: output_dirs
     run: ../tools/split_by_subtype.cwl
     label: split_by_subtype
-    'sbg:x': 526.2178344726562
-    'sbg:y': 32.24433517456055
+    'sbg:x': 515.5643920898438
+    'sbg:y': 56.349822998046875
   - id: combine_methyl_arrays
     in:
       - id: input_pkls

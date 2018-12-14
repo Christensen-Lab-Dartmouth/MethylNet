@@ -3,6 +3,7 @@ from torch import nn
 import torch
 from torch.autograd import Variable
 import numpy as np
+from schedulers import *
 
 def train(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
     model.train()
@@ -31,7 +32,7 @@ def project(model, loader, cuda=True):
     return z, sample_names, outcomes
 
 class AutoEncoder:
-    def __init__(self, autoencoder_model, n_epochs, loss_fn, optimizer, cuda=True, kl_warm_up=0,beta=1.):
+    def __init__(self, autoencoder_model, n_epochs, loss_fn, optimizer, cuda=True, kl_warm_up=0,beta=1.,scheduler_opts={}):
         self.model=autoencoder_model
         if cuda:
             self.model = self.model.cuda()
@@ -41,10 +42,12 @@ class AutoEncoder:
         self.cuda = cuda
         self.kl_warm_up = kl_warm_up
         self.beta=beta
+        self.scheduler = Scheduler(self.optimizer,scheduler_opts) if scheduler_opts else Scheduler(self.optimizer)
 
     def fit(self, train_data):
         for epoch in range(self.n_epochs):
             model, loss = train(self.model, train_data, self.loss_fn, self.optimizer, self.cuda, epoch, self.kl_warm_up, self.beta)
+            self.scheduler.step()
             print("Epoch {}: Loss {}".format(epoch,loss))
         self.model = model
         return model
