@@ -208,7 +208,7 @@ class VAE_Classifier:
 class VAE_MLP(nn.Module):
     def __init__(self, vae_model, n_output, hidden_layer_topology=[100,100,100]):
         super(VAE_MLP,self).__init__()
-        self.encoder = vae_model.encoder
+        self.vae = vae_model.vae_model
         self.n_latent = vae_model.n_latent
         self.n_output = n_output
         self.topology = [self.n_latent]+(hidden_layer_topology if hidden_layer_topology else [])
@@ -220,10 +220,9 @@ class VAE_MLP(nn.Module):
                 self.mlp_layers.append(nn.Sequential(layer,nn.ReLU()))
         self.output_layer = nn.Linear(self.topology[-1],self.n_output)
         torch.nn.init.xavier_uniform(self.output_layer.weight)
-        self.vae_mlp = nn.Sequential(self.encoder,
-                                     self.Sequential(*self.mlp_layers),
-                                     self.output_layer,
-                                     nn.Sigmoid())
+        self.mlp_layers.extend([self.output_layer,nn.Sigmoid()])
+        self.mlp = self.Sequential(*self.mlp_layers)
 
     def forward(self,x):
-        return self.vae_mlp(x)
+        out=self.vae.get_latent_z(x)
+        return self.mlp(out)

@@ -7,7 +7,7 @@
 # Specify the gpu feature
 #PBS -l mem=200GB
 # request 4 hours and 30 minutes of cpu time
-#PBS -l walltime=00:30:00
+#PBS -l walltime=05:00:00
 # mail is sent to you when the job starts and when it terminates or aborts
 #PBS -m bea
 # specify your email address
@@ -21,7 +21,9 @@ cd $PBS_O_WORKDIR
 # run the program
 module load python/3-Anaconda
 source activate py36
-python preprocess.py imputation_pipeline -i ./combined_outputs/methyl_array.pkl -o final_preprocessed/methyl_array.pkl -n 200000 -s simple -m Mean
+#python preprocess.py imputation_pipeline -i ./combined_outputs/methyl_array.pkl -o final_preprocessed/methyl_array.pkl -n 200000 -s simple -m Mean
 #python preprocess.py combine_methylation_arrays -d ./preprocess_outputs/ -e OV
-#python embedding.py perform_embedding -n 300 -hlt 500 -kl 15 -b 4. -s warm_restarts -lr 1e-4 -bce -e 140
+python visualizations.py transform_plot -o prevae_latest.html -nn 8 -d 0.1
+python embedding.py perform_embedding -n 300 -hlt 500 -kl 15 -b 4. -s warm_restarts -lr 1e-4 -bce -e 200
+python visualizations.py transform_plot -o vae_latest.html -i ./embeddings/vae_methyl_arr.pkl -nn 8 -d 0.1
 exit 0
