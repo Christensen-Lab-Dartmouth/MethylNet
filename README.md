@@ -2,7 +2,7 @@
 
 Deep Learning with Methylation
 
-MethylNet is a command line tool and python library that provides classes to handle deep learning tasks for methylation data. It wraps common R-bioconductor functions for the preliminary analysis of methylation arrays, and uses PyTorch to explore/make predictions on the methylation data.
+MethylNet is a command line tool and python library that provides classes to handle deep learning tasks for methylation data. It wraps common R-bioconductor functions for the preliminary analysis of methylation arrays (moved to https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess), and uses PyTorch to explore/make predictions on the methylation data.
 
 What MethylNet can do:  
 1. Preprocessing of IDATs (wraps R into python using rpy2):  
@@ -10,7 +10,8 @@ What MethylNet can do:
                 * Download TCGA and GEO data and clinical information  
                 * Preprocessing pipeline via enmix and minfi  
                 * Imputation using various methods (knn, MICE, mean, zero, etc.) and MAD (Mean Absolute Deviation) filtering of CpGs using fancyimpute and pandas  
-                * Storage of methylation beta value array and phenotype data into sqlite3 databases to query, embed, explore (QEE)  
+                * Storage of methylation beta value array and phenotype data into sqlite3 databases to query, embed, explore (QEE)
+                * MOVED TO https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess
 2. Deep Learning Tools via PyTorch:  
                 * Discover latent space of methylation data using Tybalt-like model and Convolutional Variational Autoencoders  
                 * UMAP/TSNE embedding of latent space  
