@@ -9,7 +9,7 @@
 #PBS -l feature=gpu
 #PBS -l mem=20GB
 # request 4 hours and 30 minutes of cpu time
-#PBS -l walltime=00:10:00
+#PBS -l walltime=01:00:00
 # mail is sent to you when the job starts and when it terminates or aborts
 #PBS -m bea
 # specify your email address
@@ -27,5 +27,5 @@ export CUDA_DEVICE=$gpuNum
 module load python/3-Anaconda
 module load cuda
 source activate py36
-python embedding.py perform_embedding -lr 1e-4 -wd 0.001 -hlt 500 -n 100 -kl 20 -c
+python embedding.py perform_embedding -n 300 -hlt 500 -kl 15 -b 4. -s warm_restarts -lr 1e-4 -bce -e 400 -c
 exit 0

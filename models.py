@@ -5,7 +5,7 @@ from torch.autograd import Variable
 import numpy as np
 from schedulers import *
 
-def train(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
+def train_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
     model.train()
     #print(model)
     for inputs, _, _ in loader:
@@ -21,7 +21,7 @@ def train(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0,
         optimizer.step()
     return model, loss
 
-def project(model, loader, cuda=True):
+def project_vae(model, loader, cuda=True):
     model.eval()
     print(model)
     for inputs, sample_names, outcomes in loader:
@@ -46,14 +46,14 @@ class AutoEncoder:
 
     def fit(self, train_data):
         for epoch in range(self.n_epochs):
-            model, loss = train(self.model, train_data, self.loss_fn, self.optimizer, self.cuda, epoch, self.kl_warm_up, self.beta)
+            model, loss = train_vae(self.model, train_data, self.loss_fn, self.optimizer, self.cuda, epoch, self.kl_warm_up, self.beta)
             self.scheduler.step()
             print("Epoch {}: Loss {}".format(epoch,loss))
         self.model = model
         return model
 
     def transform(self, train_data):
-        return project(self.model, train_data, self.cuda)
+        return project_vae(self.model, train_data, self.cuda)
 
     def fit_transform(self, train_data):
         return self.fit(train_data).transform(train_data)
@@ -127,7 +127,8 @@ class TybaltTitusVAE(nn.Module):
         return out, mean, logvar
 
     def get_latent_z(self, x):
-        return self.encode(x)[0]
+        mean, logvar = self.encode(x)
+        return self.sample_z(mean, logvar)
 
 class CVAE(nn.Module):
     def __init__(self, in_shape, n_latent):
@@ -182,4 +183,47 @@ class CVAE(nn.Module):
         return out, mean, logvar
 
     def get_latent_z(self, x):
-        return self.encode(x)[0]
+        mean, logvar = self.encode(x)
+        return self.sample_z(mean, logvar)
+
+def train_classify(model, loader, loss_func, optimizer, cuda=True, epoch=0):
+    model.train()
+    #print(model)
+    for inputs, _, _ in loader: # change dataloder for classification/regression tasks
+        inputs = Variable(inputs).view(inputs.size()[1],-1,inputs.size()[2])
+        #print(inputs.size())
+        if cuda:
+            inputs = inputs.cuda
+        output = model(inputs)
+        loss = loss_func(output)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+    return model, loss
+
+class VAE_Classifier:
+    pass
+
+class VAE_MLP(nn.Module):
+    def __init__(self, vae_model, n_output, hidden_layer_topology=[100,100,100]):
+        super(VAE_MLP,self).__init__()
+        self.encoder = vae_model.encoder
+        self.n_latent = vae_model.n_latent
+        self.n_output = n_output
+        self.topology = [self.n_latent]+(hidden_layer_topology if hidden_layer_topology else [])
+        self.mlp_layers = []
+        if len(self.topology)>1:
+            for i in range(len(self.topology)-1):
+                layer = nn.Linear(self.topology[i],self.topology[i+1])
+                torch.nn.init.xavier_uniform(layer.weight)
+                self.mlp_layers.append(nn.Sequential(layer,nn.ReLU()))
+        self.output_layer = nn.Linear(self.topology[-1],self.n_output)
+        torch.nn.init.xavier_uniform(self.output_layer.weight)
+        self.vae_mlp = nn.Sequential(self.encoder,
+                                     self.Sequential(*self.mlp_layers),
+                                     self.output_layer,
+                                     nn.Sigmoid())
+
+    def forward(self,x):
+        return self.vae_mlp(x)

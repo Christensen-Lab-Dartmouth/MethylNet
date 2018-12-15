@@ -6,6 +6,11 @@
     * clinical_info contains 11161 samples, so how many are redundant?
     * clinical info > 11k, ~9.8k downloaded, ~8.9k samples actually in pheno file
     * nohup python preprocess.py preprocess_pipeline -n 25 -ss -m &
+    * python preprocess.py combine_methylation_arrays -d ./preprocess_outputs/ -e OV
+    * nohup python preprocess.py imputation_pipeline -i ./combined_outputs/methyl_array.pkl -o final_preprocessed/methyl_array.pkl -n 200000 -s simple -m Mean &
+    * nohup python visualizations.py transform_plot  -o prevae_visual.html -nn 10 &
+    * nohup python embedding.py perform_embedding -n 300 -hlt 500 -kl 27 -b 4. -s warm_restarts -lr 1e-4 -bce -e 200 &
+    * nohup python visualizations.py transform_plot -o vae_latest.html -i ./embeddings/vae_methyl_arr.pkl -nn 8 -d 0.1  &
 2. Brain Cancer
     * python preprocess.py merge_sample_sheets -s1 ../../methylation_analyses/geo_pheno_data_backup/geo_minfi.csv -s2 ../../methylation_analyses/geo_pheno_data_backup/geo_concat.csv -os ./geo_idats/geo_merged.csv  
     * python preprocess.py meffil_encode -is geo_idats/geo_merged.csv -os geo_idats/geo_merged.csv
