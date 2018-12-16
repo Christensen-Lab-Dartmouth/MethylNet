@@ -46,7 +46,7 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     loss_fn = BCELoss() if bce_loss else MSELoss()
     scheduler_opts=dict(scheduler=scheduler,lr_scheduler_decay=decay,T_max=t_max,eta_min=eta_min,T_mult=t_mult)
     auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=n_epochs,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda,kl_warm_up=kl_warm_up,beta=beta, scheduler_opts=scheduler_opts)
-    auto_encoder_snapshot = auto_encoder.fit(methyl_dataloader)
+    auto_encoder_snapshot = auto_encoder.fit(methyl_dataloader).model
     latent_projection, sample_names, outcomes = auto_encoder.transform(methyl_dataloader)
     print(latent_projection.shape)
 

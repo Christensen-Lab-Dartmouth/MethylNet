@@ -45,12 +45,18 @@ class AutoEncoder:
         self.scheduler = Scheduler(self.optimizer,scheduler_opts) if scheduler_opts else Scheduler(self.optimizer)
 
     def fit(self, train_data):
+        loss_list = []
+        best_model=None
         for epoch in range(self.n_epochs):
             model, loss = train_vae(self.model, train_data, self.loss_fn, self.optimizer, self.cuda, epoch, self.kl_warm_up, self.beta)
             self.scheduler.step()
             print("Epoch {}: Loss {}".format(epoch,loss))
-        self.model = model
-        return model
+            if epoch > self.kl_warm_up:
+                loss_list.append(loss)
+                if loss <= min(loss_list):
+                    best_model=model
+        self.model = best_model
+        return self
 
     def transform(self, train_data):
         return project_vae(self.model, train_data, self.cuda)

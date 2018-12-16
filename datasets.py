@@ -50,17 +50,19 @@ class MethylationDataSet(Dataset):
         self.transform = transform
         self.new_shape = self.transform.shape
         self.mlp=mlp
+
+    def __getitem__(self,index):
         if self.mlp:
-            self.__getitem__ = self.get_item_mlp
+            return self.get_item_mlp(index)
         else:
-            self.__getitem__ = self.get_item_vae
+            return self.get_item_vae(index)
 
     def get_item_vae(self, index):# .iloc[index,] [index] .iloc[index]
         transform = self.transform.generate()
         #print(self.methylation_array.beta.values.shape)
         return transform(self.methylation_array.beta.values),self.samples.tolist(),self.outcome_col.values.tolist()
 
-    def get_item_vae(self, index):# .iloc[index,] [index] .iloc[index]
+    def get_item_mlp(self, index):# .iloc[index,] [index] .iloc[index]
         transform = self.transform.generate()
         #print(self.methylation_array.beta.values.shape)
         return transform(self.methylation_array.beta.iloc[index,:].values),self.samples[index],self.outcome_col.iloc[index,:].values
