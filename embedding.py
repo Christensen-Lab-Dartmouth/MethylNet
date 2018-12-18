@@ -26,14 +26,18 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     output_pkl = join(output_dir, 'vae_methyl_arr.pkl')
 
     input_dict = pickle.load(open(input_pkl,'rb'))
-    methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
+    train_methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
 
-    methyl_dataset = get_methylation_dataset(methyl_array,'disease') # train, test split? Add val set?
+    train_methyl_array, test_methyl_array = train_methyl_array.split_train_test(train_p=0.8, stratified=True, disease_only=True, key='disease', subtype_delimiter=',')
+
+    train_methyl_dataset = get_methylation_dataset(train_methyl_array,'disease') # train, test split? Add val set?
+
+    val_methyl_dataset = get_methylation_dataset(test_methyl_array,'disease')
 
     if not batch_size:
         batch_size=len(methyl_dataset)
 
-    methyl_dataloader = DataLoader(
+    train_methyl_dataloader = DataLoader(
         dataset=methyl_dataset,
         num_workers=9,
         batch_size=batch_size,
@@ -46,16 +50,16 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
         shuffle=False)
 
     if not convolutional:
-        model=TybaltTitusVAE(n_input=methyl_array.return_shape()[1],n_latent=n_latent,hidden_layer_encoder_topology=hidden_layer_encoder_topology,cuda=cuda)
+        model=TybaltTitusVAE(n_input=train_methyl_array.return_shape()[1],n_latent=n_latent,hidden_layer_encoder_topology=hidden_layer_encoder_topology,cuda=cuda)
     else:
-        model = CVAE(n_latent=n_latent,in_shape=methyl_dataset.new_shape)
+        model = CVAE(n_latent=n_latent,in_shape=train_methyl_dataset.new_shape)
 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay=weight_decay)
 
     loss_fn = BCELoss(reduction='sum') if bce_loss else MSELoss()
     scheduler_opts=dict(scheduler=scheduler,lr_scheduler_decay=decay,T_max=t_max,eta_min=eta_min,T_mult=t_mult)
     auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=n_epochs,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda,kl_warm_up=kl_warm_up,beta=beta, scheduler_opts=scheduler_opts)
-    auto_encoder_snapshot = auto_encoder.fit(methyl_dataloader).model
+    auto_encoder_snapshot = auto_encoder.fit(train_methyl_dataloader).model
     latent_projection, sample_names, outcomes = auto_encoder.transform(methyl_projection_dataloader)
     print(latent_projection.shape)
 

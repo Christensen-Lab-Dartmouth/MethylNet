@@ -6,9 +6,10 @@ import numpy as np
 from schedulers import *
 from plotter import *
 from sklearn.preprocessing import LabelEncoder
+from visualizations import umap_embed, plotly_plot
 
 def train_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
-    model.train()
+    #model.train() FIXME
     #print(model)
     total_loss,total_recon_loss,total_kl_loss=0.,0.,0.
     for inputs, _, _ in loader:
@@ -36,7 +37,7 @@ def project_vae(model, loader, cuda=True):
         inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
         if cuda:
             inputs = inputs.cuda()
-        z = np.squeeze(model.get_latent_z(inputs).detach().numpy(),axis=1)
+        z = np.squeeze(model.get_latent_z(inputs).cpu().numpy(),axis=1)
         final_outputs.append(z)
         sample_names_final.extend([name[0] for name in sample_names])
         outcomes_final.extend([outcome[0] for outcome in sample_names])
@@ -61,6 +62,7 @@ class AutoEncoder:
         self.vae_animation_fname='animation.mp4'
         self.loss_plt_fname='loss.png'
         self.plot_interval=5
+        self.embed_interval=200
 
 
     def fit(self, train_data):
@@ -79,6 +81,11 @@ class AutoEncoder:
                 loss_list.append(loss)
                 if loss <= min(loss_list):
                     best_model=model
+                    best_epoch=epoch
+                if epoch % self.embed_interval == 0:
+                    z,samples,outcomes=project_vae(best_model, train_data, self.cuda)
+                    beta_df=pd.DataFrame(z,index=samples)
+                    plotly_plot(umap_embed(beta_df,outcomes,n_neighbors=8,supervised=False,min_dist=0.2,metric='euclidean'),'training_{}.html'.format(best_epoch))
             if 0 and self.plot_interval and epoch % self.plot_interval == 0:
                 z,_,outcomes=project_vae(model, train_data, self.cuda)
                 animation_plts.append(Plot('Latent Embedding, epoch {}'.format(epoch),

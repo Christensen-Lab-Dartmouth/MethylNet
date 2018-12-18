@@ -24,7 +24,7 @@ source activate py36
 #mv final_preprocessed/methyl_array.pkl backup_final_preprocessed
 #python preprocess.py imputation_pipeline -i ./combined_outputs/methyl_array.pkl -d -ss -s simple -m Mean
 #python preprocess.py feature_select -n 27000 -nn 15 -f spectral
-python embedding.py perform_embedding -n 100 -hlt 750 -kl 300 --t_mult 1.1 -b 5. -s warm_restarts -lr 1e-3 -bce -e 1500
+python embedding.py perform_embedding -n 100 -hlt 500 -kl 20 --t_max 50 --eta_min 5e-4 --t_mult 2 -b 5. -s warm_restarts -lr 1e-2 -bce -e 1500
 #python preprocess.py combine_methylation_arrays -d ./preprocess_outputs/ -e OV
 #python visualizations.py transform_plot -o prevae_latest.html -nn 8 -d 0.1
 #python embedding.py perform_embedding -n 300 -hlt 1000,500 -kl 15 -b 2. -s warm_restarts -lr 5e-5 -bce -e 200
