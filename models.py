@@ -9,7 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 from visualizations import umap_embed, plotly_plot
 
 def train_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
-    #model.train() FIXME
+    model.train(True) #FIXME
     #print(model)
     total_loss,total_recon_loss,total_kl_loss=0.,0.,0.
     for inputs, _, _ in loader:
