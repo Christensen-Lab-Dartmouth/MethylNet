@@ -17,7 +17,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def embed():
     pass
 
-def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology, convolutional = False, kl_warm_up=0, beta=1., scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, bce_loss=False):
+def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology, convolutional = False, kl_warm_up=0, beta=1., scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, bce_loss=False, batch_size=50):
     os.makedirs(output_dir,exist_ok=True)
 
     output_file = join(output_dir,'output_latent.csv')
@@ -30,24 +30,33 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 
     methyl_dataset = get_methylation_dataset(methyl_array,'disease') # train, test split? Add val set?
 
+    if not batch_size:
+        batch_size=len(methyl_dataset)
+
     methyl_dataloader = DataLoader(
         dataset=methyl_dataset,
-        num_workers=8,
+        num_workers=9,
+        batch_size=batch_size,
+        shuffle=True)
+
+    methyl_projection_dataloader = DataLoader(
+        dataset=methyl_dataset,
+        num_workers=9,
         batch_size=1,
         shuffle=False)
 
     if not convolutional:
-        model=TybaltTitusVAE(n_input=methyl_array.return_shape()[1],n_latent=n_latent,hidden_layer_encoder_topology=hidden_layer_encoder_topology)
+        model=TybaltTitusVAE(n_input=methyl_array.return_shape()[1],n_latent=n_latent,hidden_layer_encoder_topology=hidden_layer_encoder_topology,cuda=cuda)
     else:
         model = CVAE(n_latent=n_latent,in_shape=methyl_dataset.new_shape)
 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay=weight_decay)
 
-    loss_fn = BCELoss() if bce_loss else MSELoss()
+    loss_fn = BCELoss(reduction='sum') if bce_loss else MSELoss()
     scheduler_opts=dict(scheduler=scheduler,lr_scheduler_decay=decay,T_max=t_max,eta_min=eta_min,T_mult=t_mult)
     auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=n_epochs,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda,kl_warm_up=kl_warm_up,beta=beta, scheduler_opts=scheduler_opts)
     auto_encoder_snapshot = auto_encoder.fit(methyl_dataloader).model
-    latent_projection, sample_names, outcomes = auto_encoder.transform(methyl_dataloader)
+    latent_projection, sample_names, outcomes = auto_encoder.transform(methyl_projection_dataloader)
     print(latent_projection.shape)
 
     sample_names = np.array([sample_name[0] for sample_name in sample_names]) # FIXME
@@ -77,16 +86,17 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 @click.option('-d', '--decay', default=0.5, help='Learning rate scheduler decay for exp selection.', show_default=True)
 @click.option('-t', '--t_max', default=10, help='Number of epochs before cosine learning rate restart.', show_default=True)
 @click.option('-eta', '--eta_min', default=1e-6, help='Minimum cosine LR.', show_default=True)
-@click.option('-m', '--t_mult', default=2, help='Multiply current restart period times this number given number of restarts.', show_default=True)
+@click.option('-m', '--t_mult', default=2., help='Multiply current restart period times this number given number of restarts.', show_default=True)
 @click.option('-bce', '--bce_loss', is_flag=True, help='Use bce loss instead of MSE.')
-def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up, beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss):
+@click.option('-bs', '--batch_size', default=50, show_default=True, help='Batch size.')
+def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up, beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size):
     """Perform variational autoencoding on methylation dataset."""
     hlt_list=filter(None,hidden_layer_encoder_topology.split(','))
     if hlt_list:
         hidden_layer_encoder_topology=list(map(int,hlt_list))
     else:
         hidden_layer_encoder_topology=[]
-    embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,False,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss)
+    embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,False,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size)
 
 #################
 

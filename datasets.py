@@ -46,18 +46,21 @@ class MethylationDataSet(Dataset):
         self.methylation_array = methylation_array
         self.outcome_col = self.methylation_array.pheno[outcome_col] if outcome_col else pd.Series(np.ones(len(self)),index=self.methylation_array.pheno.index)
         self.outcome_col = self.outcome_col.loc[self.methylation_array.beta.index,]
+        self.methylation_array.beta = self.methylation_array.beta.values
         self.samples = np.array(list(self.outcome_col.index))
+        self.outcome_col=self.outcome_col.values
         self.transform = transform
         self.new_shape = self.transform.shape
         self.mlp=mlp
 
     def __getitem__(self,index):
-        if self.mlp:
+        return self.transform.generate()(self.methylation_array.beta[index,:]),self.samples[index],self.outcome_col[index]
+        """if self.mlp:
             return self.get_item_mlp(index)
         else:
-            return self.get_item_vae(index)
+            return self.get_item_vae(index)"""
 
-    def get_item_vae(self, index):# .iloc[index,] [index] .iloc[index]
+    """def get_item_vae(self, index):# .iloc[index,] [index] .iloc[index]
         transform = self.transform.generate()
         #print(self.methylation_array.beta.values.shape)
         return transform(self.methylation_array.beta.values),self.samples.tolist(),self.outcome_col.values.tolist()
@@ -66,6 +69,6 @@ class MethylationDataSet(Dataset):
         transform = self.transform.generate()
         #print(self.methylation_array.beta.values.shape)
         return transform(self.methylation_array.beta.iloc[index,:].values),self.samples[index],self.outcome_col.iloc[index,:].values
-
+        """
     def __len__(self):
-        return 1 if not self.mlp else self.methylation_array.beta.shape[0]
+        return self.methylation_array.beta.shape[0]

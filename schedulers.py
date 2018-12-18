@@ -23,7 +23,7 @@ class CosineAnnealingWithRestartsLR(torch.optim.lr_scheduler._LRScheduler):
      .. _SGDR\: Stochastic Gradient Descent with Warm Restarts:
         https://arxiv.org/abs/1608.03983
     """
-    def __init__(self, optimizer, T_max, eta_min=0, last_epoch=-1, T_mult=1, alpha_decay=1.0):
+    def __init__(self, optimizer, T_max, eta_min=0, last_epoch=-1, T_mult=1., alpha_decay=1.0):
         self.T_max = T_max
         self.T_mult = T_mult
         self.restart_every = T_max
@@ -35,7 +35,7 @@ class CosineAnnealingWithRestartsLR(torch.optim.lr_scheduler._LRScheduler):
 
     def restart(self):
         self.restarts += 1
-        self.restart_every *= self.T_mult
+        self.restart_every = int(round(self.restart_every * self.T_mult))
         self.restarted_at = self.last_epoch
 
     def cosine(self, base_lr):

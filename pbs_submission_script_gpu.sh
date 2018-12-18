@@ -1,3 +1,5 @@
+#!/bin/bash -l
+
 # declare a name for this job to be sample_job
 #PBS -N methyl_gpu
 # Specify the gpuq queue
@@ -5,15 +7,14 @@
 # Specify the number of gpus
 #PBS -l nodes=1:ppn=10
 #PBS -l gpus=1
+#PBS -l hostlist=g04
 # Specify the gpu feature
 #PBS -l feature=gpu
-#PBS -l mem=20GB
+#PBS -l mem=50GB
 # request 4 hours and 30 minutes of cpu time
-#PBS -l walltime=01:00:00
+#PBS -l walltime=20:00:00
 # mail is sent to you when the job starts and when it terminates or aborts
-#PBS -m bea
-# specify your email address
-#PBS -M joshua.j.levy.gr@dartmouth.edu
+
 # Join error and standard output into one file
 #PBS -j oe
 # By default, PBS scripts execute in your home directory, not the
@@ -26,6 +27,7 @@ unset CUDA_VISIBLE_DEVICES
 export CUDA_DEVICE=$gpuNum
 module load python/3-Anaconda
 module load cuda
+echo $gpuNum
 source activate py36
-python embedding.py perform_embedding -n 300 -hlt 500 -kl 15 -b 4. -s warm_restarts -lr 1e-4 -bce -e 400 -c
+CUDA_VISIBLE_DEVICES="$gpuNum" python embedding.py perform_embedding -n 100 -hlt 1000,500 -bs 100 -kl 300 --t_mult 1.1 -b 5. -s warm_restarts -lr 1e-2 -bce -e 1500 -c
 exit 0

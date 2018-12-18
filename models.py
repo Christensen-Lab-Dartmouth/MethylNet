@@ -4,36 +4,51 @@ import torch
 from torch.autograd import Variable
 import numpy as np
 from schedulers import *
+from plotter import *
+from sklearn.preprocessing import LabelEncoder
 
 def train_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
     model.train()
     #print(model)
+    total_loss,total_recon_loss,total_kl_loss=0.,0.,0.
     for inputs, _, _ in loader:
-        inputs = Variable(inputs).view(inputs.size()[1],-1,inputs.size()[2])
+        inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
         #print(inputs.size())
         if cuda:
-            inputs = inputs.cuda
+            inputs = inputs.cuda()
         output, mean, logvar = model(inputs)
-        loss = vae_loss(output, inputs, mean, logvar, loss_func, epoch, kl_warm_up, beta)
-
+        loss, reconstruction_loss, kl_loss = vae_loss(output, inputs, mean, logvar, loss_func, epoch, kl_warm_up, beta)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-    return model, loss
+        total_loss+=loss.item()
+        total_recon_loss+=reconstruction_loss.item()
+        total_kl_loss+=kl_loss.item()
+    return model, total_loss,total_recon_loss,total_kl_loss
 
 def project_vae(model, loader, cuda=True):
     model.eval()
-    print(model)
+    #print(model)
+    final_outputs=[]
+    sample_names_final=[]
+    outcomes_final=[]
     for inputs, sample_names, outcomes in loader:
-        inputs = Variable(inputs).view(inputs.size()[1],-1,inputs.size()[2])
+        inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
         if cuda:
             inputs = inputs.cuda()
         z = np.squeeze(model.get_latent_z(inputs).detach().numpy(),axis=1)
+        final_outputs.append(z)
+        sample_names_final.extend([name[0] for name in sample_names])
+        outcomes_final.extend([outcome[0] for outcome in sample_names])
+    z=np.vstack(final_outputs)
+    sample_names=np.array(sample_names_final)
+    outcomes=np.array(outcomes_final)
     return z, sample_names, outcomes
 
 class AutoEncoder:
     def __init__(self, autoencoder_model, n_epochs, loss_fn, optimizer, cuda=True, kl_warm_up=0,beta=1.,scheduler_opts={}):
         self.model=autoencoder_model
+        print(self.model)
         if cuda:
             self.model = self.model.cuda()
         self.n_epochs = n_epochs
@@ -43,18 +58,38 @@ class AutoEncoder:
         self.kl_warm_up = kl_warm_up
         self.beta=beta
         self.scheduler = Scheduler(self.optimizer,scheduler_opts) if scheduler_opts else Scheduler(self.optimizer)
+        self.vae_animation_fname='animation.mp4'
+        self.loss_plt_fname='loss.png'
+        self.plot_interval=5
+
 
     def fit(self, train_data):
         loss_list = []
         best_model=None
+        animation_plts=[]
+        plt_data={'kl_loss':[],'recon_loss':[],'lr':[]}
         for epoch in range(self.n_epochs):
-            model, loss = train_vae(self.model, train_data, self.loss_fn, self.optimizer, self.cuda, epoch, self.kl_warm_up, self.beta)
+            model, loss, recon_loss, kl_loss = train_vae(self.model, train_data, self.loss_fn, self.optimizer, self.cuda, epoch, self.kl_warm_up, self.beta)
             self.scheduler.step()
-            print("Epoch {}: Loss {}".format(epoch,loss))
+            plt_data['kl_loss'].append(kl_loss)
+            plt_data['recon_loss'].append(recon_loss)
+            plt_data['lr'].append(self.scheduler.get_lr())
+            print("Epoch {}: Loss {}, Recon Loss {}, KL-Loss {}".format(epoch,loss,recon_loss,kl_loss))
             if epoch > self.kl_warm_up:
                 loss_list.append(loss)
                 if loss <= min(loss_list):
                     best_model=model
+            if 0 and self.plot_interval and epoch % self.plot_interval == 0:
+                z,_,outcomes=project_vae(model, train_data, self.cuda)
+                animation_plts.append(Plot('Latent Embedding, epoch {}'.format(epoch),
+                        data=PlotTransformer(z,LabelEncoder().fit_transform(outcomes)).transform()))
+
+        plts=Plotter([Plot(k,'epoch','lr' if 'loss' not in k else k,
+                      pd.DataFrame(np.vstack((range(len(plt_data[k])),plt_data[k])).T,
+                                   columns=['x','y'])) for k in plt_data],animation=False)
+        plts.write_plots(self.loss_plt_fname)
+        if 0 and self.plot_interval:
+            Plotter(animation_plts).write_plots(self.vae_animation_fname)
         self.model = best_model
         return self
 
@@ -66,19 +101,20 @@ class AutoEncoder:
 
 def vae_loss(output, input, mean, logvar, loss_func, epoch, kl_warm_up=0, beta=1.):
     recon_loss = loss_func(output, input)
-    if epoch >= kl_warm_up:
-        kl_loss = torch.mean(0.5 * torch.sum(
-            torch.exp(logvar) + mean**2 - 1. - logvar, 1))
-    else:
-        kl_loss=0.
-    print(recon_loss,kl_loss)
-    return recon_loss + kl_loss * beta
+    kl_loss = torch.mean(0.5 * torch.sum(
+        torch.exp(logvar) + mean**2 - 1. - logvar, 1))
+    kl_loss *= beta
+    if epoch < kl_warm_up:
+        kl_loss *= np.clip(epoch/kl_warm_up,0.,1.)
+    #print(recon_loss,kl_loss)
+    return recon_loss + kl_loss, recon_loss, kl_loss
 
 class TybaltTitusVAE(nn.Module):
-    def __init__(self, n_input, n_latent, hidden_layer_encoder_topology=[100,100,100]):
+    def __init__(self, n_input, n_latent, hidden_layer_encoder_topology=[100,100,100], cuda=False):
         super(TybaltTitusVAE, self).__init__()
         self.n_input = n_input
         self.n_latent = n_latent
+        self.cuda_on = cuda
         self.pre_latent_topology = [n_input]+(hidden_layer_encoder_topology if hidden_layer_encoder_topology else [])
         self.post_latent_topology = [n_latent]+(hidden_layer_encoder_topology[::-1] if hidden_layer_encoder_topology else [])
         self.encoder_layers = []
@@ -88,8 +124,8 @@ class TybaltTitusVAE(nn.Module):
                 torch.nn.init.xavier_uniform(layer.weight)
                 self.encoder_layers.append(nn.Sequential(layer,nn.ReLU()))
         self.encoder = nn.Sequential(*self.encoder_layers) if self.encoder_layers else nn.Dropout(p=0.)
-        self.z_mean = nn.Linear(self.pre_latent_topology[-1],n_latent)
-        self.z_var = nn.Linear(self.pre_latent_topology[-1],n_latent)
+        self.z_mean = nn.Sequential(nn.Linear(self.pre_latent_topology[-1],n_latent),nn.BatchNorm1d(n_latent),nn.ReLU())
+        self.z_var = nn.Sequential(nn.Linear(self.pre_latent_topology[-1],n_latent),nn.BatchNorm1d(n_latent),nn.ReLU())
         self.z_develop = nn.Linear(n_latent,self.pre_latent_topology[-1])
         self.decoder_layers = []
         if len(self.post_latent_topology)>1:
@@ -107,6 +143,8 @@ class TybaltTitusVAE(nn.Module):
     def sample_z(self, mean, logvar):
         stddev = torch.exp(0.5 * logvar)
         noise = Variable(torch.randn(stddev.size()))
+        if self.cuda_on:
+            noise=noise.cuda()
         return (noise * stddev) + mean
 
     def encode(self, x):
@@ -137,9 +175,10 @@ class TybaltTitusVAE(nn.Module):
         return self.sample_z(mean, logvar)
 
 class CVAE(nn.Module):
-    def __init__(self, in_shape, n_latent):
+    def __init__(self, in_shape, n_latent, cuda=False):
         super(CVAE,self).__init__()
         self.in_shape = in_shape
+        self.cuda=cuda
         self.n_latent = n_latent
         c,h,w = in_shape
         self.z_dim = h//2**2 # receptive field downsampled 2 times
@@ -167,6 +206,8 @@ class CVAE(nn.Module):
     def sample_z(self, mean, logvar):
         stddev = torch.exp(0.5 * logvar)
         noise = Variable(torch.randn(stddev.size()))
+        if self.cuda:
+            noise=noise.cuda()
         return (noise * stddev) + mean
 
     def encode(self, x):
@@ -199,7 +240,7 @@ def train_classify(model, loader, loss_func, optimizer, cuda=True, epoch=0):
         inputs = Variable(inputs).view(inputs.size()[1],-1,inputs.size()[2])
         #print(inputs.size())
         if cuda:
-            inputs = inputs.cuda
+            inputs = inputs.cuda()
         output = model(inputs)
         loss = loss_func(output)
 

@@ -31,3 +31,5 @@ brew cask install java8
     * docker build . -t methylnet:0.1
 4. embed
         * python embedding.py perform_embedding -n 300 -hlt 500 -kl 5 -b 4. -s warm_restarts -lr 1e-4 -bce
+        * nohup python embedding.py perform_embedding -n 70 -hlt 200 -kl 300 -b 3. -s warm_restarts -lr 1e-3 -bce -e 3000 >nohup2.out&
+        * nohup python embedding.py perform_embedding -n 60 -hlt 300 -kl 1000 --t_mult 1.1 -b 5. -s warm_restarts -lr 1e-3 -bce -e 2500 >nohup2.out&

@@ -14,6 +14,8 @@ RUN python /scripts/installer.py install_r_packages -p openssl
 
 RUN python /scripts/installer.py install_custom -m -p rtracklayer=3.8 -p GEOquery=3.8
 
+RUN conda install -y -c menpo ffmpeg=3.1.3
+
 copy *.py /scripts/
 
 ENTRYPOINT ["/usr/bin/tini","-s","--"]
