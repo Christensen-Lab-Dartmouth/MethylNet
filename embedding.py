@@ -38,13 +38,13 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
         batch_size=len(methyl_dataset)
 
     train_methyl_dataloader = DataLoader(
-        dataset=methyl_dataset,
+        dataset=train_methyl_dataset,
         num_workers=9,
         batch_size=batch_size,
         shuffle=True)
 
     methyl_projection_dataloader = DataLoader(
-        dataset=methyl_dataset,
+        dataset=train_methyl_dataset,
         num_workers=9,
         batch_size=1,
         shuffle=False)
@@ -56,7 +56,7 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay=weight_decay)
 
-    loss_fn = BCELoss(reduction='sum') if bce_loss else MSELoss()
+    loss_fn = BCELoss(reduction='elementwise_mean') if bce_loss else MSELoss() # 'sum'
     scheduler_opts=dict(scheduler=scheduler,lr_scheduler_decay=decay,T_max=t_max,eta_min=eta_min,T_mult=t_mult)
     auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=n_epochs,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda,kl_warm_up=kl_warm_up,beta=beta, scheduler_opts=scheduler_opts)
     auto_encoder_snapshot = auto_encoder.fit(train_methyl_dataloader).model
