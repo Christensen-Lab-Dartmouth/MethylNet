@@ -17,7 +17,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def embed():
     pass
 
-def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology, convolutional = False, kl_warm_up=0, beta=1., scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, bce_loss=False, batch_size=50, train_percent=0.8):
+def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology, convolutional = False, kl_warm_up=0, beta=1., scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, bce_loss=False, batch_size=50, train_percent=0.8, n_workers=9):
     os.makedirs(output_dir,exist_ok=True)
 
     output_file = join(output_dir,'output_latent.csv')
@@ -39,13 +39,13 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 
     train_methyl_dataloader = DataLoader(
         dataset=train_methyl_dataset,
-        num_workers=9,
+        num_workers=n_workers,
         batch_size=batch_size,
         shuffle=True)
 
     test_methyl_dataloader = DataLoader(
         dataset=test_methyl_dataset,
-        num_workers=9,
+        num_workers=n_workers,
         batch_size=1,
         shuffle=False)
 
@@ -67,7 +67,7 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     methyl_dataset=get_methylation_dataset(methyl_array,'disease')
     methyl_dataset_loader = DataLoader(
         dataset=methyl_dataset,
-        num_workers=9,
+        num_workers=n_workers,
         batch_size=1,
         shuffle=False)
     latent_projection, sample_names, outcomes = auto_encoder.transform(methyl_dataset_loader)
@@ -104,14 +104,15 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 @click.option('-bce', '--bce_loss', is_flag=True, help='Use bce loss instead of MSE.')
 @click.option('-bs', '--batch_size', default=50, show_default=True, help='Batch size.')
 @click.option('-p', '--train_percent', default=0.8, help='Percent data training on.', show_default=True)
-def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up, beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent):
+@click.option('-w', '--n_workers', default=9, show_default=True, help='Number of workers.')
+def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up, beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent, n_workers):
     """Perform variational autoencoding on methylation dataset."""
     hlt_list=filter(None,hidden_layer_encoder_topology.split(','))
     if hlt_list:
         hidden_layer_encoder_topology=list(map(int,hlt_list))
     else:
         hidden_layer_encoder_topology=[]
-    embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,False,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent)
+    embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,False,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent, n_workers)
 
 #################
 

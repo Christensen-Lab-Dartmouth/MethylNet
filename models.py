@@ -65,7 +65,6 @@ class AutoEncoder:
         self.embed_interval=200
         self.validation_set = False
 
-
     def fit(self, train_data):
         loss_list = []
         best_model=None
@@ -244,31 +243,104 @@ class CVAE(nn.Module):
         mean, logvar = self.encode(x)
         return self.sample_z(mean, logvar)
 
-def train_classify(model, loader, loss_func, optimizer, cuda=True, epoch=0):
-    model.train()
+def test_mlp(model, loader, categorical, cuda=True):
+    model.eval()
     #print(model)
-    for inputs, _, _ in loader: # change dataloder for classification/regression tasks
+    Y_pred=[]
+    final_latent=[]
+    sample_names_final=[]
+    Y_true=[]
+    for inputs, sample_names, y_true in loader: # change dataloder for classification/regression tasks
         inputs = Variable(inputs).view(inputs.size()[1],-1,inputs.size()[2])
         #print(inputs.size())
         if cuda:
             inputs = inputs.cuda()
-        output = model(inputs)
-        loss = loss_func(output)
+        y_predict, z = model(inputs)
+        y_predict=np.squeeze(y_predict.detach().cpu().numpy())
+        y_true=np.squeeze(y_true.detach().cpu().numpy())
+        if categorical:
+            y_predict=y_predict.argmax(axis=1)[:,np.newaxis]
+            y_true=y_true.argmax(axis=1)[:,np.newaxis]
+        Y_pred.append(y_predict)
+        final_latent.append(np.squeeze(z.detach().cpu().numpy()))
+        sample_names_final.extend([name[0] for name in sample_names])
+        Y_true.append(y_true)
+    Y_pred=np.vstack(Y_pred)
+    final_latent=np.vstack(final_latent)
+    Y_true=np.vstack(final_outputs)
+    sample_names_final = np.array(sample_names_final)
+    return Y_pred, Y_true, final_latent, sample_names_final
+
+def train_mlp(model, loader, loss_func, optimizer, cuda=True):
+    model.train(True)
+
+    #model.vae.eval() also freeze for depth of tuning?
+
+    for inputs, samples, y_true in loader: # change dataloder for classification/regression tasks
+        inputs = Variable(inputs).view(inputs.size()[1],-1,inputs.size()[2])
+        #print(inputs.size())
+        if cuda:
+            inputs = inputs.cuda()
+        y_predict, _ = model(inputs)
+        loss = loss_func(y_predict,y_true)
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
     return model, loss
 
-class VAE_Classifier:
-    pass
+class MLPFinetuneVAE:
+    def __init__(self, mlp_model, n_epochs, loss_fn, optimizer, cuda=True, categorical=False, scheduler_opts={}):
+        self.model=mlp_model
+        print(self.model)
+        if cuda:
+            self.model = self.model.cuda()
+        self.n_epochs = n_epochs
+        self.loss_fn = loss_fn
+        self.optimizer = optimizer
+        self.cuda = cuda
+        self.scheduler = Scheduler(self.optimizer,scheduler_opts) if scheduler_opts else Scheduler(self.optimizer)
+        self.loss_plt_fname='loss.png'
+        self.embed_interval=200
+        self.validation_set = False
+        self.return_latent = True
+        self.categorical = categorical
+
+    def fit(self, train_data):
+        loss_list = []
+        best_model=None
+        plt_data={'loss':[],'lr':[]}
+        for epoch in range(self.n_epochs):
+            model, loss = train_mlp(self.model, train_data, self.loss_fn, self.optimizer, self.cuda)
+            self.scheduler.step()
+            plt_data['loss'].append(loss)
+            plt_data['lr'].append(self.scheduler.get_lr())
+            print("Epoch {}: Loss {}".format(epoch,loss))
+            loss_list.append(loss)
+            if loss <= min(loss_list): # next get models for lowest reconstruction and kl, 3 models
+                best_model=copy.deepcopy(model)
+                best_epoch=epoch
+
+        plts=Plotter([Plot(k,'epoch','lr' if 'loss' not in k else k,
+                      pd.DataFrame(np.vstack((range(len(plt_data[k])),plt_data[k])).T,
+                                   columns=['x','y'])) for k in plt_data],animation=False)
+        plts.write_plots(self.loss_plt_fname)
+        self.model = best_model
+        return self
+
+    def add_validation_set(self, validation_data):
+        self.validation_set=validation_data
+
+    def predict(self, test_data):
+        return test_mlp(self.model, test_data, self.categorical, self.cuda)
 
 class VAE_MLP(nn.Module):
-    def __init__(self, vae_model, n_output, hidden_layer_topology=[100,100,100]):
+    def __init__(self, vae_model, n_output, categorical=False, hidden_layer_topology=[100,100,100]):
         super(VAE_MLP,self).__init__()
         self.vae = vae_model.vae_model
-        self.n_latent = vae_model.n_latent
         self.n_output = n_output
+        self.categorical = categorical
         self.topology = [self.n_latent]+(hidden_layer_topology if hidden_layer_topology else [])
         self.mlp_layers = []
         if len(self.topology)>1:
@@ -278,9 +350,9 @@ class VAE_MLP(nn.Module):
                 self.mlp_layers.append(nn.Sequential(layer,nn.ReLU()))
         self.output_layer = nn.Linear(self.topology[-1],self.n_output)
         torch.nn.init.xavier_uniform(self.output_layer.weight)
-        self.mlp_layers.extend([self.output_layer,nn.Sigmoid()])
+        self.mlp_layers.extend([self.output_layer]+([nn.Sigmoid()] if self.categorical else [] ))
         self.mlp = self.Sequential(*self.mlp_layers)
 
     def forward(self,x):
         out=self.vae.get_latent_z(x)
-        return self.mlp(out)
+        return self.mlp(out), out

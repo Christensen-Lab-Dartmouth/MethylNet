@@ -3,6 +3,7 @@ from torch import cat, stack, FloatTensor
 from torch.utils.data import Dataset
 from torchvision.transforms import Compose, RandomCrop, ToTensor, Scale, Pad
 import pandas as pd, numpy as np
+from sklearn.preprocessing import OneHotEncoder
 from preprocess import MethylationArray
 
 def _reshape(cpgs_per_row, l):
@@ -39,11 +40,14 @@ class Transformer:
 # methyl_train_df = methyl_df2.drop(methyl_test_df.index)
 # instead get beta keys and sample
 
-def get_methylation_dataset(methylation_array, outcome_col, convolutional=False, cpg_per_row=1200):
-    return MethylationDataSet(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col)
+def get_methylation_dataset(methylation_array, outcome_col, convolutional=False, cpg_per_row=1200, predict=False):
+    if predict:
+        return MethylationDataSetPredictions(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col)
+    else:
+        return MethylationDataSet(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col)
 
 class MethylationDataSet(Dataset):
-    def __init__(self, methylation_array, transform, outcome_col='', mlp=False):
+    def __init__(self, methylation_array, transform, outcome_col='', categorical=False):
         self.methylation_array = methylation_array
         self.outcome_col = self.methylation_array.pheno[outcome_col] if outcome_col else pd.Series(np.ones(len(self)),index=self.methylation_array.pheno.index)
         self.outcome_col = self.outcome_col.loc[self.methylation_array.beta.index,]
@@ -52,9 +56,12 @@ class MethylationDataSet(Dataset):
         self.methylation_array.beta = self.methylation_array.beta.values
         self.samples = np.array(list(self.outcome_col.index))
         self.outcome_col=self.outcome_col.values
+        if categorical:
+            self.encoder = OneHotEncoder()
+            self.encoder.fit(self.outcome_col)
+            self.outcome_col=self.encoder.transform(self.outcome_col)
         self.transform = transform
         self.new_shape = self.transform.shape
-        self.mlp=mlp
 
     def to_methyl_array(self):
         return MethylationArray(self.methylation_array.pheno,pd.DataFrame(self.methylation_array.beta,index=self.samples,columns=self.features),'')
@@ -78,3 +85,10 @@ class MethylationDataSet(Dataset):
         """
     def __len__(self):
         return self.methylation_array.beta.shape[0]
+
+class MethylationPredictionDataSet(MethylationDataSet):
+    def __init__(self, methylation_array, transform, outcome_col='', categorical=False):
+        super().__init__(methylation_array, transform, outcome_col, categorical)
+
+    def __getitem__(self,index):
+        return self.transform.generate()(self.methylation_array.beta[index,:]),self.samples[index],torch.FloatTensor(self.outcome_col[index,:])

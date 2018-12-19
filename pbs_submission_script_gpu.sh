@@ -5,14 +5,14 @@
 # Specify the gpuq queue
 #PBS -q gpuq
 # Specify the number of gpus
-#PBS -l nodes=1:ppn=10
-#PBS -l gpus=1
+#PBS -l nodes=1:ppn=4
+#PBS -l gpus=4
 #PBS -l hostlist=g04
 # Specify the gpu feature
 #PBS -l feature=gpu
 #PBS -l mem=50GB
 # request 4 hours and 30 minutes of cpu time
-#PBS -l walltime=20:00:00
+#PBS -l walltime=00:02:00
 # mail is sent to you when the job starts and when it terminates or aborts
 
 # Join error and standard output into one file
