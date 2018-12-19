@@ -80,7 +80,7 @@ class AutoEncoder:
             print("Epoch {}: Loss {}, Recon Loss {}, KL-Loss {}".format(epoch,loss,recon_loss,kl_loss))
             if epoch > self.kl_warm_up:
                 loss_list.append(loss)
-                if loss <= min(loss_list):
+                if loss <= min(loss_list): # next get models for lowest reconstruction and kl, 3 models
                     best_model=copy.deepcopy(model)
                     best_epoch=epoch
                 if epoch % self.embed_interval == 0:

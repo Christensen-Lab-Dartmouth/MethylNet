@@ -68,6 +68,11 @@ def plotly_plot(t_data_df, output_fname, G=None, axes_off=False):
         fig = go.Figure(data=plots)
     py.plot(fig, filename=output_fname, auto_open=False)
 
+def case_control_override_fn(pheno_df, column_of_interest):
+    if 'case_control' in list(pheno_df):
+        pheno_df.loc[pheno_df['case_control']=='normal',column_of_interest]='normal'
+    return pheno_df
+
 @visualize.command()
 @click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-c', '--column_of_interest', default='disease', help='Column extract from phenotype data.', type=click.Path(exists=False), show_default=True)
@@ -77,9 +82,12 @@ def plotly_plot(t_data_df, output_fname, G=None, axes_off=False):
 @click.option('-s', '--supervised', is_flag=True, help='Supervise umap embedding.')
 @click.option('-d', '--min_dist', default=0.1, show_default=True, help='UMAP min distance.')
 @click.option('-m', '--metric', default='euclidean', help='Reduction metric.', type=click.Choice(['euclidean','cosine']), show_default=True)
-def transform_plot(input_pkl, column_of_interest, output_file, n_neighbors,axes_off,supervised,min_dist, metric):
+@click.option('-cc', '--case_control_override', is_flag=True, help='Add controls from case_control column and override current disease for classification tasks.', show_default=True)
+def transform_plot(input_pkl, column_of_interest, output_file, n_neighbors,axes_off,supervised,min_dist, metric, case_control_override):
     """Dimensionality reduce VAE or original beta values using UMAP and plot using plotly."""
     input_dict = pickle.load(open(input_pkl,'rb'))
+    if case_control_override:
+        input_dict['pheno'] = case_control_override_fn(input_dict['pheno'],column_of_interest)
     t_data = umap_embed(input_dict['beta'], input_dict['pheno'][column_of_interest], n_neighbors, supervised,min_dist, metric)
     print(t_data)
     plotly_plot(t_data, output_file, axes_off=axes_off)

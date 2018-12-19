@@ -27,7 +27,7 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 
     input_dict = pickle.load(open(input_pkl,'rb'))
     methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
-
+    print(methyl_array.beta)
     train_methyl_array, test_methyl_array = methyl_array.split_train_test(train_p=train_percent, stratified=True, disease_only=True, key='disease', subtype_delimiter=',')
 
     train_methyl_dataset = get_methylation_dataset(train_methyl_array,'disease') # train, test split? Add val set?
@@ -64,18 +64,19 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
         auto_encoder.add_validation_set(test_methyl_dataloader)
     auto_encoder_snapshot = auto_encoder.fit(train_methyl_dataloader).model
     del test_methyl_dataloader, train_methyl_dataloader, test_methyl_dataset, train_methyl_dataset
+    methyl_dataset=get_methylation_dataset(methyl_array,'disease')
     methyl_dataset_loader = DataLoader(
-        dataset=get_methylation_dataset(methyl_array,'disease'),
+        dataset=methyl_dataset,
         num_workers=9,
         batch_size=1,
         shuffle=False)
     latent_projection, sample_names, outcomes = auto_encoder.transform(methyl_dataset_loader)
     print(latent_projection.shape)
-
-    sample_names = np.array([sample_name[0] for sample_name in sample_names]) # FIXME
-    outcomes = np.array([outcome[0] for outcome in outcomes]) # FIXME
+    methyl_array = methyl_dataset.to_methyl_array()
+    #sample_names = np.array([sample_name[0] for sample_name in sample_names]) # FIXME
+    #outcomes = np.array([outcome[0] for outcome in outcomes]) # FIXME
     outcome_dict=dict(zip(sample_names,outcomes))
-    print(methyl_array.beta.index)
+    print(methyl_array.beta)
     latent_projection=pd.DataFrame(latent_projection,index=methyl_array.beta.index)
     methyl_array.beta=latent_projection
     methyl_array.write_pickle(output_pkl)

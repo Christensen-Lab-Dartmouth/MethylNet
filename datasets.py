@@ -3,6 +3,7 @@ from torch import cat, stack, FloatTensor
 from torch.utils.data import Dataset
 from torchvision.transforms import Compose, RandomCrop, ToTensor, Scale, Pad
 import pandas as pd, numpy as np
+from preprocess import MethylationArray
 
 def _reshape(cpgs_per_row, l):
     def resize(vector):
@@ -46,12 +47,17 @@ class MethylationDataSet(Dataset):
         self.methylation_array = methylation_array
         self.outcome_col = self.methylation_array.pheno[outcome_col] if outcome_col else pd.Series(np.ones(len(self)),index=self.methylation_array.pheno.index)
         self.outcome_col = self.outcome_col.loc[self.methylation_array.beta.index,]
+        self.samples = np.array(list(self.methylation_array.beta.index))
+        self.features = np.array(list(self.methylation_array.beta))
         self.methylation_array.beta = self.methylation_array.beta.values
         self.samples = np.array(list(self.outcome_col.index))
         self.outcome_col=self.outcome_col.values
         self.transform = transform
         self.new_shape = self.transform.shape
         self.mlp=mlp
+
+    def to_methyl_array(self):
+        return MethylationArray(self.methylation_array.pheno,pd.DataFrame(self.methylation_array.beta,index=self.samples,columns=self.features),'')
 
     def __getitem__(self,index):
         return self.transform.generate()(self.methylation_array.beta[index,:]),self.samples[index],self.outcome_col[index]
