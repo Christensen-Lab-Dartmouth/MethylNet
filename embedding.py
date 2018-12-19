@@ -17,7 +17,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def embed():
     pass
 
-def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology, convolutional = False, kl_warm_up=0, beta=1., scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, bce_loss=False, batch_size=50):
+def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology, convolutional = False, kl_warm_up=0, beta=1., scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, bce_loss=False, batch_size=50, train_percent=0.8):
     os.makedirs(output_dir,exist_ok=True)
 
     output_file = join(output_dir,'output_latent.csv')
@@ -28,7 +28,7 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     input_dict = pickle.load(open(input_pkl,'rb'))
     train_methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
 
-    train_methyl_array, test_methyl_array = train_methyl_array.split_train_test(train_p=0.8, stratified=True, disease_only=True, key='disease', subtype_delimiter=',')
+    train_methyl_array, test_methyl_array = train_methyl_array.split_train_test(train_p=train_percent, stratified=True, disease_only=True, key='disease', subtype_delimiter=',')
 
     train_methyl_dataset = get_methylation_dataset(train_methyl_array,'disease') # train, test split? Add val set?
 
@@ -55,8 +55,9 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
         model = CVAE(n_latent=n_latent,in_shape=train_methyl_dataset.new_shape)
 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay=weight_decay)
-
-    loss_fn = BCELoss(reduction='elementwise_mean') if bce_loss else MSELoss() # 'sum'
+    sum_bce=True
+    reduction = 'sum' if sum_bce else 'elementwise_mean'
+    loss_fn = BCELoss(reduction=reduction) if bce_loss else MSELoss() # 'sum'
     scheduler_opts=dict(scheduler=scheduler,lr_scheduler_decay=decay,T_max=t_max,eta_min=eta_min,T_mult=t_mult)
     auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=n_epochs,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda,kl_warm_up=kl_warm_up,beta=beta, scheduler_opts=scheduler_opts)
     auto_encoder_snapshot = auto_encoder.fit(train_methyl_dataloader).model
@@ -93,14 +94,15 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 @click.option('-m', '--t_mult', default=2., help='Multiply current restart period times this number given number of restarts.', show_default=True)
 @click.option('-bce', '--bce_loss', is_flag=True, help='Use bce loss instead of MSE.')
 @click.option('-bs', '--batch_size', default=50, show_default=True, help='Batch size.')
-def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up, beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size):
+@click.option('-p', '--train_percent', default=0.8, help='Percent data training on.', show_default=True)
+def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up, beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent):
     """Perform variational autoencoding on methylation dataset."""
     hlt_list=filter(None,hidden_layer_encoder_topology.split(','))
     if hlt_list:
         hidden_layer_encoder_topology=list(map(int,hlt_list))
     else:
         hidden_layer_encoder_topology=[]
-    embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,False,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size)
+    embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,False,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent)
 
 #################
 

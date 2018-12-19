@@ -1,4 +1,3 @@
-import copy
 from torch import nn
 import torch
 from torch.autograd import Variable
@@ -7,6 +6,7 @@ from schedulers import *
 from plotter import *
 from sklearn.preprocessing import LabelEncoder
 from visualizations import umap_embed, plotly_plot
+import copy
 
 def train_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
     model.train(True) #FIXME
@@ -37,10 +37,10 @@ def project_vae(model, loader, cuda=True):
         inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
         if cuda:
             inputs = inputs.cuda()
-        z = np.squeeze(model.get_latent_z(inputs).cpu().numpy(),axis=1)
+        z = np.squeeze(model.get_latent_z(inputs).detach().cpu().numpy())
         final_outputs.append(z)
         sample_names_final.extend([name[0] for name in sample_names])
-        outcomes_final.extend([outcome[0] for outcome in sample_names])
+        outcomes_final.extend([outcome[0] for outcome in outcomes])
     z=np.vstack(final_outputs)
     sample_names=np.array(sample_names_final)
     outcomes=np.array(outcomes_final)
@@ -80,7 +80,7 @@ class AutoEncoder:
             if epoch > self.kl_warm_up:
                 loss_list.append(loss)
                 if loss <= min(loss_list):
-                    best_model=model
+                    best_model=copy.deepcopy(model)
                     best_epoch=epoch
                 if epoch % self.embed_interval == 0:
                     z,samples,outcomes=project_vae(best_model, train_data, self.cuda)
