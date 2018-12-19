@@ -63,6 +63,7 @@ class AutoEncoder:
         self.loss_plt_fname='loss.png'
         self.plot_interval=5
         self.embed_interval=200
+        self.validation_set = False
 
 
     def fit(self, train_data):
@@ -83,7 +84,7 @@ class AutoEncoder:
                     best_model=copy.deepcopy(model)
                     best_epoch=epoch
                 if epoch % self.embed_interval == 0:
-                    z,samples,outcomes=project_vae(best_model, train_data, self.cuda)
+                    z,samples,outcomes=project_vae(best_model, train_data if not self.validation_set else self.validation_set, self.cuda)
                     beta_df=pd.DataFrame(z,index=samples)
                     plotly_plot(umap_embed(beta_df,outcomes,n_neighbors=8,supervised=False,min_dist=0.2,metric='euclidean'),'training_{}.html'.format(best_epoch))
             if 0 and self.plot_interval and epoch % self.plot_interval == 0:
@@ -99,6 +100,9 @@ class AutoEncoder:
             Plotter(animation_plts).write_plots(self.vae_animation_fname)
         self.model = best_model
         return self
+
+    def add_validation_set(self, validation_data):
+        self.validation_set=validation_data
 
     def transform(self, train_data):
         return project_vae(self.model, train_data, self.cuda)

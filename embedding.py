@@ -26,13 +26,13 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     output_pkl = join(output_dir, 'vae_methyl_arr.pkl')
 
     input_dict = pickle.load(open(input_pkl,'rb'))
-    train_methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
+    methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
 
-    train_methyl_array, test_methyl_array = train_methyl_array.split_train_test(train_p=train_percent, stratified=True, disease_only=True, key='disease', subtype_delimiter=',')
+    train_methyl_array, test_methyl_array = methyl_array.split_train_test(train_p=train_percent, stratified=True, disease_only=True, key='disease', subtype_delimiter=',')
 
     train_methyl_dataset = get_methylation_dataset(train_methyl_array,'disease') # train, test split? Add val set?
 
-    val_methyl_dataset = get_methylation_dataset(test_methyl_array,'disease')
+    test_methyl_dataset = get_methylation_dataset(test_methyl_array,'disease')
 
     if not batch_size:
         batch_size=len(methyl_dataset)
@@ -43,16 +43,16 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
         batch_size=batch_size,
         shuffle=True)
 
-    methyl_projection_dataloader = DataLoader(
-        dataset=train_methyl_dataset,
+    test_methyl_dataloader = DataLoader(
+        dataset=test_methyl_dataset,
         num_workers=9,
         batch_size=1,
         shuffle=False)
 
     if not convolutional:
-        model=TybaltTitusVAE(n_input=train_methyl_array.return_shape()[1],n_latent=n_latent,hidden_layer_encoder_topology=hidden_layer_encoder_topology,cuda=cuda)
+        model=TybaltTitusVAE(n_input=methyl_array.return_shape()[1],n_latent=n_latent,hidden_layer_encoder_topology=hidden_layer_encoder_topology,cuda=cuda)
     else:
-        model = CVAE(n_latent=n_latent,in_shape=train_methyl_dataset.new_shape)
+        model = CVAE(n_latent=n_latent,in_shape=methyl_dataset.new_shape)
 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay=weight_decay)
     sum_bce=True
@@ -60,8 +60,16 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     loss_fn = BCELoss(reduction=reduction) if bce_loss else MSELoss() # 'sum'
     scheduler_opts=dict(scheduler=scheduler,lr_scheduler_decay=decay,T_max=t_max,eta_min=eta_min,T_mult=t_mult)
     auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=n_epochs,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda,kl_warm_up=kl_warm_up,beta=beta, scheduler_opts=scheduler_opts)
+    if 0:
+        auto_encoder.add_validation_set(test_methyl_dataloader)
     auto_encoder_snapshot = auto_encoder.fit(train_methyl_dataloader).model
-    latent_projection, sample_names, outcomes = auto_encoder.transform(methyl_projection_dataloader)
+    del test_methyl_dataloader, train_methyl_dataloader, test_methyl_dataset, train_methyl_dataset
+    methyl_dataset_loader = DataLoader(
+        dataset=get_methylation_dataset(methyl_array,'disease'),
+        num_workers=9,
+        batch_size=1,
+        shuffle=False)
+    latent_projection, sample_names, outcomes = auto_encoder.transform(methyl_dataset_loader)
     print(latent_projection.shape)
 
     sample_names = np.array([sample_name[0] for sample_name in sample_names]) # FIXME
