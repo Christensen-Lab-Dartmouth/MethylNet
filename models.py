@@ -110,7 +110,9 @@ class AutoEncoder:
         return self.fit(train_data).transform(train_data)
 
 def vae_loss(output, input, mean, logvar, loss_func, epoch, kl_warm_up=0, beta=1.):
-    recon_loss = loss_func(output, input)
+    if type(output) != type([]):
+        output = [output]
+    recon_loss = sum([loss_func(out, input) for out in output])
     kl_loss = torch.mean(0.5 * torch.sum(
         torch.exp(logvar) + mean**2 - 1. - logvar, 1))
     kl_loss *= beta
@@ -134,8 +136,8 @@ class TybaltTitusVAE(nn.Module):
                 torch.nn.init.xavier_uniform(layer.weight)
                 self.encoder_layers.append(nn.Sequential(layer,nn.ReLU()))
         self.encoder = nn.Sequential(*self.encoder_layers) if self.encoder_layers else nn.Dropout(p=0.)
-        self.z_mean = nn.Sequential(nn.Linear(self.pre_latent_topology[-1],n_latent),nn.BatchNorm1d(n_latent),nn.ReLU())
-        self.z_var = nn.Sequential(nn.Linear(self.pre_latent_topology[-1],n_latent),nn.BatchNorm1d(n_latent),nn.ReLU())
+        self.z_mean = nn.Sequential(nn.Linear(self.pre_latent_topology[-1],n_latent),nn.BatchNorm1d(n_latent))
+        self.z_var = nn.Sequential(nn.Linear(self.pre_latent_topology[-1],n_latent),nn.BatchNorm1d(n_latent))
         self.z_develop = nn.Linear(n_latent,self.pre_latent_topology[-1])
         self.decoder_layers = []
         if len(self.post_latent_topology)>1:
@@ -200,16 +202,16 @@ class CVAE(nn.Module):
             nn.BatchNorm2d(c),
             nn.Conv2d(c, 32, kernel_size=kernel_size, stride=stride_size, padding=1),  # 32, 16, 16
             nn.BatchNorm2d(32),
-            nn.LeakyReLU(),
+            nn.ReLU(),
             nn.Conv2d(32, 64, kernel_size=kernel_size, stride=stride_size, padding=1),  # 32, 8, 8
             nn.BatchNorm2d(64),
-            nn.LeakyReLU(),
+            nn.ReLU(),
             nn.Linear(64 * self.z_dim**2, n_pre_latent),
             nn.ReLU()
         )
         self.n_feature_maps = len(self.w_kernel_sizes)+len(self.h_kernel_sizes)+len(self.custom_kernel_sizes)
-        self.z_mean = nn.Linear(n_pre_latent*self.n_feature_maps, n_latent)
-        self.z_var = nn.Linear(n_pre_latent*self.n_feature_maps, n_latent)
+        self.z_mean = nn.Sequential(nn.Linear(n_pre_latent*self.n_feature_maps,n_latent),nn.BatchNorm1d(n_latent))
+        self.z_var = nn.Sequential(nn.Linear(n_pre_latent*self.n_feature_maps,n_latent),nn.BatchNorm1d(n_latent))
         self.z_develop = nn.Linear(n_latent, self.n_post_latent*self.n_feature_maps)
         decoder_generate = lambda kernel_size: nn.Sequential(
             nn.Linear(n_post_latent, 64 * self.z_dim**2),
@@ -232,7 +234,7 @@ class CVAE(nn.Module):
         return (noise * stddev) + mean
 
     def encode(self, x):
-        encoder_outputs = torch.cat([encoder(x) for encoder in self.encoders],axis=0)
+        encoder_outputs = torch.cat([encoder(x) for encoder in self.encoders],axis=1)
         x = x.view(x.size(0), -1)
         mean = self.z_mean(x)
         var = self.z_var(x)
@@ -240,7 +242,7 @@ class CVAE(nn.Module):
 
     def decode(self, x):
         out = self.z_develop(z)
-        outs = torch.chunk(z,self.n_feature_maps,dim=0)
+        outs = torch.chunk(z,self.n_feature_maps,dim=1)
         outs = [decoder(out.view(out.size(0), 64, self.z_dim, self.z_dim)) for out in outs]
         return outs
 
