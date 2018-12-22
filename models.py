@@ -27,6 +27,22 @@ def train_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_u
         total_kl_loss+=kl_loss.item()
     return model, total_loss,total_recon_loss,total_kl_loss
 
+def val_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
+    model.eval() #FIXME
+    #print(model)
+    total_loss,total_recon_loss,total_kl_loss=0.,0.,0.
+    for inputs, _, _ in loader:
+        inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
+        #print(inputs.size())
+        if cuda:
+            inputs = inputs.cuda()
+        output, mean, logvar = model(inputs)
+        loss, reconstruction_loss, kl_loss = vae_loss(output, inputs, mean, logvar, loss_func, epoch, kl_warm_up, beta)
+        total_loss+=loss.item()
+        total_recon_loss+=reconstruction_loss.item()
+        total_kl_loss+=kl_loss.item()
+    return model, total_loss,total_recon_loss,total_kl_loss
+
 def project_vae(model, loader, cuda=True):
     model.eval()
     #print(model)
@@ -69,13 +85,18 @@ class AutoEncoder:
         loss_list = []
         best_model=None
         animation_plts=[]
-        plt_data={'kl_loss':[],'recon_loss':[],'lr':[]}
+        plt_data={'kl_loss':[],'recon_loss':[],'lr':[],'val_kl_loss':[],'val_recon_loss':[], 'val_loss':[]}
         for epoch in range(self.n_epochs):
             model, loss, recon_loss, kl_loss = train_vae(self.model, train_data, self.loss_fn, self.optimizer, self.cuda, epoch, self.kl_warm_up, self.beta)
             self.scheduler.step()
             plt_data['kl_loss'].append(kl_loss)
             plt_data['recon_loss'].append(recon_loss)
             plt_data['lr'].append(self.scheduler.get_lr())
+            if self.validation_set:
+                _, val_loss, val_recon_loss, val_kl_loss = val_vae(self.model, self.validation_set, self.loss_fn, self.optimizer, self.cuda, epoch, self.kl_warm_up, self.beta)
+                plt_data['val_kl_loss'].append(val_kl_loss)
+                plt_data['val_recon_loss'].append(val_recon_loss)
+                plt_data['val_loss'].append(val_loss)
             print("Epoch {}: Loss {}, Recon Loss {}, KL-Loss {}".format(epoch,loss,recon_loss,kl_loss))
             if epoch > self.kl_warm_up:
                 loss_list.append(loss)
@@ -93,7 +114,7 @@ class AutoEncoder:
 
         plts=Plotter([Plot(k,'epoch','lr' if 'loss' not in k else k,
                       pd.DataFrame(np.vstack((range(len(plt_data[k])),plt_data[k])).T,
-                                   columns=['x','y'])) for k in plt_data],animation=False)
+                                   columns=['x','y'])) for k in plt_data if plt_data[k]],animation=False)
         plts.write_plots(self.loss_plt_fname)
         if 0 and self.plot_interval:
             Plotter(animation_plts).write_plots(self.vae_animation_fname)
@@ -269,6 +290,40 @@ class CVAE(nn.Module):
         mean, logvar = self.encode(x)
         return self.sample_z(mean, logvar)
 
+def train_mlp(model, loader, loss_func, optimizer, cuda=True):
+    model.train(True)
+
+    #model.vae.eval() also freeze for depth of tuning?
+
+    for inputs, samples, y_true in loader: # change dataloder for classification/regression tasks
+        inputs = Variable(inputs).view(inputs.size()[1],-1,inputs.size()[2])
+        #print(inputs.size())
+        if cuda:
+            inputs = inputs.cuda()
+        y_predict, _ = model(inputs)
+        loss = loss_func(y_predict,y_true)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+    return model, loss
+
+def val_mlp(model, loader, loss_func, optimizer, cuda=True):
+    model.eval()
+
+    #model.vae.eval() also freeze for depth of tuning?
+
+    for inputs, samples, y_true in loader: # change dataloder for classification/regression tasks
+        inputs = Variable(inputs).view(inputs.size()[1],-1,inputs.size()[2])
+        #print(inputs.size())
+        if cuda:
+            inputs = inputs.cuda()
+        y_predict, _ = model(inputs)
+        loss = loss_func(y_predict,y_true)
+
+    return model, loss
+
 def test_mlp(model, loader, categorical, cuda=True):
     model.eval()
     #print(model)
@@ -297,25 +352,6 @@ def test_mlp(model, loader, categorical, cuda=True):
     sample_names_final = np.array(sample_names_final)
     return Y_pred, Y_true, final_latent, sample_names_final
 
-def train_mlp(model, loader, loss_func, optimizer, cuda=True):
-    model.train(True)
-
-    #model.vae.eval() also freeze for depth of tuning?
-
-    for inputs, samples, y_true in loader: # change dataloder for classification/regression tasks
-        inputs = Variable(inputs).view(inputs.size()[1],-1,inputs.size()[2])
-        #print(inputs.size())
-        if cuda:
-            inputs = inputs.cuda()
-        y_predict, _ = model(inputs)
-        loss = loss_func(y_predict,y_true)
-
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-    return model, loss
-
 class MLPFinetuneVAE:
     def __init__(self, mlp_model, n_epochs, loss_fn, optimizer, cuda=True, categorical=False, scheduler_opts={}):
         self.model=mlp_model
@@ -336,11 +372,14 @@ class MLPFinetuneVAE:
     def fit(self, train_data):
         loss_list = []
         best_model=None
-        plt_data={'loss':[],'lr':[]}
+        plt_data={'loss':[],'lr':[], 'val_loss':[]}
         for epoch in range(self.n_epochs):
             model, loss = train_mlp(self.model, train_data, self.loss_fn, self.optimizer, self.cuda)
             self.scheduler.step()
             plt_data['loss'].append(loss)
+            if self.validation_set:
+                _, val_loss = val_mlp(self.model, self.validation_set, self.loss_fn, self.optimizer, self.cuda)
+                plt_data['val_loss'].append(val_loss)
             plt_data['lr'].append(self.scheduler.get_lr())
             print("Epoch {}: Loss {}".format(epoch,loss))
             loss_list.append(loss)
@@ -350,7 +389,7 @@ class MLPFinetuneVAE:
 
         plts=Plotter([Plot(k,'epoch','lr' if 'loss' not in k else k,
                       pd.DataFrame(np.vstack((range(len(plt_data[k])),plt_data[k])).T,
-                                   columns=['x','y'])) for k in plt_data],animation=False)
+                                   columns=['x','y'])) for k in plt_data if plt_data[k]],animation=False)
         plts.write_plots(self.loss_plt_fname)
         self.model = best_model
         return self

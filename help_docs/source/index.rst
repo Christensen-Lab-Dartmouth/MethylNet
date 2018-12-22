@@ -16,8 +16,8 @@ Welcome to MethylNet's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-.. click:: preprocess:preprocess
-   :prog: python preprocess.py
+.. click:: predictions:predict
+   :prog: python predictions.py
    :show-nested:
 
 .. click:: embedding:embed

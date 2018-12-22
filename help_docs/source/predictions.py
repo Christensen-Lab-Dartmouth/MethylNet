@@ -51,7 +51,7 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
     test_methyl_dataloader = DataLoader(
         dataset=test_methyl_dataset,
         num_workers=n_workers,
-        batch_size=min(batch_size,len(test_methyl_dataset)),
+        batch_size=1,
         shuffle=False)
 
     model=VAE_MLP(vae_model=vae_model,categorical=categorical,hidden_layer_topology=hidden_layer_topology,n_output=train_methyl_dataset.outcome_col.shape[1])
@@ -72,7 +72,8 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
     loss_fn = CrossEntropyLoss(reduction=reduction,weight=torch.FloatTensor(class_weights) if class_weights else None) if categorical else MSELoss() # 'sum'
     scheduler_opts=dict(scheduler=scheduler,lr_scheduler_decay=decay,T_max=t_max,eta_min=eta_min,T_mult=t_mult)
     vae_mlp=MLPFinetuneVAE(mlp_model=model,n_epochs=n_epochs,categorical=categorical,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda, scheduler_opts=scheduler_opts)
-    vae_mlp.add_validation_set(test_methyl_dataloader)
+    if 0:
+        vae_mlp.add_validation_set(test_methyl_dataloader)
     vae_mlp_snapshot = vae_mlp.fit(train_methyl_dataloader).model
     del train_methyl_dataloader train_methyl_dataset
     """methyl_dataset=get_methylation_dataset(methyl_array,interest_cols,predict=True)
