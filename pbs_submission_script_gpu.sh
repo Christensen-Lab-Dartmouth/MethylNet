@@ -30,5 +30,5 @@ module load python/3-Anaconda
 module load cuda
 echo $gpuNum
 source activate py36
-CUDA_VISIBLE_DEVICES="$gpuNum" python embedding.py perform_embedding -n 300 -bs 512 -hlt 300,300 -kl 0 --t_max 10 --eta_min 1e-7 --t_mult 1 -b 50. -s warm_restarts -lr 5e-4 -bce -e 25 -v -l elementwise_mean -c
+CUDA_VISIBLE_DEVICES="$gpuNum" python embedding.py perform_embedding -n 300 -bs 512 -hlt 300,300 -kl 0 --t_max 10 --eta_min 1e-7 --t_mult 1 -b 0.05 -s warm_restarts -lr 1e-3 -bce -e 25 -v -l elementwise_mean -c
 exit 0

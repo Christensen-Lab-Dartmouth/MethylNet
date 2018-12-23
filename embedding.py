@@ -50,7 +50,7 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
         dataset=test_methyl_dataset,
         num_workers=n_workers,
         batch_size=min(batch_size,len(test_methyl_dataset)),
-        shuffle=False,
+        shuffle=True,
         pin_memory=False)
 
     if not convolutional:
