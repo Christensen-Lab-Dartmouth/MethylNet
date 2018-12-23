@@ -99,7 +99,7 @@ class AutoEncoder:
                 plt_data['val_loss'].append(val_loss)
             print("Epoch {}: Loss {}, Recon Loss {}, KL-Loss {}".format(epoch,loss,recon_loss,kl_loss))
             if epoch > self.kl_warm_up:
-                loss_list.append(loss)
+                loss_list.append(loss if not self.validation_set else val_loss)
                 if loss <= min(loss_list): # next get models for lowest reconstruction and kl, 3 models
                     best_model=copy.deepcopy(model)
                     best_epoch=epoch
@@ -290,13 +290,16 @@ class CVAE(nn.Module):
         mean, logvar = self.encode(x)
         return self.sample_z(mean, logvar)
 
-def train_mlp(model, loader, loss_func, optimizer, cuda=True):
+def train_mlp(model, loader, loss_func, optimizer, cuda=True, categorical=False):
     model.train(True)
 
     #model.vae.eval() also freeze for depth of tuning?
 
     for inputs, samples, y_true in loader: # change dataloder for classification/regression tasks
         inputs = Variable(inputs).view(inputs.size()[1],-1,inputs.size()[2])
+        y_true = Variable(inputs)
+        if categorical:
+            y_true=y_true.argmax(1).long()
         #print(inputs.size())
         if cuda:
             inputs = inputs.cuda()
@@ -309,7 +312,7 @@ def train_mlp(model, loader, loss_func, optimizer, cuda=True):
 
     return model, loss
 
-def val_mlp(model, loader, loss_func, optimizer, cuda=True):
+def val_mlp(model, loader, loss_func, optimizer, cuda=True, categorical=False):
     model.eval()
 
     #model.vae.eval() also freeze for depth of tuning?
@@ -320,6 +323,8 @@ def val_mlp(model, loader, loss_func, optimizer, cuda=True):
         if cuda:
             inputs = inputs.cuda()
         y_predict, _ = model(inputs)
+        if categorical:
+            y_true=y_true.argmax(1).long()
         loss = loss_func(y_predict,y_true)
 
     return model, loss
@@ -374,15 +379,15 @@ class MLPFinetuneVAE:
         best_model=None
         plt_data={'loss':[],'lr':[], 'val_loss':[]}
         for epoch in range(self.n_epochs):
-            model, loss = train_mlp(self.model, train_data, self.loss_fn, self.optimizer, self.cuda)
+            model, loss = train_mlp(self.model, train_data, self.loss_fn, self.optimizer, self.cuda,categorical=self.categorical)
             self.scheduler.step()
             plt_data['loss'].append(loss)
             if self.validation_set:
-                _, val_loss = val_mlp(self.model, self.validation_set, self.loss_fn, self.optimizer, self.cuda)
+                _, val_loss = val_mlp(self.model, self.validation_set, self.loss_fn, self.optimizer, self.cuda,categorical=self.categorical)
                 plt_data['val_loss'].append(val_loss)
             plt_data['lr'].append(self.scheduler.get_lr())
             print("Epoch {}: Loss {}".format(epoch,loss))
-            loss_list.append(loss)
+            loss_list.append(loss if not self.validation_set else val_loss)
             if loss <= min(loss_list): # next get models for lowest reconstruction and kl, 3 models
                 best_model=copy.deepcopy(model)
                 best_epoch=epoch
@@ -406,7 +411,7 @@ class VAE_MLP(nn.Module):
         self.vae = vae_model.vae_model
         self.n_output = n_output
         self.categorical = categorical
-        self.topology = [self.n_latent]+(hidden_layer_topology if hidden_layer_topology else [])
+        self.topology = [self.vae_model.n_latent]+(hidden_layer_topology if hidden_layer_topology else [])
         self.mlp_layers = []
         if len(self.topology)>1:
             for i in range(len(self.topology)-1):
@@ -416,7 +421,7 @@ class VAE_MLP(nn.Module):
         self.output_layer = nn.Linear(self.topology[-1],self.n_output)
         torch.nn.init.xavier_uniform(self.output_layer.weight)
         self.mlp_layers.extend([self.output_layer]+([nn.Sigmoid()] if self.categorical else [] ))
-        self.mlp = self.Sequential(*self.mlp_layers)
+        self.mlp = nn.Sequential(*self.mlp_layers)
 
     def forward(self,x):
         out=self.vae.get_latent_z(x)

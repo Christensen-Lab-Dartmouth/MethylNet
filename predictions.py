@@ -18,7 +18,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def predict():
     pass
 
-def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,lr,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, train_percent=0.8, n_workers=8):
+def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,lr,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, train_percent=0.8, n_workers=8, add_validation_set=False, loss_reduction='sum'):
     os.makedirs(output_dir,exist_ok=True)
 
     output_file = join(output_dir,'predictions.csv')
@@ -67,12 +67,11 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
 
 
     optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay=weight_decay)
-    sum_ce=True
-    reduction = 'sum' if sum_ce else 'mean'
-    loss_fn = CrossEntropyLoss(reduction=reduction,weight=torch.FloatTensor(class_weights) if class_weights else None) if categorical else MSELoss() # 'sum'
+    loss_fn = CrossEntropyLoss(reduction=loss_reduction,weight=torch.FloatTensor(class_weights) if class_weights else None) if categorical else MSELoss(reduction=loss_reduction) # 'sum'
     scheduler_opts=dict(scheduler=scheduler,lr_scheduler_decay=decay,T_max=t_max,eta_min=eta_min,T_mult=t_mult)
     vae_mlp=MLPFinetuneVAE(mlp_model=model,n_epochs=n_epochs,categorical=categorical,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda, scheduler_opts=scheduler_opts)
-    vae_mlp.add_validation_set(test_methyl_dataloader)
+    if add_validation_set:
+        vae_mlp.add_validation_set(test_methyl_dataloader)
     vae_mlp_snapshot = vae_mlp.fit(train_methyl_dataloader).model
     del train_methyl_dataloader train_methyl_dataset
     """methyl_dataset=get_methylation_dataset(methyl_array,interest_cols,predict=True)
@@ -121,14 +120,16 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
 @click.option('-bs', '--batch_size', default=50, show_default=True, help='Batch size.')
 @click.option('-p', '--train_percent', default=0.8, help='Percent data training on.', show_default=True)
 @click.option('-w', '--n_workers', default=9, show_default=True, help='Number of workers.')
-def make_prediction(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,lr,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, train_percent=0.8, n_workers=8):
+@click.option('-v', '--add_validation_set', is_flag=True, help='Evaluate validation set.')
+@click.option('-l', '--loss_reduction', default='sum', show_default=True, help='Type of reduction on loss function.', type=click.Choice(['sum','elementwise_mean','none']))
+def make_prediction(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,lr,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, train_percent=0.8, n_workers=8, add_validation_set=False, loss_reduction='sum'):
     """Perform variational autoencoding on methylation dataset."""
     hlt_list=filter(None,hidden_layer_topology.split(','))
     if hlt_list:
         hidden_layer_topology=list(map(int,hlt_list))
     else:
         hidden_layer_topology=[]
-    predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,lr,weight_decay,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, train_percent, n_workers)
+    predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,lr,weight_decay,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, train_percent, n_workers, add_validation_set, loss_reduction)
 
 #################
 

@@ -57,7 +57,8 @@ class MethylationDataSet(Dataset):
         self.samples = np.array(list(self.outcome_col.index))
         self.outcome_col=self.outcome_col.values
         if categorical:
-            self.encoder = OneHotEncoder()
+            self.outcome_col=self.outcome_col[:,np.newaxis]
+            self.encoder = OneHotEncoder(sparse=False)
             self.encoder.fit(self.outcome_col)
             self.outcome_col=self.encoder.transform(self.outcome_col)
         self.transform = transform

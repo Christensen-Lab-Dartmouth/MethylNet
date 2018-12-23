@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
 # declare a name for this job to be sample_job
-#PBS -N methyl_gpu
+#PBS -N methyl_gpu_2
 # Specify the gpuq queue
 #PBS -q gpuq
 # Specify the number of gpus
@@ -30,5 +30,5 @@ module load python/3-Anaconda
 module load cuda
 echo $gpuNum
 source activate py36
-CUDA_VISIBLE_DEVICES="$gpuNum" python embedding.py perform_embedding -n 300 -bs 512 -hlt 300,300 -kl 0 --t_max 10 --eta_min 1e-7 --t_mult 1 -b 50. -s warm_restarts -lr 5e-4 -bce -e 25 -v -l elementwise_mean -c
+CUDA_VISIBLE_DEVICES="$gpuNum" python predictions.py make_prediction -cat -htl 200,100 -s warm_restarts -bs 256 -c -v
 exit 0
