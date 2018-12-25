@@ -299,6 +299,7 @@ def train_mlp(model, loader, loss_func, optimizer, cuda=True, categorical=False)
 
     #model.vae.eval() also freeze for depth of tuning?
     #print(loss_func)
+    running_loss=0.
     for inputs, samples, y_true in loader: # change dataloder for classification/regression tasks
         #print(samples)
         inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
@@ -315,14 +316,15 @@ def train_mlp(model, loader, loss_func, optimizer, cuda=True, categorical=False)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        running_loss+=loss.item()
 
-    return model, loss
+    return model, running_loss
 
 def val_mlp(model, loader, loss_func, optimizer, cuda=True, categorical=False):
     model.eval()
 
     #model.vae.eval() also freeze for depth of tuning?
-
+    running_loss=0.
     for inputs, samples, y_true in loader: # change dataloder for classification/regression tasks
         inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
         y_true = Variable(y_true)
@@ -334,8 +336,8 @@ def val_mlp(model, loader, loss_func, optimizer, cuda=True, categorical=False):
         if categorical:
             y_true=y_true.argmax(1).long()
         loss = loss_func(y_predict,y_true)
-
-    return model, loss
+        running_loss+=loss.item()
+    return model, running_loss
 
 def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
     model.eval()
@@ -363,7 +365,7 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
         Y_true.append(y_true)
     Y_pred=np.vstack(Y_pred)
     final_latent=np.vstack(final_latent)
-    Y_true=np.vstack(final_outputs)
+    Y_true=np.vstack(Y_true)
     sample_names_final = np.array(sample_names_final)
     if output_latent:
         return Y_pred, Y_true, final_latent, sample_names_final
