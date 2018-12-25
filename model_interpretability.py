@@ -1,4 +1,6 @@
 #https://www.bioconductor.org/packages/devel/bioc/vignettes/missMethyl/inst/doc/missMethyl.html#gene-ontology-analysis
+import shap, numpy as np
+import torch
 
 # after attaching classifier to VAE
 
@@ -31,6 +33,7 @@ Read Lola and great papers
 class CpGFinder:
     def __init__(self,model_master):
         self.model_master=model_master # has predict method
+        output_latent
 
     def build_explainer(self, train_data): # can interpret latent dimensions
         self.explainer=shap.KernelExplainer(model.predict if 'predict' in dir(model) else model.transform, train_data, link="identity")

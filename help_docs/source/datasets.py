@@ -40,9 +40,9 @@ class Transformer:
 # methyl_train_df = methyl_df2.drop(methyl_test_df.index)
 # instead get beta keys and sample
 
-def get_methylation_dataset(methylation_array, outcome_col, convolutional=False, cpg_per_row=1200, predict=False):
+def get_methylation_dataset(methylation_array, outcome_col, convolutional=False, cpg_per_row=1200, predict=False, categorical=False):
     if predict:
-        return MethylationDataSetPredictions(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col)
+        return MethylationDataSetPredictions(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col, categorical)
     else:
         return MethylationDataSet(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col)
 

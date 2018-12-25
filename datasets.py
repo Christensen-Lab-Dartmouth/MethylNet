@@ -40,16 +40,16 @@ class Transformer:
 # methyl_train_df = methyl_df2.drop(methyl_test_df.index)
 # instead get beta keys and sample
 
-def get_methylation_dataset(methylation_array, outcome_col, convolutional=False, cpg_per_row=1200, predict=False):
+def get_methylation_dataset(methylation_array, outcome_col, convolutional=False, cpg_per_row=1200, predict=False, categorical=False):
     if predict:
-        return MethylationDataSetPredictions(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col)
+        return MethylationPredictionDataSet(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col, categorical=categorical)
     else:
         return MethylationDataSet(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col)
 
 class MethylationDataSet(Dataset):
     def __init__(self, methylation_array, transform, outcome_col='', categorical=False):
         self.methylation_array = methylation_array
-        self.outcome_col = self.methylation_array.pheno[outcome_col] if outcome_col else pd.Series(np.ones(len(self)),index=self.methylation_array.pheno.index)
+        self.outcome_col = self.methylation_array.pheno.loc[:,outcome_col] if outcome_col else pd.Series(np.ones(len(self)),index=self.methylation_array.pheno.index)
         self.outcome_col = self.outcome_col.loc[self.methylation_array.beta.index,]
         self.samples = np.array(list(self.methylation_array.beta.index))
         self.features = np.array(list(self.methylation_array.beta))
@@ -57,7 +57,8 @@ class MethylationDataSet(Dataset):
         self.samples = np.array(list(self.outcome_col.index))
         self.outcome_col=self.outcome_col.values
         if categorical:
-            self.outcome_col=self.outcome_col[:,np.newaxis]
+            #self.outcome_col=self.outcome_col#[:,np.newaxis]
+            print(self.outcome_col)
             self.encoder = OneHotEncoder(sparse=False)
             self.encoder.fit(self.outcome_col)
             self.outcome_col=self.encoder.transform(self.outcome_col)
@@ -90,6 +91,7 @@ class MethylationDataSet(Dataset):
 class MethylationPredictionDataSet(MethylationDataSet):
     def __init__(self, methylation_array, transform, outcome_col='', categorical=False):
         super().__init__(methylation_array, transform, outcome_col, categorical)
+        print(self.outcome_col)
 
     def __getitem__(self,index):
         return self.transform.generate()(self.methylation_array.beta[index,:]),self.samples[index],torch.FloatTensor(self.outcome_col[index,:])

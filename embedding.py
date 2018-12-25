@@ -37,8 +37,6 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     if not batch_size:
         batch_size=len(methyl_dataset)
 
-    torch.set_num_threads(n_workers+1)
-
     train_methyl_dataloader = DataLoader(
         dataset=train_methyl_dataset,
         num_workers=n_workers,#n_workers
@@ -64,7 +62,7 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=n_epochs,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda,kl_warm_up=kl_warm_up,beta=beta, scheduler_opts=scheduler_opts)
     if add_validation_set:
         auto_encoder.add_validation_set(test_methyl_dataloader)
-    auto_encoder_snapshot = auto_encoder.fit(train_methyl_dataloader).model
+    auto_encoder = auto_encoder.fit(train_methyl_dataloader)
     del test_methyl_dataloader, train_methyl_dataloader, test_methyl_dataset, train_methyl_dataset
     methyl_dataset=get_methylation_dataset(methyl_array,'disease')
     methyl_dataset_loader = DataLoader(
@@ -83,9 +81,9 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     methyl_array.beta=latent_projection
     methyl_array.write_pickle(output_pkl)
     latent_projection.to_csv(output_file)
-    torch.save(auto_encoder_snapshot,output_model)
+    torch.save(auto_encoder.model,output_model)
     pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
-    return latent_projection, outcome_dict, auto_encoder_snapshot
+    return latent_projection, outcome_dict, auto_encoder.model
 
 @embed.command()
 @click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)

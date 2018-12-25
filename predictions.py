@@ -15,10 +15,10 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 
 @click.group(context_settings= CONTEXT_SETTINGS)
 @click.version_option(version='0.1')
-def predict():
+def prediction():
     pass
 
-def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,lr,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, train_percent=0.8, n_workers=8, add_validation_set=False, loss_reduction='sum'):
+def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, train_percent=0.8, n_workers=8, add_validation_set=False, loss_reduction='sum'):
     os.makedirs(output_dir,exist_ok=True)
 
     output_file = join(output_dir,'predictions.csv')
@@ -35,9 +35,12 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
 
     train_methyl_array, test_methyl_array = methyl_array.split_train_test(train_p=train_percent, stratified=(True if categorical else False), disease_only=disease_only, key=interest_cols[0], subtype_delimiter=',')
 
-    train_methyl_dataset = get_methylation_dataset(train_methyl_array,interest_cols,predict=True) # train, test split? Add val set?
+    if len(interest_cols) == 1 and disease_only:
+        interest_cols[0] += '_only'
 
-    test_methyl_dataset = get_methylation_dataset(test_methyl_array,interest_cols,predict=True)
+    train_methyl_dataset = get_methylation_dataset(train_methyl_array,interest_cols,categorical=categorical, predict=True) # train, test split? Add val set?
+
+    test_methyl_dataset = get_methylation_dataset(test_methyl_array,interest_cols,categorical=categorical, predict=True)
 
     if not batch_size:
         batch_size=len(methyl_dataset)
@@ -58,22 +61,29 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
 
     class_weights=[]
     if categorical:
-        out_weight=Counter(np.argmax(train_methyl_dataset.output_col,axis=1))
-        total_samples=sum(out_weight.values())
+        out_weight=Counter(np.argmax(train_methyl_dataset.outcome_col,axis=1))
+        #total_samples=sum(out_weight.values())
         for k in sorted(list(out_weight.keys())):
-            class_weights.append(total_samples/float(out_weight[k]))
+            class_weights.append(1./float(out_weight[k])) # total_samples
         class_weights=np.array(class_weights)
-        class_weights=class_weights/class_weights.max()
+        class_weights=(class_weights/class_weights.sum()).tolist()
+        print(class_weights)
 
+    if class_weights:
+        class_weights = torch.FloatTensor(class_weights)
+        if cuda:
+            class_weights = class_weights.cuda()
+    else:
+        class_weights = None
 
-    optimizer = torch.optim.Adam(model.parameters(), lr = lr, weight_decay=weight_decay)
-    loss_fn = CrossEntropyLoss(reduction=loss_reduction,weight=torch.FloatTensor(class_weights) if class_weights else None) if categorical else MSELoss(reduction=loss_reduction) # 'sum'
+    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
+    loss_fn = CrossEntropyLoss(reduction=loss_reduction,weight= class_weights) if categorical else MSELoss(reduction=loss_reduction) # 'sum'
     scheduler_opts=dict(scheduler=scheduler,lr_scheduler_decay=decay,T_max=t_max,eta_min=eta_min,T_mult=t_mult)
     vae_mlp=MLPFinetuneVAE(mlp_model=model,n_epochs=n_epochs,categorical=categorical,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda, scheduler_opts=scheduler_opts)
     if add_validation_set:
         vae_mlp.add_validation_set(test_methyl_dataloader)
     vae_mlp_snapshot = vae_mlp.fit(train_methyl_dataloader).model
-    del train_methyl_dataloader train_methyl_dataset
+    del train_methyl_dataloader, train_methyl_dataset
     """methyl_dataset=get_methylation_dataset(methyl_array,interest_cols,predict=True)
     methyl_dataset_loader = DataLoader(
         dataset=methyl_dataset,
@@ -100,7 +110,7 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
     Y_true.to_csv(output_gt_file)
     return latent_projection, Y_pred, Y_true, vae_mlp_snapshot
 
-@embed.command() # FIXME finish this!!
+@prediction.command() # FIXME finish this!!
 @click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-vae', '--input_vae_pkl', default='./embeddings/output_model.p', help='Trained VAE.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./predictions/', help='Output directory for predictions.', type=click.Path(exists=False), show_default=True)
@@ -122,16 +132,16 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
 @click.option('-w', '--n_workers', default=9, show_default=True, help='Number of workers.')
 @click.option('-v', '--add_validation_set', is_flag=True, help='Evaluate validation set.')
 @click.option('-l', '--loss_reduction', default='sum', show_default=True, help='Type of reduction on loss function.', type=click.Choice(['sum','elementwise_mean','none']))
-def make_prediction(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,lr,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, train_percent=0.8, n_workers=8, add_validation_set=False, loss_reduction='sum'):
+def make_prediction(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, train_percent=0.8, n_workers=8, add_validation_set=False, loss_reduction='sum'):
     """Perform variational autoencoding on methylation dataset."""
     hlt_list=filter(None,hidden_layer_topology.split(','))
     if hlt_list:
         hidden_layer_topology=list(map(int,hlt_list))
     else:
         hidden_layer_topology=[]
-    predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,lr,weight_decay,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, train_percent, n_workers, add_validation_set, loss_reduction)
+    predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate,weight_decay,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, train_percent, n_workers, add_validation_set, loss_reduction)
 
 #################
 
 if __name__ == '__main__':
-    predict()
+    prediction()
