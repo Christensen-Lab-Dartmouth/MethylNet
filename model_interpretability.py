@@ -33,7 +33,7 @@ Read Lola and great papers
 class CpGFinder:
     def __init__(self,model_master):
         self.model_master=model_master # has predict method
-        output_latent
+        self.model_master.output_latent = False
 
     def build_explainer(self, train_data): # can interpret latent dimensions
         self.explainer=shap.KernelExplainer(model.predict if 'predict' in dir(model) else model.transform, train_data, link="identity")
@@ -50,3 +50,27 @@ class BioInterpreter:
         self.top_cpgs = cpg_finder_obj.top_cpgs
 
     def p(): pass # add rgreat, lola, roadmap-chromatin hmm, atac-seq, chip-seq, gometh, Hi-C, bedtools, Owen's analysis
+
+CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
+
+@click.group(context_settings= CONTEXT_SETTINGS)
+@click.version_option(version='0.1')
+def interpret():
+    pass
+
+def data_loader_wrapped_predict(): # major modifications needed, think up new idea
+
+@interpret.command()
+@click.option('-v', '--add_validation_set', is_flag=True, help='Evaluate validation set.')
+@click.option('-l', '--loss_reduction', default='sum', show_default=True, help='Type of reduction on loss function.', type=click.Choice(['sum','elementwise_mean','none']))
+def return_important_cpgs(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, train_percent=0.8, n_workers=8, add_validation_set=False, loss_reduction='sum'):
+
+    cpg_finder.return_top_shapley_features()
+    cpgs = cpg_finder.top_cpgs
+
+
+
+#################
+
+if __name__ == '__main__':
+    interpret()

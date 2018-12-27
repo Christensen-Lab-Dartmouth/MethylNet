@@ -40,14 +40,14 @@ class Transformer:
 # methyl_train_df = methyl_df2.drop(methyl_test_df.index)
 # instead get beta keys and sample
 
-def get_methylation_dataset(methylation_array, outcome_col, convolutional=False, cpg_per_row=1200, predict=False, categorical=False):
+def get_methylation_dataset(methylation_array, outcome_col, convolutional=False, cpg_per_row=1200, predict=False, categorical=False, categorical_encoder=False):
     if predict:
-        return MethylationPredictionDataSet(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col, categorical=categorical)
+        return MethylationPredictionDataSet(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col, categorical=categorical, categorical_encoder=categorical_encoder)
     else:
         return MethylationDataSet(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col)
 
 class MethylationDataSet(Dataset):
-    def __init__(self, methylation_array, transform, outcome_col='', categorical=False):
+    def __init__(self, methylation_array, transform, outcome_col='', categorical=False, categorical_encoder=False):
         self.methylation_array = methylation_array
         self.outcome_col = self.methylation_array.pheno.loc[:,outcome_col] if outcome_col else pd.Series(np.ones(len(self)),index=self.methylation_array.pheno.index)
         self.outcome_col = self.outcome_col.loc[self.methylation_array.beta.index,]
@@ -58,12 +58,17 @@ class MethylationDataSet(Dataset):
         self.outcome_col=self.outcome_col.values
         if categorical:
             #self.outcome_col=self.outcome_col#[:,np.newaxis]
-            print(self.outcome_col)
-            self.encoder = OneHotEncoder(sparse=False)
-            self.encoder.fit(self.outcome_col)
+            if not categorical_encoder:
+                print(self.outcome_col)
+                self.encoder = OneHotEncoder(sparse=False)
+                self.encoder.fit(self.outcome_col)
+            else:
+                self.encoder=categorical_encoder
             self.outcome_col=self.encoder.transform(self.outcome_col)
         self.transform = transform
         self.new_shape = self.transform.shape
+        print(self.outcome_col)
+        print(self.outcome_col.shape)
 
     def to_methyl_array(self):
         return MethylationArray(self.methylation_array.pheno,pd.DataFrame(self.methylation_array.beta,index=self.samples,columns=self.features),'')

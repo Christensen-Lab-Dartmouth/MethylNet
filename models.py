@@ -329,12 +329,12 @@ def val_mlp(model, loader, loss_func, optimizer, cuda=True, categorical=False):
         inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
         y_true = Variable(y_true)
         #print(inputs.size())
+        if categorical:
+            y_true=y_true.argmax(1).long()
         if cuda:
             inputs = inputs.cuda()
             y_true = y_true.cuda()
         y_predict, _ = model(inputs)
-        if categorical:
-            y_true=y_true.argmax(1).long()
         loss = loss_func(y_predict,y_true)
         running_loss+=loss.item()
     return model, running_loss
