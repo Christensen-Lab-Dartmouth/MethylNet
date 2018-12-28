@@ -30,5 +30,5 @@ module load python/3-Anaconda
 module load cuda
 echo $gpuNum
 source activate py36
-CUDA_VISIBLE_DEVICES="$gpuNum" python predictions.py make_prediction -cat -hlt 100 -s warm_restarts -bs 256 -c -v -p 0.4 -e 5
+CUDA_VISIBLE_DEVICES="$gpuNum" python predictions.py make_prediction -cat -hlt 100 -s warm_restarts -bs 256 -c -v -do -p 0.4 -e 5
 exit 0

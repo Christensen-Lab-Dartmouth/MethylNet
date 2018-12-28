@@ -36,10 +36,13 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
     train_methyl_array, test_methyl_array = methyl_array.split_train_test(train_p=train_percent, stratified=(True if categorical else False), disease_only=disease_only, key=interest_cols[0], subtype_delimiter=',')
 
     if len(interest_cols) == 1 and disease_only:
+        print(interest_cols)
         interest_cols[0] += '_only'
+        print(train_methyl_array.pheno[interest_cols[0]].unique())
+        print(test_methyl_array.pheno[interest_cols[0]].unique())
 
     train_methyl_dataset = get_methylation_dataset(train_methyl_array,interest_cols,categorical=categorical, predict=True) # train, test split? Add val set?
-
+    print(list(train_methyl_dataset.encoder.get_feature_names()))
     test_methyl_dataset = get_methylation_dataset(test_methyl_array,interest_cols,categorical=categorical, predict=True, categorical_encoder=train_methyl_dataset.encoder)
 
     if not batch_size:
@@ -50,6 +53,7 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
         num_workers=n_workers,
         batch_size=batch_size,
         shuffle=True)
+
 
     test_methyl_dataloader = DataLoader(
         dataset=test_methyl_dataset,
@@ -99,9 +103,8 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
     #outcomes = np.array([outcome[0] for outcome in outcomes]) # FIXME
     Y_pred=pd.DataFrame(Y_pred,index=sample_names)#dict(zip(sample_names,outcomes))
     Y_true=pd.DataFrame(Y_true,index=sample_names)
-    actual_outcomes=pd.DataFrame()
     print(methyl_array.beta)
-    latent_projection=pd.DataFrame(latent_projection,index=test_methyl_array.beta.index)
+    latent_projection=pd.DataFrame(latent_projection,index=sample_names)
     methyl_array.beta=latent_projection
     methyl_array.write_pickle(output_pkl)
     latent_projection.to_csv(output_file_latent)
@@ -140,7 +143,7 @@ def make_prediction(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,catego
         hidden_layer_topology=list(map(int,hlt_list))
     else:
         hidden_layer_topology=[]
-    predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate,weight_decay,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, train_percent, n_workers, add_validation_set, loss_reduction)
+    predict(input_pkl,input_vae_pkl,output_dir,cuda,list(interest_cols),categorical,disease_only,hidden_layer_topology,learning_rate,weight_decay,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, train_percent, n_workers, add_validation_set, loss_reduction)
 
 #################
 

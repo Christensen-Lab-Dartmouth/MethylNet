@@ -94,8 +94,8 @@ class MethylationDataSet(Dataset):
         return self.methylation_array.beta.shape[0]
 
 class MethylationPredictionDataSet(MethylationDataSet):
-    def __init__(self, methylation_array, transform, outcome_col='', categorical=False):
-        super().__init__(methylation_array, transform, outcome_col, categorical)
+    def __init__(self, methylation_array, transform, outcome_col='', categorical=False, categorical_encoder=False):
+        super().__init__(methylation_array, transform, outcome_col, categorical, categorical_encoder=categorical_encoder)
         print(self.outcome_col)
 
     def __getitem__(self,index):
