@@ -211,6 +211,9 @@ class TybaltTitusVAE(nn.Module):
         mean, logvar = self.encode(x)
         return self.sample_z(mean, logvar)
 
+    def forward_predict(self, x):
+        return self.get_latent_z(x)
+
 class CVAE(nn.Module):
     def __init__(self, in_shape, n_latent, custom_kernel_sizes, kernel_widths, kernel_heights, n_pre_latent, stride_size, cuda=False):
         super(CVAE,self).__init__()
@@ -294,7 +297,10 @@ class CVAE(nn.Module):
         mean, logvar = self.encode(x)
         return self.sample_z(mean, logvar)
 
-def train_mlp(model, loader, loss_func, optimizer, cuda=True, categorical=False):
+    def forward_predict(self, x):
+        return self.get_latent_z(x)
+
+def train_mlp(model, loader, loss_func, optimizer_vae, optimizer_mlp, cuda=True, categorical=False):
     model.train(True)
 
     #model.vae.eval() also freeze for depth of tuning?
@@ -313,14 +319,16 @@ def train_mlp(model, loader, loss_func, optimizer, cuda=True, categorical=False)
         y_predict, _ = model(inputs)
         loss = loss_func(y_predict,y_true)
 
-        optimizer.zero_grad()
+        optimizer_vae.zero_grad()
+        optimizer_mlp.zero_grad()
         loss.backward()
-        optimizer.step()
+        optimizer_vae.step()
+        optimizer_mlp.step()
         running_loss+=loss.item()
 
     return model, running_loss
 
-def val_mlp(model, loader, loss_func, optimizer, cuda=True, categorical=False):
+def val_mlp(model, loader, loss_func, cuda=True, categorical=False):
     model.eval()
 
     #model.vae.eval() also freeze for depth of tuning?
@@ -373,7 +381,7 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
         return Y_pred
 
 class MLPFinetuneVAE:
-    def __init__(self, mlp_model, n_epochs, loss_fn, optimizer, cuda=True, categorical=False, scheduler_opts={}, output_latent=True,):
+    def __init__(self, mlp_model, n_epochs, loss_fn, optimizer_vae, optimizer_mlp, cuda=True, categorical=False, scheduler_opts={}, output_latent=True):
         self.model=mlp_model
         #print(self.model)
         if cuda:
@@ -381,9 +389,11 @@ class MLPFinetuneVAE:
             #self.model.vae = self.model.vae.cuda()
         self.n_epochs = n_epochs
         self.loss_fn = loss_fn
-        self.optimizer = optimizer
+        self.optimizer_vae = optimizer_vae
+        self.optimizer_mlp = optimizer_mlp
         self.cuda = cuda
-        self.scheduler = Scheduler(self.optimizer,scheduler_opts) if scheduler_opts else Scheduler(self.optimizer)
+        self.scheduler_vae = Scheduler(self.optimizer_vae,scheduler_opts) if scheduler_opts else Scheduler(self.optimizer_vae)
+        self.scheduler_mlp = Scheduler(self.optimizer_mlp,scheduler_opts) if scheduler_opts else Scheduler(self.optimizer_mlp)
         self.loss_plt_fname='loss.png'
         self.embed_interval=200
         self.validation_set = False
@@ -396,18 +406,20 @@ class MLPFinetuneVAE:
         model = self.model
         print(model)
         best_model=copy.deepcopy(self.model)
-        plt_data={'loss':[],'lr':[], 'val_loss':[]}
+        plt_data={'loss':[],'lr_vae':[],'lr_mlp':[], 'val_loss':[]}
         for epoch in range(self.n_epochs):
             print(epoch)
-            model, loss = train_mlp(model, train_data, self.loss_fn, self.optimizer, self.cuda,categorical=self.categorical)
-            self.scheduler.step()
+            model, loss = train_mlp(model, train_data, self.loss_fn, self.optimizer_vae, self.optimizer_mlp, self.cuda,categorical=self.categorical)
+            self.scheduler_vae.step()
+            self.scheduler_mlp.step()
             plt_data['loss'].append(loss)
             print("Epoch {}: Loss {}".format(epoch,loss))
             if self.validation_set:
-                model, val_loss = val_mlp(model, self.validation_set, self.loss_fn, self.optimizer, self.cuda,categorical=self.categorical)
+                model, val_loss = val_mlp(model, self.validation_set, self.loss_fn, self.cuda,categorical=self.categorical)
                 plt_data['val_loss'].append(val_loss)
                 print("Epoch {}: Val-Loss {}".format(epoch,val_loss))
-            plt_data['lr'].append(self.scheduler.get_lr())
+            plt_data['lr_vae'].append(self.scheduler_vae.get_lr())
+            plt_data['lr_mlp'].append(self.scheduler_mlp.get_lr())
             loss = loss if not self.validation_set else val_loss
             loss_list.append(loss)
             if loss <= min(loss_list): # next get models for lowest reconstruction and kl, 3 models
@@ -444,7 +456,20 @@ class VAE_MLP(nn.Module):
         torch.nn.init.xavier_uniform_(self.output_layer.weight)
         self.mlp_layers.extend([self.output_layer]+([nn.Sigmoid()] if self.categorical else [] ))
         self.mlp = nn.Sequential(*self.mlp_layers)
+        self.output_z=False
 
     def forward(self,x):
         out=self.vae.get_latent_z(x)
         return self.mlp(out), out
+
+    def toggle_latent_z(self):
+        if self.output_z:
+            self.output_z=False
+        else:
+            self.output_z=True
+
+    def forward_predict(self,x):
+        if self.output_z:
+            return self.vae.get_latent_z(x)
+        else:
+            return self.mlp(self.vae.get_latent_z(x))

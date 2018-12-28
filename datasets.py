@@ -100,3 +100,11 @@ class MethylationPredictionDataSet(MethylationDataSet):
 
     def __getitem__(self,index):
         return self.transform.generate()(self.methylation_array.beta[index,:]),self.samples[index],torch.FloatTensor(self.outcome_col[index,:])
+
+class RawBetaArrayDataSet(Dataset):
+    def __init__(self, beta_array, transform):
+        self.beta_array = beta_array
+        self.transform = transform
+
+    def __getitem__(self,index):
+        return self.transform.generate()(self.beta_array[index,:])

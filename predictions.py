@@ -18,7 +18,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def prediction():
     pass
 
-def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, train_percent=0.8, n_workers=8, add_validation_set=False, loss_reduction='sum'):
+def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, train_percent=0.8, n_workers=8, add_validation_set=False, loss_reduction='sum'):
     os.makedirs(output_dir,exist_ok=True)
 
     output_file = join(output_dir,'predictions.csv')
@@ -80,13 +80,15 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
     else:
         class_weights = None
 
-    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
+    optimizer_vae = torch.optim.Adam(model.vae.parameters(), lr = learning_rate_vae, weight_decay=weight_decay)
+    optimizer_mlp = torch.optim.Adam(model.mlp.parameters(), lr = learning_rate_mlp, weight_decay=weight_decay)
     loss_fn = CrossEntropyLoss(reduction=loss_reduction,weight= class_weights) if categorical else MSELoss(reduction=loss_reduction) # 'sum'
     scheduler_opts=dict(scheduler=scheduler,lr_scheduler_decay=decay,T_max=t_max,eta_min=eta_min,T_mult=t_mult)
-    vae_mlp=MLPFinetuneVAE(mlp_model=model,n_epochs=n_epochs,categorical=categorical,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda, scheduler_opts=scheduler_opts)
+    vae_mlp=MLPFinetuneVAE(mlp_model=model,n_epochs=n_epochs,categorical=categorical,loss_fn=loss_fn,optimizer_vae=optimizer_vae,optimizer_mlp=optimizer_mlp,cuda=cuda, scheduler_opts=scheduler_opts)
     if add_validation_set:
         vae_mlp.add_validation_set(test_methyl_dataloader)
     vae_mlp_snapshot = vae_mlp.fit(train_methyl_dataloader).model
+    train_encoder = train_methyl_dataset.encoder
     del train_methyl_dataloader, train_methyl_dataset
     """methyl_dataset=get_methylation_dataset(methyl_array,interest_cols,predict=True)
     methyl_dataset_loader = DataLoader(
@@ -95,23 +97,23 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
         batch_size=1,
         shuffle=False)"""
     Y_pred, Y_true, latent_projection, sample_names = vae_mlp.predict(test_methyl_dataloader)
-    test_methyl_dataset = test_methyl_dataset.to_methyl_array()
+    test_methyl_array = test_methyl_dataset.to_methyl_array()
     """if categorical:
         Y_true=test_methyl_dataset.encoder.inverse_transform(Y_true)[:,np.newaxis]
         Y_pred=test_methyl_dataset.encoder.inverse_transform(Y_pred)[:,np.newaxis]"""
     #sample_names = np.array([sample_name[0] for sample_name in sample_names]) # FIXME
     #outcomes = np.array([outcome[0] for outcome in outcomes]) # FIXME
-    Y_pred=pd.DataFrame(Y_pred,index=sample_names)#dict(zip(sample_names,outcomes))
-    Y_true=pd.DataFrame(Y_true,index=sample_names)
+    Y_pred=pd.DataFrame(Y_pred,index=test_methyl_array.beta.index)#dict(zip(sample_names,outcomes))
+    Y_true=pd.DataFrame(Y_true,index=test_methyl_array.beta.index)
     print(methyl_array.beta)
-    latent_projection=pd.DataFrame(latent_projection,index=sample_names)
-    methyl_array.beta=latent_projection
-    methyl_array.write_pickle(output_pkl)
+    latent_projection=pd.DataFrame(latent_projection,index=test_methyl_array.beta.index)
+    test_methyl_array.beta=latent_projection
+    test_methyl_array.write_pickle(output_pkl)
     latent_projection.to_csv(output_file_latent)
     torch.save(vae_mlp_snapshot,output_model)
     Y_pred.to_csv(output_file)#pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
     Y_true.to_csv(output_gt_file)
-    pickle.dump(train_methyl_dataset.encoder,open(output_onehot_encoder,'wb'))
+    pickle.dump(train_encoder,open(output_onehot_encoder,'wb'))
     return latent_projection, Y_pred, Y_true, vae_mlp_snapshot
 
 @prediction.command() # FIXME finish this!!
@@ -123,7 +125,8 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
 @click.option('-cat', '--categorical', is_flag=True, help='Multi-class prediction.', show_default=True)
 @click.option('-do', '--disease_only', is_flag=True, help='Only look at disease, or text before subtype_delimiter.')
 @click.option('-hlt', '--hidden_layer_topology', default='', help='Topology of hidden layers, comma delimited, leave empty for one layer encoder, eg. 100,100 is example of 5-hidden layer topology.', type=click.Path(exists=False), show_default=True)
-@click.option('-lr', '--learning_rate', default=1e-3, help='Number of latent dimensions.', show_default=True)
+@click.option('-lr_vae', '--learning_rate_vae', default=1e-5, help='Learning rate VAE.', show_default=True)
+@click.option('-lr_mlp', '--learning_rate_mlp', default=1e-3, help='Learning rate MLP.', show_default=True)
 @click.option('-wd', '--weight_decay', default=1e-4, help='Weight decay of adam optimizer.', show_default=True)
 @click.option('-e', '--n_epochs', default=50, help='Number of epochs to train over.', show_default=True)
 @click.option('-s', '--scheduler', default='null', help='Type of learning rate scheduler.', type=click.Choice(['null','exp','warm_restarts']),show_default=True)
@@ -136,14 +139,14 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
 @click.option('-w', '--n_workers', default=9, show_default=True, help='Number of workers.')
 @click.option('-v', '--add_validation_set', is_flag=True, help='Evaluate validation set.')
 @click.option('-l', '--loss_reduction', default='sum', show_default=True, help='Type of reduction on loss function.', type=click.Choice(['sum','elementwise_mean','none']))
-def make_prediction(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, train_percent=0.8, n_workers=8, add_validation_set=False, loss_reduction='sum'):
+def make_prediction(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, train_percent=0.8, n_workers=8, add_validation_set=False, loss_reduction='sum'):
     """Perform variational autoencoding on methylation dataset."""
     hlt_list=filter(None,hidden_layer_topology.split(','))
     if hlt_list:
         hidden_layer_topology=list(map(int,hlt_list))
     else:
         hidden_layer_topology=[]
-    predict(input_pkl,input_vae_pkl,output_dir,cuda,list(interest_cols),categorical,disease_only,hidden_layer_topology,learning_rate,weight_decay,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, train_percent, n_workers, add_validation_set, loss_reduction)
+    predict(input_pkl,input_vae_pkl,output_dir,cuda,list(interest_cols),categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, train_percent, n_workers, add_validation_set, loss_reduction)
 
 #################
 

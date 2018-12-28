@@ -1,6 +1,11 @@
 #https://www.bioconductor.org/packages/devel/bioc/vignettes/missMethyl/inst/doc/missMethyl.html#gene-ontology-analysis
 import shap, numpy as np
 import torch
+from datasets import RawBetaArrayDataSet, Transformer
+from torch.autograd import Variable
+from torch.utils.data import DataLoader
+
+
 
 # after attaching classifier to VAE
 
@@ -58,7 +63,22 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def interpret():
     pass
 
-def data_loader_wrapped_predict(): # major modifications needed, think up new idea
+def predict(model,loader,cuda): # model can be VAE_MLP, TybaltTitusVAE, or CVAE
+    model.eval()
+    outputs=[]
+    for input in loader:
+        input=Variable(input)
+        if cuda:
+            input = input.cuda()
+        outputs.append(np.squeeze(model.forward_predict(input).detach().cpu().numpy()))
+    outputs=np.vstack(outputs)
+    return outputs
+
+def RawBetaPredict(raw_beta_array):
+    raw_beta_array=RawBetaArrayDataSet(raw_beta_array,Transformer())
+    raw_beta_array=DataLoader(raw_beta_dataset)
+    raw_beta_array=predict(raw_beta_array)
+    return raw_beta_array
 
 @interpret.command()
 @click.option('-v', '--add_validation_set', is_flag=True, help='Evaluate validation set.')

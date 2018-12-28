@@ -90,7 +90,7 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 @click.option('-o', '--output_dir', default='./embeddings/', help='Output directory for embeddings.', type=click.Path(exists=False), show_default=True)
 @click.option('-c', '--cuda', is_flag=True, help='Use GPUs.')
 @click.option('-n', '--n_latent', default=64, help='Number of latent dimensions.', show_default=True)
-@click.option('-lr', '--learning_rate', default=1e-3, help='Number of latent dimensions.', show_default=True)
+@click.option('-lr', '--learning_rate', default=1e-3, help='Learning rate.', show_default=True)
 @click.option('-wd', '--weight_decay', default=1e-4, help='Weight decay of adam optimizer.', show_default=True)
 @click.option('-e', '--n_epochs', default=50, help='Number of epochs to train over.', show_default=True)
 @click.option('-hlt', '--hidden_layer_encoder_topology', default='', help='Topology of hidden layers, comma delimited, leave empty for one layer encoder, eg. 100,100 is example of 5-hidden layer topology.', type=click.Path(exists=False), show_default=True)
