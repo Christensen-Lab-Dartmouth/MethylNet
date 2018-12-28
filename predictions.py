@@ -27,6 +27,7 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
     output_model = join(output_dir,'output_model.p')
     output_pkl = join(output_dir, 'vae_mlp_methyl_arr.pkl')
     output_onehot_encoder = join(output_dir, 'one_hot_encoder.p')
+    train_test_idx_file = join(output_dir, 'train_test_idx.p')
 
     input_dict = pickle.load(open(input_pkl,'rb'))
     vae_model = torch.load(input_vae_pkl)
@@ -34,6 +35,9 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
     methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
 
     train_methyl_array, test_methyl_array = methyl_array.split_train_test(train_p=train_percent, stratified=(True if categorical else False), disease_only=disease_only, key=interest_cols[0], subtype_delimiter=',')
+
+    train_test_idx_dict={}
+    train_test_idx_dict['train'], train_test_idx_dict['test'] = train_methyl_array.return_idx(), test_methyl_array.return_idx()
 
     if len(interest_cols) == 1 and disease_only:
         print(interest_cols)
@@ -114,6 +118,7 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
     Y_pred.to_csv(output_file)#pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
     Y_true.to_csv(output_gt_file)
     pickle.dump(train_encoder,open(output_onehot_encoder,'wb'))
+    pickle.dump(train_test_idx_dict,open(train_test_idx_file,'wb'))
     return latent_projection, Y_pred, Y_true, vae_mlp_snapshot
 
 @prediction.command() # FIXME finish this!!

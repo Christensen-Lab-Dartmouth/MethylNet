@@ -24,11 +24,15 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     output_model = join(output_dir,'output_model.p')
     outcome_dict_file = join(output_dir,'output_outcomes.p')
     output_pkl = join(output_dir, 'vae_methyl_arr.pkl')
+    train_test_idx_file = join(output_dir, 'train_test_idx.p')
 
     input_dict = pickle.load(open(input_pkl,'rb'))
     methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
     print(methyl_array.beta)
     train_methyl_array, test_methyl_array = methyl_array.split_train_test(train_p=train_percent, stratified=True, disease_only=True, key='disease', subtype_delimiter=',')
+
+    train_test_idx_dict={}
+    train_test_idx_dict['train'], train_test_idx_dict['test'] = train_methyl_array.return_idx(), test_methyl_array.return_idx()
 
     train_methyl_dataset = get_methylation_dataset(train_methyl_array,'disease') # train, test split? Add val set?
 
@@ -83,6 +87,7 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     latent_projection.to_csv(output_file)
     torch.save(auto_encoder.model,output_model)
     pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
+    pickle.dump(train_test_idx_dict,open(train_test_idx_file,'wb'))
     return latent_projection, outcome_dict, auto_encoder.model
 
 @embed.command()
