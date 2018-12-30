@@ -1,10 +1,14 @@
 #https://www.bioconductor.org/packages/devel/bioc/vignettes/missMethyl/inst/doc/missMethyl.html#gene-ontology-analysis
-import shap, numpy as np
+import shap, numpy as np, pandas as pd
 import torch
 from datasets import RawBetaArrayDataSet, Transformer
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from os.path import join
+import click
+import os
+import pickle
+from preprocess import MethylationArray, extract_pheno_beta_df_from_pickle_dict
 
 
 
@@ -149,6 +153,7 @@ def return_important_cpgs(input_pkl, train_test_idx_pkl, model_pickle, n_workers
 @click.option('-t', '--top_cpgs_pickle', default='./interpretations/shapley_explanations/top_cpgs.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./interpretations/biological_explanations/', help='Output directory for interpretations.', type=click.Path(exists=False), show_default=True)
 def gometh_cpgs(top_cpgs_pickle,output_dir):
+    """Add categorical encoder as custom input, then can use to change names of output csvs to match disease if encoder exists."""
     os.makedirs(output_dir,exist_ok=True)
     top_cpgs=pickle.load(open(top_cpgs_pickle,'rb'))
     bio_interpreter = BioInterpreter(top_cpgs)

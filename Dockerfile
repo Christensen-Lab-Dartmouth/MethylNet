@@ -19,3 +19,5 @@ RUN conda install -y -c menpo ffmpeg=3.1.3
 copy *.py /scripts/
 
 ENTRYPOINT ["/usr/bin/tini","-s","--"]
+
+# NOTE TO SELF: SWITCH TO MICROSOFT R

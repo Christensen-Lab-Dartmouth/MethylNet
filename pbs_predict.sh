@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
 # declare a name for this job to be sample_job
-#PBS -N methyl_gpu_2
+#PBS -N methyl_predict
 # Specify the gpuq queue
 #PBS -q gpuq
 # Specify the number of gpus
