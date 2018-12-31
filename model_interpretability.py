@@ -39,16 +39,44 @@ https://bioconductor.org/packages/devel/bioc/vignettes/methylGSA/inst/doc/methyl
 Read Lola and great papers
 """
 
+def to_tensor(arr):
+    return Transformer().generate()(arr)
 
-class CpGExplainer:
-    def __init__(self,prediction_function):
+class CpGExplainer: # consider shap.kmeans
+    def __init__(self,prediction_function, cuda):
         self.prediction_function=prediction_function
+        self.cuda = cuda
 
-    def build_explainer(self, train_methyl_array): # can interpret latent dimensions
-        self.explainer=shap.KernelExplainer(self.prediction_function, train_methyl_array.return_raw_beta_array(), link="identity")
+    def build_explainer(self, train_methyl_array, method='kernel', batch_size=100): # can interpret latent dimensions
+        self.method = method
+        if self.method =='kernel':
+            self.explainer=shap.KernelExplainer(self.prediction_function, train_methyl_array.return_raw_beta_array(), link="identity")
+        elif self.method == 'deep':
+            self.explainer=shap.DeepExplainer(self.prediction_function, to_tensor(train_methyl_array.return_raw_beta_array()) if not self.cuda else to_tensor(train_methyl_array.return_raw_beta_array()).cuda())
+        elif self.method == 'gradient':
+            self.explainer=shap.GradientExplainer(self.prediction_function, to_tensor(train_methyl_array.return_raw_beta_array()) if not self.cuda else to_tensor(train_methyl_array.return_raw_beta_array()).cuda(), batch_size=batch_size)
+        else:
+            print('Not Implemented, default to kernel explainer.')
+            self.method = 'kernel'
+            self.explainer=shap.KernelExplainer(self.prediction_function, train_methyl_array.return_raw_beta_array(), link="identity")
 
-    def return_top_shapley_features(self, test_methyl_array, n_samples, n_top_features):
-        shap_values = self.explainer.shap_values(test_methyl_array.return_raw_beta_array(), nsamples=n_samples)
+
+    def return_top_shapley_features(self, test_methyl_array, n_samples, n_top_features, shap_sample_batch_size=None):
+        n_batch = 1
+        if shap_sample_batch_size != None:
+            n_batch = int(n_samples/shap_sample_batch_size)
+            n_samples = shap_sample_batch_size
+        test_arr = test_methyl_array.return_raw_beta_array()
+        shap_values = np.zeros(test_arr.shape)
+        if self.method != 'kernel':
+            test_arr=to_tensor(test_arr) if not self.cuda else to_tensor(test_arr).cuda()
+        for i in range(n_batch):
+            click.echo("Shapley Batch {}".format(i))
+            if self.method == 'kernel' or self.method == 'gradient':
+                shap_values += self.explainer.shap_values(test_arr, nsamples=n_samples)
+            else:
+                shap_values += self.explainer.shap_values(test_arr)
+        shap_values/=float(n_batch)
         cpgs=np.array(list(test_methyl_array.beta))
         top_cpgs=[]
         for i in range(len(shap_values)): # list of top cpgs, one per class
@@ -101,6 +129,9 @@ def return_predict_function(model, cuda):
         return outputs
     return predict
 
+# https://github.com/slundberg/shap/blob/master/shap/common.py
+# Provided model function fails when applied to the provided data set.
+
 def return_dataloader_construct(n_workers,batch_size):
     def construct_data_loader(raw_beta_array):
         raw_beta_dataset=RawBetaArrayDataSet(raw_beta_array,Transformer())
@@ -123,12 +154,14 @@ def main_prediction_function(n_workers,batch_size, model, cuda):
 @click.option('-t', '--train_test_idx_pkl', default='./predictions/train_test_idx.p', help='Pickle containing training and testing indices.', type=click.Path(exists=False), show_default=True)
 @click.option('-m', '--model_pickle', default='./predictions/output_model.p', help='Pytorch model containing forward_predict method.', type=click.Path(exists=False), show_default=True)
 @click.option('-w', '--n_workers', default=9, show_default=True, help='Number of workers.')
-@click.option('-bs', '--batch_size', default=50, show_default=True, help='Batch size.')
+@click.option('-bs', '--batch_size', default=512, show_default=True, help='Batch size.')
 @click.option('-c', '--cuda', is_flag=True, help='Use GPUs.')
-@click.option('-ns', '--n_samples', default=500, show_default=True, help='Number of samples for SHAP output.')
+@click.option('-ns', '--n_samples', default=200, show_default=True, help='Number of samples for SHAP output.')
 @click.option('-nf', '--n_top_features', default=20, show_default=True, help='Top features to select for shap outputs.')
 @click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/', help='Output directory for interpretations.', type=click.Path(exists=False), show_default=True)
-def return_important_cpgs(input_pkl, train_test_idx_pkl, model_pickle, n_workers, batch_size, cuda, n_samples, n_top_features, output_dir):
+@click.option('-e', '--method', default='kernel', help='Explainer type.', type=click.Choice(['kernel','deep','gradient']), show_default=True)
+@click.option('-ssbs', '--shap_sample_batch_size', default=0, help='Break up shapley computations into batches. Set to 0 for only 1 batch.', show_default=True)
+def return_important_cpgs(input_pkl, train_test_idx_pkl, model_pickle, n_workers, batch_size, cuda, n_samples, n_top_features, output_dir, method, shap_sample_batch_size):
     os.makedirs(output_dir,exist_ok=True)
     input_dict = pickle.load(open(input_pkl,'rb'))
     preprocessed_methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
@@ -136,10 +169,20 @@ def return_important_cpgs(input_pkl, train_test_idx_pkl, model_pickle, n_workers
     train_test_idx_dict=pickle.load(open(train_test_idx_pkl,'rb'))
     train_methyl_array, test_methyl_array=preprocessed_methyl_array.subset_index(train_test_idx_dict['train']), preprocessed_methyl_array.subset_index(train_test_idx_dict['test'])
     model = torch.load(model_pickle)
-    prediction_function=main_prediction_function(n_workers,batch_size, model, cuda)
-    cpg_explainer = CpGExplainer(prediction_function)
-    cpg_explainer.build_explainer(train_methyl_array)
-    cpg_explainer.return_top_shapley_features(test_methyl_array, n_samples, n_top_features)
+    model.eval()
+    if cuda:
+        model = model.cuda()
+    if method == 'deep' or method == 'gradient':
+        model.forward = model.forward_predict
+    prediction_function=main_prediction_function(n_workers,batch_size, model, cuda) if method == 'kernel' else model
+    # in order for shap to work, prediction_function must work with methylation array beta values
+    #test_results=prediction_function(train_methyl_array.return_raw_beta_array())
+    # if above does not work, shap will not work
+    cpg_explainer = CpGExplainer(prediction_function, cuda)
+    cpg_explainer.build_explainer(train_methyl_array, method, batch_size=batch_size)
+    if not shap_sample_batch_size:
+        shap_sample_batch_size = None
+    cpg_explainer.return_top_shapley_features(test_methyl_array, n_samples, n_top_features, shap_sample_batch_size=shap_sample_batch_size)
     top_cpgs = cpg_explainer.top_cpgs
     shapley_values = cpg_explainer.shapley_values
     output_top_cpgs=join(output_dir,'top_cpgs.p')

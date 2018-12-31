@@ -108,3 +108,6 @@ class RawBetaArrayDataSet(Dataset):
 
     def __getitem__(self,index):
         return self.transform.generate()(self.beta_array[index,:])
+
+    def __len__(self):
+        return self.beta_array.shape[0]
