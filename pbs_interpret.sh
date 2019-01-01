@@ -30,6 +30,6 @@ module load python/3-Anaconda
 module load cuda
 echo $gpuNum
 source activate py36
-CUDA_VISIBLE_DEVICES="$gpuNum" python model_interpretability.py return_important_cpgs -e kernel -ssbs 10 -ns 100 -bs 512 -c
+CUDA_VISIBLE_DEVICES="$gpuNum" python model_interpretability.py return_important_cpgs -e gradient -ssbs 0 -ns 10 -bs 512 -r 2 -rt 1 -col disease_only -c
 python model_interpretability.py gometh_cpgs
 exit 0

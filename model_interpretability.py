@@ -42,7 +42,7 @@ Read Lola and great papers
 def to_tensor(arr):
     return Transformer().generate()(arr)
 
-class CpGExplainer: # consider shap.kmeans
+class CpGExplainer: # consider shap.kmeans or grab representative sample of each outcome in training set for background ~ 39 * 2 samples, 39 cancers, should speed things up, small training set when building explainer https://github.com/slundberg/shap/issues/372
     def __init__(self,prediction_function, cuda):
         self.prediction_function=prediction_function
         self.cuda = cuda
@@ -61,13 +61,13 @@ class CpGExplainer: # consider shap.kmeans
             self.explainer=shap.KernelExplainer(self.prediction_function, train_methyl_array.return_raw_beta_array(), link="identity")
 
 
-    def return_top_shapley_features(self, test_methyl_array, n_samples, n_top_features, shap_sample_batch_size=None):
+    def return_top_shapley_features(self, test_methyl_array, n_samples, n_top_features, n_outputs, shap_sample_batch_size=None):
         n_batch = 1
-        if shap_sample_batch_size != None:
+        if shap_sample_batch_size != None and self.method != 'deep':
             n_batch = int(n_samples/shap_sample_batch_size)
             n_samples = shap_sample_batch_size
         test_arr = test_methyl_array.return_raw_beta_array()
-        shap_values = np.zeros(test_arr.shape)
+        shap_values = np.zeros((n_outputs,)+test_arr.shape)
         if self.method != 'kernel':
             test_arr=to_tensor(test_arr) if not self.cuda else to_tensor(test_arr).cuda()
         for i in range(n_batch):
@@ -80,32 +80,35 @@ class CpGExplainer: # consider shap.kmeans
         cpgs=np.array(list(test_methyl_array.beta))
         top_cpgs=[]
         for i in range(len(shap_values)): # list of top cpgs, one per class
-            top_feature_idx=np.argsort(shap_values[i].mean(0)*-1)[:n_top_features]
-            top_cpgs.append(np.vstack([cpgs[top_feature_idx],shap_values[i].mean(0)[top_feature_idx]]).T) # -np.abs(shap_values) # should I only consider the positive cases
+            top_feature_idx=np.argsort(shap_values[i, ...].mean(0)*-1)[:n_top_features]
+            top_cpgs.append(np.vstack([cpgs[top_feature_idx],shap_values[i, ...].mean(0)[top_feature_idx]]).T) # -np.abs(shap_values) # should I only consider the positive cases
         self.top_cpgs = top_cpgs # return shapley values
-        self.shapley_features = [pd.DataFrame(shap_values[i],index=test_methyl_array.beta.index,columns=cpgs) for i in range(len(shap_values))]
+        self.shapley_values = [pd.DataFrame(shap_values[i, ...],index=test_methyl_array.beta.index,columns=cpgs) for i in range(shap_values.shape[0])]
 
 class BioInterpreter:
     def __init__(self, top_cpgs):
         self.top_cpgs = top_cpgs
-
-    def gometh(self, collection='GO', allcpgs=[]):# go or kegg # add rgreat, lola, roadmap-chromatin hmm, atac-seq, chip-seq, gometh, Hi-C, bedtools, Owen's analysis
-        import rpy2.robjects as robjects
         from rpy2.robjects.packages import importr
+        self.hg19 = importr('IlluminaHumanMethylation450kanno.ilmn12.hg19')
+        self.missMethyl=importr('missMethyl')
+        self.limma=importr('limma')
+
+    def gometh(self, collection='GO', allcpgs=[]):# consider turn into generator go or kegg # add rgreat, lola, roadmap-chromatin hmm, atac-seq, chip-seq, gometh, Hi-C, bedtools, Owen's analysis
+        import rpy2.robjects as robjects
         from rpy2.robjects import pandas2ri
         pandas2ri.activate()
         output_dfs={}
-        missMethyl=importr('missMethyl')
-        limma=importr('limma')
         if allcpgs:
             allcpgs=robjects.vectors.StrVector(allcpgs)
         else:
             allcpgs=robjects.r('NULL')
         for i, list_cpgs in enumerate(self.top_cpgs):
+            click.echo('Start Prediction {} GOMETH'.format(i))
             list_cpgs=robjects.vectors.StrVector(list_cpgs[:,0].tolist())
-            gometh_output = missMethyl.gometh(sig_cpg=list_cpgs,all_cpg=allcpgs,collection=collection)
-            gometh_output = limma.topKEGG(gometh_output) if collection=='KEGG' else limma.topGO(gometh_output)
+            gometh_output = self.missMethyl.gometh(sig_cpg=list_cpgs,all_cpg=allcpgs,collection=collection)
+            gometh_output = self.limma.topKEGG(gometh_output) if collection=='KEGG' else self.limma.topGO(gometh_output)
             output_dfs['prediction_{}'.format(i)]=pandas2ri.ri2py(robjects.r['as'](gometh_output,'data.frame'))
+            click.echo('GO/KEGG Computed for Prediction {} Cpgs: {}'.format(i, ' '.join(list_cpgs)))
         return output_dfs
 
 
@@ -161,7 +164,10 @@ def main_prediction_function(n_workers,batch_size, model, cuda):
 @click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/', help='Output directory for interpretations.', type=click.Path(exists=False), show_default=True)
 @click.option('-e', '--method', default='kernel', help='Explainer type.', type=click.Choice(['kernel','deep','gradient']), show_default=True)
 @click.option('-ssbs', '--shap_sample_batch_size', default=0, help='Break up shapley computations into batches. Set to 0 for only 1 batch.', show_default=True)
-def return_important_cpgs(input_pkl, train_test_idx_pkl, model_pickle, n_workers, batch_size, cuda, n_samples, n_top_features, output_dir, method, shap_sample_batch_size):
+@click.option('-r', '--n_random_representative', default=0, help='Number of representative samples to choose for background selection. Is this number for regression models, or this number per class for classification problems.', show_default=True)
+@click.option('-col', '--interest_col', default='disease', help='Column of interest for sample selection for explainer training.', type=click.Path(exists=False), show_default=True)
+@click.option('-rt', '--n_random_representative_test', default=0, help='Number of representative samples to choose for test set. Is this number for regression models, or this number per class for classification problems.', show_default=True)
+def return_important_cpgs(input_pkl, train_test_idx_pkl, model_pickle, n_workers, batch_size, cuda, n_samples, n_top_features, output_dir, method, shap_sample_batch_size, n_random_representative, interest_col, n_random_representative_test):
     os.makedirs(output_dir,exist_ok=True)
     input_dict = pickle.load(open(input_pkl,'rb'))
     preprocessed_methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
@@ -169,39 +175,51 @@ def return_important_cpgs(input_pkl, train_test_idx_pkl, model_pickle, n_workers
     train_test_idx_dict=pickle.load(open(train_test_idx_pkl,'rb'))
     train_methyl_array, test_methyl_array=preprocessed_methyl_array.subset_index(train_test_idx_dict['train']), preprocessed_methyl_array.subset_index(train_test_idx_dict['test'])
     model = torch.load(model_pickle)
+    if n_random_representative:
+        train_methyl_array = train_methyl_array.subsample(interest_col, n_samples=n_random_representative, categorical=model.categorical if 'categorical' in dir(model) else False)
+    if n_random_representative_test:
+        test_methyl_array = test_methyl_array.subsample(interest_col, n_samples=n_random_representative_test, categorical=model.categorical if 'categorical' in dir(model) else False)
     model.eval()
     if cuda:
         model = model.cuda()
     if method == 'deep' or method == 'gradient':
         model.forward = model.forward_predict
-    prediction_function=main_prediction_function(n_workers,batch_size, model, cuda) if method == 'kernel' else model
+    t_arr = train_methyl_array.return_raw_beta_array()
+    prediction_function=main_prediction_function(n_workers,min(batch_size,t_arr.shape[0]), model, cuda) if method == 'kernel' else model
     # in order for shap to work, prediction_function must work with methylation array beta values
-    #test_results=prediction_function(train_methyl_array.return_raw_beta_array())
+    n_test_results_outputs=main_prediction_function(n_workers, 1, model, cuda)(t_arr[:2, ...]).shape[1]
     # if above does not work, shap will not work
     cpg_explainer = CpGExplainer(prediction_function, cuda)
     cpg_explainer.build_explainer(train_methyl_array, method, batch_size=batch_size)
     if not shap_sample_batch_size:
         shap_sample_batch_size = None
-    cpg_explainer.return_top_shapley_features(test_methyl_array, n_samples, n_top_features, shap_sample_batch_size=shap_sample_batch_size)
+    cpg_explainer.return_top_shapley_features(test_methyl_array, n_samples, n_top_features, n_outputs=n_test_results_outputs, shap_sample_batch_size=shap_sample_batch_size)
     top_cpgs = cpg_explainer.top_cpgs
     shapley_values = cpg_explainer.shapley_values
     output_top_cpgs=join(output_dir,'top_cpgs.p')
+    output_all_cpgs=join(output_dir,'all_cpgs.p')
     output_shapley_values=join(output_dir,'shapley_values.p')
     output_explainer=join(output_dir,'explainer.p')
+    pickle.dump(train_methyl_array.return_cpgs(),open(output_all_cpgs,'wb'))
     pickle.dump(top_cpgs,open(output_top_cpgs,'wb'))
     pickle.dump(shapley_values,open(output_shapley_values,'wb'))
     pickle.dump(cpg_explainer.explainer,open(output_explainer,'wb'))
 
 @interpret.command()
+@click.option('-a', '--all_cpgs_pickle', default='./interpretations/shapley_explanations/all_cpgs.p', help='List of all cpgs used in shapley analysis.', type=click.Path(exists=False), show_default=True)
 @click.option('-t', '--top_cpgs_pickle', default='./interpretations/shapley_explanations/top_cpgs.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./interpretations/biological_explanations/', help='Output directory for interpretations.', type=click.Path(exists=False), show_default=True)
-def gometh_cpgs(top_cpgs_pickle,output_dir):
+def gometh_cpgs(all_cpgs_pickle,top_cpgs_pickle,output_dir):
     """Add categorical encoder as custom input, then can use to change names of output csvs to match disease if encoder exists."""
     os.makedirs(output_dir,exist_ok=True)
+    if os.path.exists(all_cpgs_pickle):
+        all_cpgs=list(pickle.load(open(all_cpgs_pickle,'rb')))
+    else:
+        all_cpgs = []
     top_cpgs=pickle.load(open(top_cpgs_pickle,'rb'))
     bio_interpreter = BioInterpreter(top_cpgs)
-    go_outputs=bio_interpreter.gometh('GO')
-    kegg_outputs=bio_interpreter.gometh('KEGG')
+    go_outputs=bio_interpreter.gometh('GO', allcpgs=all_cpgs)
+    kegg_outputs=bio_interpreter.gometh('KEGG', allcpgs=all_cpgs)
     for k in go_outputs:
         output_csvs={'GO':join(output_dir,'{}_GO.csv'.format(k)),'KEGG':join(output_dir,'{}_KEGG.csv'.format(k))}
         go_outputs[k].to_csv(output_csvs['GO'])
