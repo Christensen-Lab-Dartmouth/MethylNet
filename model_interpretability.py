@@ -86,14 +86,19 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
         self.shapley_values = [pd.DataFrame(shap_values[i, ...],index=test_methyl_array.beta.index,columns=cpgs) for i in range(shap_values.shape[0])]
 
 class BioInterpreter:
-    def __init__(self, top_cpgs):
+    def __init__(self, top_cpgs, prediction_classes=None):
         self.top_cpgs = top_cpgs
         from rpy2.robjects.packages import importr
         self.hg19 = importr('IlluminaHumanMethylation450kanno.ilmn12.hg19')
         self.missMethyl=importr('missMethyl')
         self.limma=importr('limma')
+        self.prediction_classes = prediction_classes
+        if self.prediction_classes == None:
+            self.prediction_classes = list(range(len(self.top_cpgs)))
+        else:
+            self.prediction_classes=list(map(lambda x: x.replace(' ',''),prediction_classes))
 
-    def gometh(self, collection='GO', allcpgs=[]):# consider turn into generator go or kegg # add rgreat, lola, roadmap-chromatin hmm, atac-seq, chip-seq, gometh, Hi-C, bedtools, Owen's analysis
+    def gometh(self, collection='GO', allcpgs=[], prediction_idx=[]):# consider turn into generator go or kegg # add rgreat, lola, roadmap-chromatin hmm, atac-seq, chip-seq, gometh, Hi-C, bedtools, Owen's analysis
         import rpy2.robjects as robjects
         from rpy2.robjects import pandas2ri
         pandas2ri.activate()
@@ -102,13 +107,18 @@ class BioInterpreter:
             allcpgs=robjects.vectors.StrVector(allcpgs)
         else:
             allcpgs=robjects.r('NULL')
-        for i, list_cpgs in enumerate(self.top_cpgs):
-            click.echo('Start Prediction {} GOMETH'.format(i))
+        if not prediction_idx:
+            prediction_idx=range(len(self.top_cpgs))
+        else:
+            prediction_idx=map(int,prediction_idx)
+        for i in prediction_idx:
+            list_cpgs=self.top_cpgs[i]
+            print('Start Prediction {} GOMETH'.format(self.prediction_classes[i]))
             list_cpgs=robjects.vectors.StrVector(list_cpgs[:,0].tolist())
             gometh_output = self.missMethyl.gometh(sig_cpg=list_cpgs,all_cpg=allcpgs,collection=collection)
             gometh_output = self.limma.topKEGG(gometh_output) if collection=='KEGG' else self.limma.topGO(gometh_output)
-            output_dfs['prediction_{}'.format(i)]=pandas2ri.ri2py(robjects.r['as'](gometh_output,'data.frame'))
-            click.echo('GO/KEGG Computed for Prediction {} Cpgs: {}'.format(i, ' '.join(list_cpgs)))
+            output_dfs['prediction_{}'.format(self.prediction_classes[i])]=pandas2ri.ri2py(robjects.r['as'](gometh_output,'data.frame'))
+            print('GO/KEGG Computed for Prediction {} Cpgs: {}'.format(self.prediction_classes[i], ' '.join(list_cpgs)))
         return output_dfs
 
 
@@ -208,18 +218,26 @@ def return_important_cpgs(input_pkl, train_test_idx_pkl, model_pickle, n_workers
 @interpret.command()
 @click.option('-a', '--all_cpgs_pickle', default='./interpretations/shapley_explanations/all_cpgs.p', help='List of all cpgs used in shapley analysis.', type=click.Path(exists=False), show_default=True)
 @click.option('-t', '--top_cpgs_pickle', default='./interpretations/shapley_explanations/top_cpgs.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
+@click.option('-e', '--categorical_encoder', default='./predictions/one_hot_encoder.p', help='One hot encoder if categorical model.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./interpretations/biological_explanations/', help='Output directory for interpretations.', type=click.Path(exists=False), show_default=True)
-def gometh_cpgs(all_cpgs_pickle,top_cpgs_pickle,output_dir):
+@click.option('-i', '--prediction_idx', multiple=True, default=[], help='Prediction indices, leave empty to output all indices. Inputs must be int.', show_default=True)
+def gometh_cpgs(all_cpgs_pickle,top_cpgs_pickle,categorical_encoder,output_dir, prediction_idx):
     """Add categorical encoder as custom input, then can use to change names of output csvs to match disease if encoder exists."""
     os.makedirs(output_dir,exist_ok=True)
+    if os.path.exists(categorical_encoder):
+        categorical_encoder=pickle.load(open(categorical_encoder,'rb'))
+        prediction_classes=list(categorical_encoder.categories_[0])
+    else:
+        prediction_classes = None
     if os.path.exists(all_cpgs_pickle):
         all_cpgs=list(pickle.load(open(all_cpgs_pickle,'rb')))
     else:
         all_cpgs = []
     top_cpgs=pickle.load(open(top_cpgs_pickle,'rb'))
-    bio_interpreter = BioInterpreter(top_cpgs)
-    go_outputs=bio_interpreter.gometh('GO', allcpgs=all_cpgs)
-    kegg_outputs=bio_interpreter.gometh('KEGG', allcpgs=all_cpgs)
+    bio_interpreter = BioInterpreter(top_cpgs, prediction_classes)
+    prediction_idx=list(prediction_idx)
+    go_outputs=bio_interpreter.gometh('GO', allcpgs=all_cpgs, prediction_idx=prediction_idx)
+    kegg_outputs=bio_interpreter.gometh('KEGG', allcpgs=all_cpgs, prediction_idx=prediction_idx)
     for k in go_outputs:
         output_csvs={'GO':join(output_dir,'{}_GO.csv'.format(k)),'KEGG':join(output_dir,'{}_KEGG.csv'.format(k))}
         go_outputs[k].to_csv(output_csvs['GO'])

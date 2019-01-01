@@ -214,7 +214,15 @@ class TybaltTitusVAE(nn.Module):
     def forward_predict(self, x):
         return self.get_latent_z(x)
 
+class ChromosomeVAE(nn.Module):
+    """Split up CpGs by chromosome, then run autoencoder on each chromosome, concatenating the latent spaces, parameterizing and running KL loss / reconstruction on that."""
+    def __init__(self):
+        super(nn.Module,self).__init__()
+        print('Not implemented.')
+        pass
+
 class CVAE(nn.Module):
+    """Add option to feed in Hi-C / ATAC-Seq data."""
     def __init__(self, in_shape, n_latent, custom_kernel_sizes, kernel_widths, kernel_heights, n_pre_latent, stride_size, cuda=False):
         super(CVAE,self).__init__()
         self.n_post_latent = n_pre_latent
@@ -381,7 +389,7 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
         return Y_pred
 
 class MLPFinetuneVAE:
-    def __init__(self, mlp_model, n_epochs, loss_fn, optimizer_vae, optimizer_mlp, cuda=True, categorical=False, scheduler_opts={}, output_latent=True):
+    def __init__(self, mlp_model, n_epochs, loss_fn, optimizer_vae, optimizer_mlp, cuda=True, categorical=False, scheduler_opts={}, output_latent=True, train_decoder=False):
         self.model=mlp_model
         #print(self.model)
         if cuda:
@@ -400,6 +408,7 @@ class MLPFinetuneVAE:
         self.return_latent = True
         self.categorical = categorical
         self.output_latent = output_latent
+        self.train_decoder = train_decoder # FIXME add loss for decoder if selecting this option and freeze other weights when updating decoder, also change forward function to include reconstruction, change back when done
 
     def fit(self, train_data):
         loss_list = []
@@ -439,7 +448,7 @@ class MLPFinetuneVAE:
     def predict(self, test_data):
         return test_mlp(self.model, test_data, self.categorical, self.cuda, self.output_latent)
 
-class VAE_MLP(nn.Module):
+class VAE_MLP(nn.Module): # add ability to train decoder
     def __init__(self, vae_model, n_output, categorical=False, hidden_layer_topology=[100,100,100]):
         super(VAE_MLP,self).__init__()
         self.vae = vae_model
@@ -461,6 +470,11 @@ class VAE_MLP(nn.Module):
     def forward(self,x):
         out=self.vae.get_latent_z(x)
         return self.mlp(out), out
+
+    def forward_embed(self,x):
+        out=self.vae.get_latent_z(x)
+        recon=self.vae.decoder(out)
+        return self.mlp(out), out, recon
 
     def toggle_latent_z(self):
         if self.output_z:
