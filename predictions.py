@@ -92,6 +92,8 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
     if add_validation_set:
         vae_mlp.add_validation_set(test_methyl_dataloader)
     vae_mlp_snapshot = vae_mlp.fit(train_methyl_dataloader).model
+    if 'encoder' in dir(train_methyl_dataset):
+        pickle.dump(train_methyl_dataset.encoder,open(output_onehot_encoder,'wb'))
     del train_methyl_dataloader, train_methyl_dataset
     """methyl_dataset=get_methylation_dataset(methyl_array,interest_cols,predict=True)
     methyl_dataset_loader = DataLoader(
@@ -116,8 +118,6 @@ def predict(input_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,di
     torch.save(vae_mlp_snapshot,output_model)
     Y_pred.to_csv(output_file)#pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
     Y_true.to_csv(output_gt_file)
-    if 'encoder' in dir(train_methyl_dataset):
-        pickle.dump(train_methyl_dataset.encoder,open(output_onehot_encoder,'wb'))
     pickle.dump(train_test_idx_dict,open(train_test_idx_file,'wb'))
     return latent_projection, Y_pred, Y_true, vae_mlp_snapshot
 

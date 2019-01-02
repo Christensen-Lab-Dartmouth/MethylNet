@@ -308,12 +308,13 @@ class CVAE(nn.Module):
     def forward_predict(self, x):
         return self.get_latent_z(x)
 
-def train_mlp(model, loader, loss_func, optimizer_vae, optimizer_mlp, cuda=True, categorical=False):
+def train_mlp(model, loader, loss_func, optimizer_vae, optimizer_mlp, cuda=True, categorical=False, train_decoder=False):
     model.train(True)
 
     #model.vae.eval() also freeze for depth of tuning?
     #print(loss_func)
     running_loss=0.
+    running_decoder_loss=0.
     for inputs, samples, y_true in loader: # change dataloder for classification/regression tasks
         #print(samples)
         inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
@@ -324,22 +325,27 @@ def train_mlp(model, loader, loss_func, optimizer_vae, optimizer_mlp, cuda=True,
         if cuda:
             inputs = inputs.cuda()
             y_true = y_true.cuda()
-        y_predict, _ = model(inputs)
+        y_predict, z = model(inputs)
         loss = loss_func(y_predict,y_true)
 
         optimizer_vae.zero_grad()
         optimizer_mlp.zero_grad()
         loss.backward()
+        if train_decoder:
+            model, decoder_loss = train_decoder_(model, inputs, z)
+            running_decoder_loss += decoder_loss
         optimizer_vae.step()
         optimizer_mlp.step()
         running_loss+=loss.item()
-
+    if train_decoder:
+        print('Decoder Loss is {}'.format(running_decoder_loss))
     return model, running_loss
 
-def val_mlp(model, loader, loss_func, cuda=True, categorical=False):
+def val_mlp(model, loader, loss_func, cuda=True, categorical=False, train_decoder=False):
     model.eval()
 
     #model.vae.eval() also freeze for depth of tuning?
+    running_decoder_loss=0.
     running_loss=0.
     for inputs, samples, y_true in loader: # change dataloder for classification/regression tasks
         inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
@@ -350,9 +356,13 @@ def val_mlp(model, loader, loss_func, cuda=True, categorical=False):
         if cuda:
             inputs = inputs.cuda()
             y_true = y_true.cuda()
-        y_predict, _ = model(inputs)
+        y_predict, z = model(inputs)
         loss = loss_func(y_predict,y_true)
         running_loss+=loss.item()
+        if train_decoder:
+            running_decoder_loss += val_decoder_(model, inputs, z)
+    if train_decoder:
+        print('Val Decoder Loss is {}'.format(running_decoder_loss))
     return model, running_loss
 
 def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
@@ -388,6 +398,33 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
     else:
         return Y_pred
 
+def train_decoder_(model, x, z):
+    model.vae.train(True)
+    for param in model.parameters():
+        param.requires_grad = False
+    for param in model.vae.decoder.parameters():
+        param.requires_grad = True
+    loss_fn = nn.BCELoss(reduction='sum')
+    x_hat = model.decode(z)
+    if type(x_hat) != type([]):
+        x_hat = [x_hat]
+    loss = sum([loss_func(x_h, x) for x_h in x_hat])
+    loss.backward()
+    for param in model.parameters():
+        param.requires_grad = True
+    model.vae.eval()
+    return model, loss.item()
+
+def val_decoder_(model, x, z):
+    model.vae.eval()
+    loss_fn = nn.BCELoss(reduction='sum')
+    x_hat = model.decode(z)
+    if type(x_hat) != type([]):
+        x_hat = [x_hat]
+    loss = sum([loss_func(x_h, x) for x_h in x_hat])
+    return loss.item()
+
+
 class MLPFinetuneVAE:
     def __init__(self, mlp_model, n_epochs, loss_fn, optimizer_vae, optimizer_mlp, cuda=True, categorical=False, scheduler_opts={}, output_latent=True, train_decoder=False):
         self.model=mlp_model
@@ -418,13 +455,13 @@ class MLPFinetuneVAE:
         plt_data={'loss':[],'lr_vae':[],'lr_mlp':[], 'val_loss':[]}
         for epoch in range(self.n_epochs):
             print(epoch)
-            model, loss = train_mlp(model, train_data, self.loss_fn, self.optimizer_vae, self.optimizer_mlp, self.cuda,categorical=self.categorical)
+            model, loss = train_mlp(model, train_data, self.loss_fn, self.optimizer_vae, self.optimizer_mlp, self.cuda,categorical=self.categorical, train_decoder=self.train_decoder)
             self.scheduler_vae.step()
             self.scheduler_mlp.step()
             plt_data['loss'].append(loss)
             print("Epoch {}: Loss {}".format(epoch,loss))
             if self.validation_set:
-                model, val_loss = val_mlp(model, self.validation_set, self.loss_fn, self.cuda,categorical=self.categorical)
+                model, val_loss = val_mlp(model, self.validation_set, self.loss_fn, self.cuda,categorical=self.categorical, train_decoder=self.train_decoder)
                 plt_data['val_loss'].append(val_loss)
                 print("Epoch {}: Val-Loss {}".format(epoch,val_loss))
             plt_data['lr_vae'].append(self.scheduler_vae.get_lr())
@@ -468,8 +505,11 @@ class VAE_MLP(nn.Module): # add ability to train decoder
         self.output_z=False
 
     def forward(self,x):
-        out=self.vae.get_latent_z(x)
-        return self.mlp(out), out
+        z=self.vae.get_latent_z(x)
+        return self.mlp(z), z
+
+    def decode(self,z):
+        return self.vae.decoder(z)
 
     def forward_embed(self,x):
         out=self.vae.get_latent_z(x)

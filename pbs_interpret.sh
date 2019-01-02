@@ -13,7 +13,7 @@
 #PBS -l feature=gpu
 #PBS -l mem=100GB
 # request 4 hours and 30 minutes of cpu time
-#PBS -l walltime=01:00:00
+#PBS -l walltime=02:00:00
 # mail is sent to you when the job starts and when it terminates or aborts
 
 # Join error and standard output into one file
@@ -30,6 +30,6 @@ module load python/3-Anaconda
 module load cuda
 echo $gpuNum
 source activate py36
-CUDA_VISIBLE_DEVICES="$gpuNum" python model_interpretability.py return_important_cpgs -e gradient -ssbs 0 -ns 10 -bs 512 -r 2 -rt 1 -col disease_only -c
+CUDA_VISIBLE_DEVICES="$gpuNum" python model_interpretability.py return_important_cpgs -e gradient -ssbs 0 -ns 10 -bs 512 -r 3 -rt 3 -col disease -c
 python model_interpretability.py gometh_cpgs
 exit 0
