@@ -80,8 +80,8 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
         cpgs=np.array(list(test_methyl_array.beta))
         top_cpgs=[]
         for i in range(len(shap_values)): # list of top cpgs, one per class
-            top_feature_idx=np.argsort(shap_values[i, ...].mean(0)*-1)[:n_top_features]
-            top_cpgs.append(np.vstack([cpgs[top_feature_idx],shap_values[i, ...].mean(0)[top_feature_idx]]).T) # -np.abs(shap_values) # should I only consider the positive cases
+            top_feature_idx=np.argsort(np.abs(shap_values[i, ...]).mean(0)*-1)[:n_top_features]
+            top_cpgs.append(np.vstack([cpgs[top_feature_idx],np.abs(shap_values[i, ...]).mean(0)[top_feature_idx]]).T) # -np.abs(shap_values) # should I only consider the positive cases
         self.top_cpgs = top_cpgs # return shapley values
         self.shapley_values = [pd.DataFrame(shap_values[i, ...],index=test_methyl_array.beta.index,columns=cpgs) for i in range(shap_values.shape[0])]
 
