@@ -5,7 +5,7 @@
 # Specify the gpuq queue
 #PBS -q gpuq
 # Specify the number of gpus
-#PBS -l nodes=1:ppn=10
+#PBS -l nodes=1
 #PBS -l gpus=1
 # gpus ppn was 4 and 4, figure out in future
 #PBS -l hostlist=g03
@@ -30,6 +30,6 @@ module load python/3-Anaconda
 module load cuda
 echo $gpuNum
 source activate py36
-CUDA_VISIBLE_DEVICES="$gpuNum" python model_interpretability.py return_important_cpgs -e gradient -ssbs 25 -ns 100 -bs 512 -r 4 -rt 3 -col disease_only -nf 10 -c
-python model_interpretability.py gometh_cpgs
+CUDA_VISIBLE_DEVICES="$gpuNum" python model_interpretability.py return_important_cpgs -mth gradient -ssbs 25 -ns 100 -bs 512 -r 4 -rt 3 -col disease -nf 2000 -c
+#python model_interpretability.py gometh_cpgs
 exit 0

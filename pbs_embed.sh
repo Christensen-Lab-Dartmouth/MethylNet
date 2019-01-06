@@ -4,8 +4,8 @@
 #PBS -N methyl_embed
 # Specify the gpuq queue
 #PBS -q gpuq
-# Specify the number of gpus
-#PBS -l nodes=1:ppn=10
+# Specify the number of gpus :ppn=10
+#PBS -l nodes=1
 #PBS -l gpus=1
 # gpus ppn was 4 and 4, figure out in future
 #PBS -l hostlist=g04
