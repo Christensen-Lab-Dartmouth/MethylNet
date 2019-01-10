@@ -55,8 +55,9 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
         shuffle=True,
         pin_memory=False)
 
+    n_input = methyl_array.return_shape()[1]
     if not convolutional:
-        model=TybaltTitusVAE(n_input=methyl_array.return_shape()[1],n_latent=n_latent,hidden_layer_encoder_topology=hidden_layer_encoder_topology,cuda=cuda)
+        model=TybaltTitusVAE(n_input=n_input,n_latent=n_latent,hidden_layer_encoder_topology=hidden_layer_encoder_topology,cuda=cuda)
     else:
         model = CVAE(n_latent=n_latent,in_shape=methyl_dataset.new_shape, kernel_heights=height_kernel_sizes, kernel_widths=width_kernel_sizes, n_pre_latent=n_latent*2) # change soon
 
@@ -88,7 +89,7 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     torch.save(auto_encoder.model,output_model)
     pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
     pickle.dump(train_test_idx_dict,open(train_test_idx_file,'wb'))
-    return latent_projection, outcome_dict, auto_encoder.model
+    return latent_projection, outcome_dict, n_input, auto_encoder
 
 @embed.command()
 @click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
@@ -115,14 +116,23 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 @click.option('-ws', '--width_kernel_sizes', default=[], multiple=True, help='Widths of convolutional kernels.')
 @click.option('-v', '--add_validation_set', is_flag=True, help='Evaluate validation set.')
 @click.option('-l', '--loss_reduction', default='sum', show_default=True, help='Type of reduction on loss function.', type=click.Choice(['sum','elementwise_mean','none']))
-def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up, beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction):
+@click.option('-hl', '--hyperparameter_log', default='hyperparameters.csv', show_default=True, help='CSV file containing prior runs.', type=click.Path(exists=False))
+def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up, beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction, hyperparameter_log):
     """Perform variational autoencoding on methylation dataset."""
     hlt_list=filter(None,hidden_layer_encoder_topology.split(','))
     if hlt_list:
         hidden_layer_encoder_topology=list(map(int,hlt_list))
     else:
         hidden_layer_encoder_topology=[]
-    embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction)
+    _,_,n_input,autoencoder = embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction)
+    hyperparameter_row = [autoencoder.best_epoch, autoencoder.min_loss, autoencoder.min_val_loss, n_input, n_latent, str(hidden_layer_encoder_topology), learning_rate, weight_decay, beta, kl_warm_up, scheduler, t_max, t_mult, batch_size, train_percent]
+    if os.path.exists(hyperparameter_log):
+        hyperparameter_df = pd.read_csv(hyperparameter_log)
+        hyperparameter_df.append(hyperparameter_row)
+    else:
+        hyperparameter_df = pd.DataFrame(columns=["best_epoch", "min_loss", "min_val_loss", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate", "weight_decay", "beta", "kl_warm_up", "scheduler", "t_max", "t_mult", "batch_size", "train_percent"])
+        hyperparameter_df.loc[0] = hyperparameter_row
+    hyperparameter_df.to_csv(hyperparameter_log)
 
 #################
 

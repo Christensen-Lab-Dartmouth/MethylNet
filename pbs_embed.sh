@@ -29,6 +29,6 @@ export CUDA_DEVICE=$gpuNum
 module load python/3-Anaconda
 module load cuda
 echo $gpuNum
-source activate py36
+source activate methylnet
 CUDA_VISIBLE_DEVICES="$gpuNum" python embedding.py perform_embedding -n 300 -bs 512 -hlt 300,300 -kl 0 --t_max 10 --eta_min 1e-7 --t_mult 1 -b 200 -s warm_restarts -lr 1e-3 -bce -e 50 -v -l sum -c
 exit 0

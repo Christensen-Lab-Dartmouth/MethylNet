@@ -1,0 +1,15 @@
+1. Pancancer
+    * rsync /Users/joshualevy/Documents/GitHub/methylation/*.sh /Users/joshualevy/Documents/GitHub/methylation/*.py /Users/joshualevy/Documents/GitHub/PyMethylProcess/preprocess.py f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer/
+    * python preprocess.py get_categorical_distribution -k disease
+    * python preprocess.py remove_diseases -is ./tcga_idats/minfiSheet.csv -os ./samplesheet_exclusion.csv -l 11 -d
+    * python preprocess.py meffil_encode -is ./samplesheet_exclusion.csv -os final_samplesheet.csv
+    * python preprocess.py split_preprocess_input_by_subtype -i final_samplesheet.csv -d
+    * python preprocess.py batch_deploy_preprocess -n 35 -qc -s  -r -m
+    * mksub pbs_preprocess.sh
+2. Brain Cancer
+    * rsync /Users/joshualevy/Documents/GitHub/methylation/*.sh /Users/joshualevy/Documents/GitHub/methylation/*.py /Users/joshualevy/Documents/GitHub/PyMethylProcess/preprocess.py f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer/
+    * python preprocess.py get_categorical_distribution -is ./geo_idats/geo_merged.csv -d
+    * python preprocess.py remove_diseases -is ./geo_idats/geo_merged.csv -os ./samplesheet_exclusion.csv -l 10 -d
+    * python preprocess.py meffil_encode -is ./samplesheet_exclusion.csv -os final_samplesheet.csv
+    * python preprocess.py split_preprocess_input_by_subtype -i final_samplesheet.csv -d
+    * python preprocess.py batch_deploy_preprocess -n 35 -qc -s  -r -m
