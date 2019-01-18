@@ -1,16 +1,17 @@
 #!/bin/bash -l
 
 # declare a name for this job to be sample_job
-#PBS -N methyl_cpu
+#PBS -N methylprocess
 # Specify the gpuq queue
 #PBS -q default
 # Specify the number of gpus
 #PBS -l nodes=1:ppn=20
+#PBS -l feature='cellm'
 # Specify the gpu feature
-#PBS -l mem=200GB
-#PBS -A Free
+#PBS -l mem=60GB
 # request 4 hours and 30 minutes of cpu time
-#PBS -l walltime=48:00:00
+#PBS -A Free
+#PBS -l walltime=24:00:00
 # Join error and standard output into one file
 #PBS -j oe
 # By default, PBS scripts execute in your home directory, not the
@@ -19,7 +20,7 @@
 cd $PBS_O_WORKDIR
 # run the program
 module load python/3-Anaconda
-source activate methylnet
+source activate methylnet_pro2
 #mkdir backup_final_preprocessed
 python preprocess.py batch_deploy_preprocess -n 19 -qc -s  -r -m
 #mv final_preprocessed/methyl_array.pkl backup_final_preprocessed

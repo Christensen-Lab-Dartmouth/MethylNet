@@ -29,7 +29,7 @@ export CUDA_DEVICE=$gpuNum
 module load python/3-Anaconda
 module load cuda
 echo $gpuNum
-source activate methylnet
+source activate methylnet_pro
 CUDA_VISIBLE_DEVICES="$gpuNum" python model_interpretability.py return_important_cpgs -mth gradient -ssbs 25 -ns 100 -bs 512 -r 4 -rt 3 -col disease -nf 2000 -c
 #python model_interpretability.py gometh_cpgs
 exit 0

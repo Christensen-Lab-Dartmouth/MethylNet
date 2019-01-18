@@ -29,6 +29,6 @@ export CUDA_DEVICE=$gpuNum
 module load python/3-Anaconda
 module load cuda
 echo $gpuNum
-source activate methylnet
+source activate methylnet_pro
 CUDA_VISIBLE_DEVICES="$gpuNum" python predictions.py make_prediction -cat -hlt 100 -s warm_restarts -bs 256 -c -v -do -e 50 -p 0.8 -lr_vae 1e-4 -lr_mlp 1e-4 -eta 1e-7
 exit 0
