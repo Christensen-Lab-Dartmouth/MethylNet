@@ -86,6 +86,10 @@ def case_control_override_fn(pheno_df, column_of_interest):
 def transform_plot(input_pkl, column_of_interest, output_file, n_neighbors,axes_off,supervised,min_dist, metric, case_control_override):
     """Dimensionality reduce VAE or original beta values using UMAP and plot using plotly."""
     input_dict = pickle.load(open(input_pkl,'rb'))
+    try:
+        input_dict['pheno'][column_of_interest]
+    except:
+        column_of_interest = 'disease'
     if case_control_override:
         input_dict['pheno'] = case_control_override_fn(input_dict['pheno'],column_of_interest)
     t_data = umap_embed(input_dict['beta'], input_dict['pheno'][column_of_interest], n_neighbors, supervised,min_dist, metric)

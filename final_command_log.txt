@@ -1,6 +1,6 @@
 0. module load python/3-Anaconda && source activate methylnet_pro2
 1. Pancancer
-    * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer
+    * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2
     * rsync /Users/joshualevy/Documents/GitHub/methylation/*.sh /Users/joshualevy/Documents/GitHub/PyMethylProcess/run_parallel /Users/joshualevy/Documents/GitHub/methylation/*.py /Users/joshualevy/Documents/GitHub/PyMethylProcess/preprocess.py f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer/
     * python preprocess.py get_categorical_distribution -k disease
     * python preprocess.py remove_diseases -is ./tcga_idats/minfiSheet.csv -os ./samplesheet_exclusion.csv -l 11 -d
@@ -11,27 +11,15 @@
     * python preprocess.py batch_deploy_preprocess -n 19 -qc -s  -r -m -u # load qc results and visualize, make edits # add new qsub script
     * rsync -r -v --progress --exclude='*.rds' f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer/preprocess_outputs/* /Users/joshualevy/Desktop/methylation/final_runs/pancancer/preprocess_outputs/
     * nohup python preprocess.py batch_deploy_preprocess -n 5 -c 4 -r -m -u & # run final normalization # add new qsub script
-    * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/BLCA/ -o preprocess_outputs/BLCA/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -qc -n 4 &
-    * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/BRCA/ -o preprocess_outputs/BRCA/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -u -n 4 &
-    * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/HNSC/ -o preprocess_outputs/HNSC/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -u -n 4 &
-    * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/STAD/ -o preprocess_outputs/STAD/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -u -n 4 &
-    * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/PRAD/ -o preprocess_outputs/PRAD/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -u -n 4 &
-    * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/SKCM/ -o preprocess_outputs/SKCM/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -u -n 4 &
     * python preprocess.py na_report -i preprocess_outputs/ -o na_report/ -r
-    * # add imputation
     * python preprocess.py combine_methylation_arrays -d ./preprocess_outputs/ -e OV
-    * mksub pbs_combine.sh
     * nohup python preprocess.py imputation_pipeline -i ./combined_outputs/methyl_array.pkl -o final_preprocessed/methyl_array.pkl -n 200000 -ss -s sklearn -m Mean -k 20 -d -st 0.05 -ct 0.05 &
     * mkdir visualizations && nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap.html -c disease_only -nn 10 &
     * mkdir embeddings && python embedding.py launch_hyperparameter_scan -sc disease_only -g
-    * nohup python embedding.py launch_hyperparameter_scan -sc disease_only --nohup &
-    * rsync f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer/embeddings/embed_hyperparameters*.csv /Users/joshualevy/Desktop/methylation/final_runs/pancancer
-    * rsync /Users/joshualevy/Desktop/methylation/final_runs/pancancer/embed_hyperparameters_scan_input.csv f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer/embeddings/
-    * mksub pbs_embed_hyperparameters.sh -l hostlist=g03
-    * mksub -I -q gpuq -l hostlist=g03
+    * python embedding.py launch_hyperparameter_scan -sc disease_only --nohup -g
 
 2. Brain Cancer
-    * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer
+    * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2
     * rsync /Users/joshualevy/Documents/GitHub/methylation/*.sh /Users/joshualevy/Documents/GitHub/PyMethylProcess/run_parallel /Users/joshualevy/Documents/GitHub/methylation/*.py /Users/joshualevy/Documents/GitHub/PyMethylProcess/preprocess.py f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer/
     * python preprocess.py get_categorical_distribution -is ./geo_idats/geo_merged.csv -d
     * python preprocess.py remove_diseases -is ./geo_idats/geo_merged.csv -os ./samplesheet_exclusion.csv -l 10 -d
@@ -43,10 +31,23 @@
     * nohup python preprocess.py batch_deploy_preprocess -n 5 -c 4 -r -m -u & # run final normalization
     * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/EPN/ -o preprocess_outputs/EPN/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -u -n 4 &
     * python preprocess.py preprocess_pipeline -i preprocess_outputs/LIPN/ -o preprocess_outputs/LIPN/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -u -n 15 && python preprocess.py na_report -i preprocess_outputs/LIPN/methyl_array.pkl -o na_report_test/
-    * # add imputation
     * python preprocess.py combine_methylation_arrays -d ./preprocess_outputs/
     * nohup python preprocess.py imputation_pipeline -ss -i ./combined_outputs/methyl_array.pkl -o final_preprocessed/methyl_array.pkl -n 200000 -s sklearn -m Mean -k 20 -d -st 0.05 -ct 0.05 &
     * mkdir visualizations && nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap.html -c disease_only -nn 10 &
     * mkdir embeddings && python embedding.py launch_hyperparameter_scan -sc disease_only -g
-    * python embedding.py launch_hyperparameter_scan -sc disease_only --nohup 
+    * python embedding.py launch_hyperparameter_scan -sc disease_only --nohup -g
+
+
+3. Retired Commands
+    * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/BLCA/ -o preprocess_outputs/BLCA/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -qc -n 4 &
+    * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/BRCA/ -o preprocess_outputs/BRCA/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -u -n 4 &
+    * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/HNSC/ -o preprocess_outputs/HNSC/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -u -n 4 &
+    * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/STAD/ -o preprocess_outputs/STAD/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -u -n 4 &
+    * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/PRAD/ -o preprocess_outputs/PRAD/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -u -n 4 &
+    * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/SKCM/ -o preprocess_outputs/SKCM/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -u -n 4 &
+    * mksub pbs_combine.sh
+    * rsync f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer/embeddings/embed_hyperparameters*.csv /Users/joshualevy/Desktop/methylation/final_runs/pancancer
+    * rsync /Users/joshualevy/Desktop/methylation/final_runs/pancancer/embed_hyperparameters_scan_input.csv f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer/embeddings/
+    * mksub pbs_embed_hyperparameters.sh -l hostlist=g03
+    * mksub -I -q gpuq -l hostlist=g03
     * mksub pbs_embed_hyperparameters.sh -l hostlist=g04

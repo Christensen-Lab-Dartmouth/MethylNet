@@ -15,6 +15,7 @@ conda install -y -c click click=6.7
 python -m pip install rpy2
 python -m pip install kneed
 python -m pip install Cython pathos
+python -m pip install nevergrad
 #python -m pip download rpy2==2.9.5 && tar xvzf rpy2-2.9.5.tar.gz
 #cd rpy2-2.9.5 && python setup.py build --r-home /dartfs-hpc/rc/home/w/f003k8w/R/x86_64-redhat-linux-gnu-library/3.5 install
 

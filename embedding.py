@@ -128,15 +128,13 @@ def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_de
         hidden_layer_encoder_topology=[]
     _,_,n_input,autoencoder = embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction, stratify_column)
     hyperparameter_row = [n_epochs, autoencoder.best_epoch, autoencoder.min_loss, autoencoder.min_val_loss, n_input, n_latent, str(hidden_layer_encoder_topology), learning_rate, weight_decay, beta, kl_warm_up, scheduler, t_max, t_mult, batch_size, train_percent]
+    hyperparameter_df = pd.DataFrame(columns=['n_epochs',"best_epoch", "min_loss", "min_val_loss", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate", "weight_decay", "beta", "kl_warm_up", "scheduler", "t_max", "t_mult", "batch_size", "train_percent"])
+    hyperparameter_df.loc[0] = hyperparameter_row
     if os.path.exists(hyperparameter_log):
         print('APPEND')
-        hyperparameter_df = pd.read_csv(hyperparameter_log)
-        hyperparameter_df=hyperparameter_df[[col for col in list(hyperparameter_df) if not col.startswith('Unnamed')]]
-        hyperparameter_df.append(hyperparameter_row)
-    else:
-        print('CREATE')
-        hyperparameter_df = pd.DataFrame(columns=['n_epochs',"best_epoch", "min_loss", "min_val_loss", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate", "weight_decay", "beta", "kl_warm_up", "scheduler", "t_max", "t_mult", "batch_size", "train_percent"])
-        hyperparameter_df.loc[0] = hyperparameter_row
+        hyperparameter_df_former = pd.read_csv(hyperparameter_log)
+        hyperparameter_df_former=hyperparameter_df[[col for col in list(hyperparameter_df) if not col.startswith('Unnamed')]]
+        hyperparameter_df=pd.concat([hyperparameter_df_former,hyperparameter_df],axis=0)
     hyperparameter_df.to_csv(hyperparameter_log)
 
 @embed.command()
@@ -147,55 +145,12 @@ def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_de
 @click.option('-sc', '--stratify_column', default='disease', show_default=True, help='Column to stratify samples on.', type=click.Path(exists=False))
 @click.option('-r', '--reset_all', is_flag=True, help='Run all jobs again.')
 @click.option('-t', '--torque', is_flag=True, help='Submit jobs on torque.')
-@click.option('-gpu', '--gpu', default=0, help='If torque submit, which gpu to use.', show_default=True)
+@click.option('-gpu', '--gpu', default=-1, help='If torque submit, which gpu to use.', show_default=True)
 @click.option('-gn', '--gpu_node', default=1, help='If torque submit, which gpu node to use.', show_default=True)
 @click.option('-nh', '--nohup', is_flag=True, help='Nohup launch jobs.')
 def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup):
-    if generate_input:
-        df=pd.DataFrame(np.array([False,300,1e-3,1e-4,50,'300,300,300',0,200,'warm_restarts',10,1e-7,1.,512,0.85,4,'sum'])[np.newaxis,:],columns=['completed','--n_latent','--learning_rate','--weight_decay','--n_epochs','--hidden_layer_encoder_topology', '--kl_warm_up', '--beta', '--scheduler', '--t_max', '--eta_min', '--t_mult', '--batch_size', '--train_percent', '--n_workers', '--loss_reduction'])
-        df.to_csv(hyperparameter_input_csv)
-    else:
-        from itertools import cycle
-        from pathos.multiprocessing import ProcessingPool as Pool
-        def run(x):
-            print(x)
-            subprocess.call(x,shell=True)
-        lower = lambda x: x.lower()
-        if not torque:
-            gpus=cycle(range(4))
-        else:
-            gpus=cycle([gpu])
-        df=pd.read_csv(hyperparameter_input_csv)
-        if reset_all:
-            df.loc[:,'completed']=False
-        df_final = df[df['completed'].astype(str).map(lower)=='false'].reset_index(drop=True)[['--n_latent','--learning_rate','--weight_decay','--n_epochs','--hidden_layer_encoder_topology', '--kl_warm_up', '--beta', '--scheduler', '--t_max', '--eta_min', '--t_mult', '--batch_size', '--train_percent', '--n_workers', '--loss_reduction']]
-        commands=[]
-        for i in range(df_final.shape[0]):
-            commands.append('python embedding.py perform_embedding -bce -c -v -hl {} -sc {} {}'.format(hyperparameter_output_log,stratify_column,' '.join(['{} {}'.format(k,v) for k,v in [(k2,df_final.loc[i,k2]) for k2 in list(df_final)]])))
-        for i in range(len(commands)):
-            commands[i] = '{} {} {} {}'.format('CUDA_VISIBLE_DEVICES="{}"'.format(next(gpus)),'nohup' if nohup and not torque else '',commands[i],'&' if nohup and not torque else '')
-        if torque:
-            with open('pbs_embed_hyperparameters.sh','r') as f:
-                deploy_txt=f.read().replace('COMMAND',commands[0]).replace('HOST','g0{}'.format(gpu_node))
-            with open('pbs_gpu_deploy.sh','w') as f:
-                f.write(deploy_txt)
-            command = 'mksub pbs_gpu_deploy.sh'
-            print(command)
-            job=os.popen(command).read().strip('\n')
-            df.loc[np.arange(df.shape[0])==np.where(df['completed'].astype(str).map(lower)=='false')[0][0],'completed']=job
-        else:
-            commands = np.array_split(commands,len(commands)//job_chunk_size)
-            for command_list in commands:
-                if nohup:
-                    for command in command_list:
-                        subprocess.call(command,shell=True)
-                else:
-                    pool = Pool(len(command_list))
-                    pool.map(run, command_list)
-                    pool.close()
-                    pool.join()
-            df.loc[:,'completed']=True
-        df[[col for col in list(df) if not col.startswith('Unnamed')]].to_csv(hyperparameter_input_csv)
+    from hyperparameter_scans import coarse_scan
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False)
 
 #################
 
