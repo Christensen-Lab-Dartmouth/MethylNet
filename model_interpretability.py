@@ -8,7 +8,7 @@ from os.path import join
 import click
 import os
 import pickle
-from preprocess import MethylationArray, extract_pheno_beta_df_from_pickle_dict
+from MethylationDataTypes import MethylationArray, extract_pheno_beta_df_from_pickle_dict
 
 
 

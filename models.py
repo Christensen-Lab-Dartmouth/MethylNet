@@ -124,7 +124,7 @@ class AutoEncoder:
             Plotter(animation_plts).write_plots(self.vae_animation_fname)
         self.min_loss = min(np.array(plt_data['kl_loss'])+np.array(plt_data['recon_loss']))
         if self.validation_set:
-            self.min_val_loss = min(plt['val_loss'])
+            self.min_val_loss = min(plt_data['val_loss'])
         else:
             self.min_val_loss = -1
         self.best_epoch = best_epoch
@@ -482,9 +482,9 @@ class MLPFinetuneVAE:
                       pd.DataFrame(np.vstack((range(len(plt_data[k])),plt_data[k])).T,
                                    columns=['x','y'])) for k in plt_data if plt_data[k]],animation=False)
         plts.write_plots(self.loss_plt_fname)
-        self.min_loss = min(plt['loss'])
+        self.min_loss = min(plt_data['loss'])
         if self.validation_set:
-            self.min_val_loss = min(plt['val_loss'])
+            self.min_val_loss = min(plt_data['val_loss'])
         else:
             self.min_val_loss = -1
         self.best_epoch = best_epoch

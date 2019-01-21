@@ -4,7 +4,7 @@ from torch.utils.data import Dataset
 from torchvision.transforms import Compose, RandomCrop, ToTensor, Scale, Pad
 import pandas as pd, numpy as np
 from sklearn.preprocessing import OneHotEncoder
-from preprocess import MethylationArray
+from MethylationDataTypes import MethylationArray
 
 def _reshape(cpgs_per_row, l):
     def resize(vector):
