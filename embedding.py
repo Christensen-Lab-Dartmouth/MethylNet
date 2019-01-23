@@ -119,7 +119,8 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 @click.option('-l', '--loss_reduction', default='sum', show_default=True, help='Type of reduction on loss function.', type=click.Choice(['sum','elementwise_mean','none']))
 @click.option('-hl', '--hyperparameter_log', default='embeddings/embed_hyperparameters_log.csv', show_default=True, help='CSV file containing prior runs.', type=click.Path(exists=False))
 @click.option('-sc', '--stratify_column', default='disease', show_default=True, help='Column to stratify samples on.', type=click.Path(exists=False))
-def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up, beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction, hyperparameter_log,stratify_column):
+@click.option('-j', '--job_name', default='embed_job', show_default=True, help='Embedding job name.', type=click.Path(exists=False))
+def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up, beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction, hyperparameter_log,stratify_column,job_name):
     """Perform variational autoencoding on methylation dataset."""
     hlt_list=filter(None,hidden_layer_encoder_topology.split(','))
     if hlt_list:
@@ -127,13 +128,13 @@ def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_de
     else:
         hidden_layer_encoder_topology=[]
     _,_,n_input,autoencoder = embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction, stratify_column)
-    hyperparameter_row = [n_epochs, autoencoder.best_epoch, autoencoder.min_loss, autoencoder.min_val_loss, n_input, n_latent, str(hidden_layer_encoder_topology), learning_rate, weight_decay, beta, kl_warm_up, scheduler, t_max, t_mult, batch_size, train_percent]
-    hyperparameter_df = pd.DataFrame(columns=['n_epochs',"best_epoch", "min_loss", "min_val_loss", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate", "weight_decay", "beta", "kl_warm_up", "scheduler", "t_max", "t_mult", "batch_size", "train_percent"])
+    hyperparameter_row = [job_name,n_epochs, autoencoder.best_epoch, autoencoder.min_loss, autoencoder.min_val_loss, n_input, n_latent, str(hidden_layer_encoder_topology), learning_rate, weight_decay, beta, kl_warm_up, scheduler, t_max, t_mult, batch_size, train_percent]
+    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate", "weight_decay", "beta", "kl_warm_up", "scheduler", "t_max", "t_mult", "batch_size", "train_percent"])
     hyperparameter_df.loc[0] = hyperparameter_row
     if os.path.exists(hyperparameter_log):
         print('APPEND')
         hyperparameter_df_former = pd.read_csv(hyperparameter_log)
-        hyperparameter_df_former=hyperparameter_df[[col for col in list(hyperparameter_df) if not col.startswith('Unnamed')]]
+        hyperparameter_df_former=hyperparameter_df_former[[col for col in list(hyperparameter_df) if not col.startswith('Unnamed')]]
         hyperparameter_df=pd.concat([hyperparameter_df_former,hyperparameter_df],axis=0)
     hyperparameter_df.to_csv(hyperparameter_log)
 

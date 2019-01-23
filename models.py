@@ -398,6 +398,7 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
     Y_pred=np.vstack(Y_pred)
     final_latent=np.vstack(final_latent)
     Y_true=np.vstack(Y_true)
+    #print(np.hstack([Y_pred,Y_true]))
     sample_names_final = np.array(sample_names_final)
     if output_latent:
         return Y_pred, Y_true, final_latent, sample_names_final
@@ -512,7 +513,7 @@ class VAE_MLP(nn.Module): # add ability to train decoder
                 self.mlp_layers.append(nn.Sequential(layer,nn.ReLU()))
         self.output_layer = nn.Linear(self.topology[-1],self.n_output)
         torch.nn.init.xavier_uniform_(self.output_layer.weight)
-        self.mlp_layers.extend([self.output_layer]+([nn.Sigmoid()] if self.categorical else [] ))
+        self.mlp_layers.extend([self.output_layer])#+([nn.LogSoftmax()] if self.categorical else []))
         self.mlp = nn.Sequential(*self.mlp_layers)
         self.output_z=False
 
