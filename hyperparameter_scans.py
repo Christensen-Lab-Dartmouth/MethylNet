@@ -51,7 +51,7 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
         if not mlp:
             commands.append('sh -c "python embedding.py perform_embedding -bce -c -v -j {} -hl {} -sc {} {} && python visualizations.py transform_plot -i embeddings/vae_methyl_arr.pkl -o visualizations/{}_vae_embed.html -c disease_only -nn 10 "'.format(job_id,hyperparameter_output_log,stratify_column,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if df_final.loc[i,k2] != '']),job_id))
         else:
-            commands.append('sh -c "python predictions.py make_prediction -cat -c -v -do -j {} -hl {} {} && python visualizations.py transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o visualizations/{}_mlp_embed.html -c disease_only -nn 10 "'.format(job_id,hyperparameter_output_log,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if df_final.loc[i,k2] != '']),job_id))
+            commands.append('sh -c "python predictions.py make_prediction -cat -c -v -j {} -hl {} {} && python visualizations.py transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o visualizations/{}_mlp_embed.html -c disease_only -nn 10 "'.format(job_id,hyperparameter_output_log,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if df_final.loc[i,k2] != '']),job_id)) #-do
         df.loc[np.arange(df.shape[0])==np.where(df['--job_name'].astype(str).map(lower)=='false')[0][0],'--job_name']=job_id
     for i in range(len(commands)):
         commands[i] = '{} {} {} {}'.format('CUDA_VISIBLE_DEVICES="{}"'.format(next(gpus)),'nohup' if nohup else '',commands[i],'&' if nohup else '')
