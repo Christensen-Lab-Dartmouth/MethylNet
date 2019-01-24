@@ -1,4 +1,4 @@
-from MethylationDataTypes import MethylationArray, extract_pheno_beta_df_from_pickle_dict
+from MethylationDataTypes import MethylationArray,MethylationArrays, extract_pheno_beta_df_from_pickle_dict
 import pickle
 import pandas as pd, numpy as np
 import click
@@ -13,7 +13,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def embed():
     pass
 
-def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up=0, beta=1., scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, bce_loss=False, batch_size=50, train_percent=0.8, n_workers=9, convolutional = False, height_kernel_sizes=[], width_kernel_sizes=[], add_validation_set=False, loss_reduction='sum', stratify_column='disease'):
+def embed_vae(train_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up=0, beta=1., scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, bce_loss=False, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=9, convolutional = False, height_kernel_sizes=[], width_kernel_sizes=[], add_validation_set=False, loss_reduction='sum', stratify_column='disease'):
     from models import AutoEncoder, TybaltTitusVAE, CVAE
     from datasets import get_methylation_dataset
     import torch
@@ -25,19 +25,15 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     output_model = join(output_dir,'output_model.p')
     outcome_dict_file = join(output_dir,'output_outcomes.p')
     output_pkl = join(output_dir, 'vae_methyl_arr.pkl')
-    train_test_idx_file = join(output_dir, 'train_test_idx.p')
 
     input_dict = pickle.load(open(input_pkl,'rb'))
-    methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
+    #methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
     #print(methyl_array.beta)
-    train_methyl_array, test_methyl_array = methyl_array.split_train_test(train_p=train_percent, stratified=True, disease_only=True, key='disease', subtype_delimiter=',')
-
-    train_test_idx_dict={}
-    train_test_idx_dict['train'], train_test_idx_dict['test'] = train_methyl_array.return_idx(), test_methyl_array.return_idx()
+    train_methyl_array, val_methyl_array = MethylationArray.from_pickle(train_pkl), MethylationArray.from_pickle(val_pkl)#methyl_array.split_train_test(train_p=train_percent, stratified=True, disease_only=True, key='disease', subtype_delimiter=',')
 
     train_methyl_dataset = get_methylation_dataset(train_methyl_array,stratify_column) # train, test split? Add val set?
 
-    test_methyl_dataset = get_methylation_dataset(test_methyl_array,stratify_column)
+    val_methyl_dataset = get_methylation_dataset(val_methyl_array,stratify_column)
 
     if not batch_size:
         batch_size=len(methyl_dataset)
@@ -49,14 +45,14 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
         shuffle=True,
         pin_memory=False)
 
-    test_methyl_dataloader = DataLoader(
-        dataset=test_methyl_dataset,
+    val_methyl_dataloader = DataLoader(
+        dataset=val_methyl_dataset,
         num_workers=n_workers,
-        batch_size=min(batch_size,len(test_methyl_dataset)),
+        batch_size=min(batch_size,len(val_methyl_dataset)),
         shuffle=True,
         pin_memory=False)
 
-    n_input = methyl_array.return_shape()[1]
+    n_input = train_methyl_array.return_shape()[1]
     if not convolutional:
         model=TybaltTitusVAE(n_input=n_input,n_latent=n_latent,hidden_layer_encoder_topology=hidden_layer_encoder_topology,cuda=cuda)
     else:
@@ -67,10 +63,13 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     scheduler_opts=dict(scheduler=scheduler,lr_scheduler_decay=decay,T_max=t_max,eta_min=eta_min,T_mult=t_mult)
     auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=n_epochs,loss_fn=loss_fn,optimizer=optimizer,cuda=cuda,kl_warm_up=kl_warm_up,beta=beta, scheduler_opts=scheduler_opts)
     if add_validation_set:
-        auto_encoder.add_validation_set(test_methyl_dataloader)
+        auto_encoder.add_validation_set(val_methyl_dataloader)
     auto_encoder = auto_encoder.fit(train_methyl_dataloader)
-    del test_methyl_dataloader, train_methyl_dataloader, test_methyl_dataset, train_methyl_dataset
-    methyl_dataset=get_methylation_dataset(methyl_array,stratify_column)
+    train_methyl_array=train_methyl_dataset.to_methyl_array()
+    val_methyl_array=val_methyl_dataset.to_methyl_array()
+    del val_methyl_dataloader, train_methyl_dataloader, val_methyl_dataset, train_methyl_dataset
+
+    methyl_dataset=get_methylation_dataset(MethylationArrays([train_methyl_array,val_methyl_array]).combine(),stratify_column)
     methyl_dataset_loader = DataLoader(
         dataset=methyl_dataset,
         num_workers=n_workers,
@@ -89,11 +88,10 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     latent_projection.to_csv(output_file)
     torch.save(auto_encoder.model,output_model)
     pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
-    pickle.dump(train_test_idx_dict,open(train_test_idx_file,'wb'))
     return latent_projection, outcome_dict, n_input, auto_encoder
 
 @embed.command()
-@click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-i', '--train_pkl', default='./train_val_test_sets/train_methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./embeddings/', help='Output directory for embeddings.', type=click.Path(exists=False), show_default=True)
 @click.option('-c', '--cuda', is_flag=True, help='Use GPUs.')
 @click.option('-n', '--n_latent', default=64, help='Number of latent dimensions.', show_default=True)
@@ -110,7 +108,7 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 @click.option('-m', '--t_mult', default=2., help='Multiply current restart period times this number given number of restarts.', show_default=True)
 @click.option('-bce', '--bce_loss', is_flag=True, help='Use bce loss instead of MSE.')
 @click.option('-bs', '--batch_size', default=50, show_default=True, help='Batch size.')
-@click.option('-p', '--train_percent', default=0.8, help='Percent data training on.', show_default=True)
+@click.option('-vp', '--val_pkl', default='./train_val_test_sets/val_methyl_array.pkl', help='Validation Set Methylation Array Location.', show_default=True, type=click.Path(exists=False),)
 @click.option('-w', '--n_workers', default=9, show_default=True, help='Number of workers.')
 @click.option('-conv', '--convolutional', is_flag=True, help='Use convolutional VAE.')
 @click.option('-hs', '--height_kernel_sizes', default=[], multiple=True, help='Heights of convolutional kernels.')
@@ -120,16 +118,16 @@ def embed_vae(input_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 @click.option('-hl', '--hyperparameter_log', default='embeddings/embed_hyperparameters_log.csv', show_default=True, help='CSV file containing prior runs.', type=click.Path(exists=False))
 @click.option('-sc', '--stratify_column', default='disease', show_default=True, help='Column to stratify samples on.', type=click.Path(exists=False))
 @click.option('-j', '--job_name', default='embed_job', show_default=True, help='Embedding job name.', type=click.Path(exists=False))
-def perform_embedding(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up, beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction, hyperparameter_log,stratify_column,job_name):
+def perform_embedding(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up, beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, val_pkl, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction, hyperparameter_log,stratify_column,job_name):
     """Perform variational autoencoding on methylation dataset."""
     hlt_list=filter(None,hidden_layer_encoder_topology.split(','))
     if hlt_list:
         hidden_layer_encoder_topology=list(map(int,hlt_list))
     else:
         hidden_layer_encoder_topology=[]
-    _,_,n_input,autoencoder = embed_vae(input_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, train_percent, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction, stratify_column)
-    hyperparameter_row = [job_name,n_epochs, autoencoder.best_epoch, autoencoder.min_loss, autoencoder.min_val_loss, n_input, n_latent, str(hidden_layer_encoder_topology), learning_rate, weight_decay, beta, kl_warm_up, scheduler, t_max, t_mult, batch_size, train_percent]
-    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate", "weight_decay", "beta", "kl_warm_up", "scheduler", "t_max", "t_mult", "batch_size", "train_percent"])
+    _,_,n_input,autoencoder = embed_vae(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, val_pkl, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction, stratify_column)
+    hyperparameter_row = [job_name,n_epochs, autoencoder.best_epoch, autoencoder.min_loss, autoencoder.min_val_loss, n_input, n_latent, str(hidden_layer_encoder_topology), learning_rate, weight_decay, beta, kl_warm_up, scheduler, t_max, t_mult, batch_size]
+    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate", "weight_decay", "beta", "kl_warm_up", "scheduler", "t_max", "t_mult", "batch_size"])
     hyperparameter_df.loc[0] = hyperparameter_row
     if os.path.exists(hyperparameter_log):
         print('APPEND')

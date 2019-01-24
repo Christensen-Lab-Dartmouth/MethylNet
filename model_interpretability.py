@@ -8,7 +8,7 @@ from os.path import join
 import click
 import os
 import pickle
-from MethylationDataTypes import MethylationArray, extract_pheno_beta_df_from_pickle_dict
+from MethylationDataTypes import MethylationArray, MethylationArrays, extract_pheno_beta_df_from_pickle_dict
 
 
 
@@ -230,8 +230,9 @@ def main_prediction_function(n_workers,batch_size, model, cuda):
     return main_predict
 
 @interpret.command()
-@click.option('-i', '--input_pkl', default='./final_preprocessed/methyl_array.pkl', help='Input database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
-@click.option('-t', '--train_test_idx_pkl', default='./predictions/train_test_idx.p', help='Pickle containing training and testing indices.', type=click.Path(exists=False), show_default=True)
+@click.option('-i', '--train_pkl', default='./train_val_test_sets/train_methyl_array.pkl', help='Input database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
+@click.option('-v', '--val_pkl', default='./train_val_test_sets/val_methyl_array.pkl', help='Val database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
+@click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
 @click.option('-m', '--model_pickle', default='./predictions/output_model.p', help='Pytorch model containing forward_predict method.', type=click.Path(exists=False), show_default=True)
 @click.option('-w', '--n_workers', default=9, show_default=True, help='Number of workers.')
 @click.option('-bs', '--batch_size', default=512, show_default=True, help='Batch size.')
@@ -249,9 +250,8 @@ def main_prediction_function(n_workers,batch_size, model, cuda):
 @click.option('-fs', '--feature_selection', is_flag=True, help='Perform feature selection using top global SHAP scores.', show_default=True)
 @click.option('-top', '--top_outputs', default=0, help='Get shapley values for fewer outputs if feature selection.', show_default=True)
 @click.option('-vae', '--vae_interpret', is_flag=True, help='Use model to get shapley values for VAE latent dimensions, only works if proper datasets are set.', show_default=True)
-def return_important_cpgs(input_pkl, train_test_idx_pkl, model_pickle, n_workers, batch_size, cuda, n_samples, n_top_features, output_dir, method, shap_sample_batch_size, n_random_representative, interest_col, n_random_representative_test, categorical_encoder, plot_summary, feature_selection, top_outputs, vae_interpret):
+def return_important_cpgs(train_pkl, val, test_pkl, model_pickle, n_workers, batch_size, cuda, n_samples, n_top_features, output_dir, method, shap_sample_batch_size, n_random_representative, interest_col, n_random_representative_test, categorical_encoder, plot_summary, feature_selection, top_outputs, vae_interpret):
     os.makedirs(output_dir,exist_ok=True)
-    input_dict = pickle.load(open(input_pkl,'rb'))
     if not top_outputs or not feature_selection:
         top_outputs = None
     if os.path.exists(categorical_encoder):
@@ -259,10 +259,12 @@ def return_important_cpgs(input_pkl, train_test_idx_pkl, model_pickle, n_workers
         prediction_classes=list(categorical_encoder.categories_[0])
     else:
         prediction_classes = None
-    preprocessed_methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
-    cpgs, samples= preprocessed_methyl_array.return_cpgs(), preprocessed_methyl_array.return_idx()
-    train_test_idx_dict=pickle.load(open(train_test_idx_pkl,'rb'))
-    train_methyl_array, test_methyl_array=preprocessed_methyl_array.subset_index(train_test_idx_dict['train']), preprocessed_methyl_array.subset_index(train_test_idx_dict['test'])
+    train_methyl_array, val_methyl_array, test_methyl_array=MethylationArray.from_pickle(train_pkl), MethylationArray.from_pickle(val_pkl), MethylationArray.from_pickle(val_pkl), MethylationArray.from_pickle(test_pkl)#preprocessed_methyl_array.subset_index(train_test_idx_dict['train']), preprocessed_methyl_array.subset_index(train_test_idx_dict['test'])
+    #preprocessed_methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
+    train_methyl_array = MethylationArrays([train_methyl_array,val_methyl_array]).combine()
+    train_methyl_array
+    cpgs, train_samples= train_methyl_array.return_cpgs(), train_methyl_array.return_idx()
+    cpgs, test_samples= test_methyl_array.return_cpgs(), test_methyl_array.return_idx()
     model = torch.load(model_pickle)
     if n_random_representative and method != 'gradient':
         train_methyl_array = train_methyl_array.subsample(interest_col, n_samples=n_random_representative, categorical=model.categorical if 'categorical' in dir(model) else False)
@@ -290,7 +292,7 @@ def return_important_cpgs(input_pkl, train_test_idx_pkl, model_pickle, n_workers
     cpg_explainer.return_top_shapley_features(test_methyl_array, n_samples, n_top_features, n_outputs=n_test_results_outputs, shap_sample_batch_size=shap_sample_batch_size, interest_col=interest_col, prediction_classes=prediction_classes, top_outputs=top_outputs, summary_plot_file=(join(output_dir,'summary.png') if plot_summary else ''), feature_selection=feature_selection)
     if feature_selection:
         print('FEATURE SELECT')
-        feature_selected_methyl_array=cpg_explainer.feature_select(preprocessed_methyl_array,n_top_features)
+        feature_selected_methyl_array=cpg_explainer.feature_select(MethylationArrays([train_methyl_array,test_methyl_array]).combine(),n_top_features)
         feature_selected_methyl_array.write_pickle(join(output_dir, 'feature_selected_methyl_array.pkl'))
     else:
         top_cpgs = cpg_explainer.top_cpgs

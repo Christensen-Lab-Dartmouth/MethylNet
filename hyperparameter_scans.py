@@ -11,7 +11,7 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
               '--learning_rate_vae':[0,1e-5,5e-5,1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1],'--learning_rate_mlp':[1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1,5e-1],
               '--weight_decay':[1e-4],'--n_epochs':[25,50,75,100,200,500,1000], '--scheduler':['warm_restarts','null'], '--t_max':[10],
               '--eta_min':[1e-7,1e-6], '--t_mult':[1.,1.2,1.5,2],
-              '--batch_size':[50,100,256,512], '--train_percent':[.85],
+              '--batch_size':[50,100,256,512],
               '--n_workers':[4], '--loss_reduction':['sum']}
     else:
         grid={'--n_latent':[100,150,200,300,500],
@@ -21,7 +21,7 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
               '--kl_warm_up':[0,20], '--beta':[0.,0.5,1,10,50,100,200,500],
               '--scheduler':['warm_restarts'], '--t_max':[10],
               '--eta_min':[1e-7,1e-6], '--t_mult':[1.,1.2,1.5,2],
-              '--batch_size':[50,100,256,512], '--train_percent':[.85],
+              '--batch_size':[50,100,256,512],
               '--n_workers':[4], '--loss_reduction':['sum']}
     if generate_input:
         for i in range(4):
