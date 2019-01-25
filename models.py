@@ -107,7 +107,7 @@ class AutoEncoder:
                 if loss <= min(loss_list): # next get models for lowest reconstruction and kl, 3 models
                     best_model=copy.deepcopy(model)#.state_dict())
                     best_epoch=epoch
-                if epoch % self.embed_interval == 0:
+                if 0 and epoch % self.embed_interval == 0:
                     z,samples,outcomes=project_vae(best_model, train_data if not self.validation_set else self.validation_set, self.cuda)
                     beta_df=pd.DataFrame(z,index=samples)
                     plotly_plot(umap_embed(beta_df,outcomes,n_neighbors=8,supervised=False,min_dist=0.2,metric='euclidean'),'training_{}.html'.format(best_epoch))

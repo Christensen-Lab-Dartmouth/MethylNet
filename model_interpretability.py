@@ -43,9 +43,10 @@ def to_tensor(arr):
     return Transformer().generate()(arr)
 
 class CpGExplainer: # consider shap.kmeans or grab representative sample of each outcome in training set for background ~ 39 * 2 samples, 39 cancers, should speed things up, small training set when building explainer https://github.com/slundberg/shap/issues/372
-    def __init__(self,prediction_function, cuda):
+    def __init__(self,prediction_function=None, cuda=False):
         self.prediction_function=prediction_function
         self.cuda = cuda
+        self.explainer=None
 
     def build_explainer(self, train_methyl_array, method='kernel', batch_size=100): # can interpret latent dimensions
         self.method = method
@@ -119,12 +120,27 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
         print(cpgs)
         return methyl_array.subset_cpgs(cpgs)
 
+    def return_shapley_predictions(self, test_methyl_array, sample_name, interest_col, encoder=None):
+        prediction_class = test_methyl_array['pheno'].loc[sample_name,interest_col]
+        prediction_class_labelled = None
+        if encoder != None:
+            prediction_class_labelled = encoder.transform(prediction_class)
+        return "In development"
+
+
+    @classmethod
+    def from_explainer(explainer, method, cuda):
+        cpg_explainer = CpGExplainer(cuda=cuda)
+        cpg_explainer.explainer = explainer
+        return cpg_explainer
+
 
 class BioInterpreter:
     def __init__(self, top_cpgs, prediction_classes=None):
         self.top_cpgs = top_cpgs
         from rpy2.robjects.packages import importr
         self.hg19 = importr('IlluminaHumanMethylation450kanno.ilmn12.hg19')
+        self.GRanges = importr('GenomicRanges')
         self.missMethyl=importr('missMethyl')
         self.limma=importr('limma')
         self.lola=importr('LOLA')
@@ -165,6 +181,32 @@ class BioInterpreter:
             output_dfs['prediction_{}'.format(self.prediction_classes[i])]=pandas2ri.ri2py(robjects.r['as'](gometh_output,'data.frame'))
             print('GO/KEGG Computed for Prediction {} Cpgs: {}'.format(self.prediction_classes[i], ' '.join(list_cpgs)))
         return output_dfs
+
+    def get_nearby_cpg_shapleys(self, all_cpgs, prediction_idx, max_gap):
+        import rpy2.robjects as robjects
+        from rpy2.robjects import pandas2ri
+        from collections import defaultdict
+        pandas2ri.activate()
+        cpg_locations = pandas2ri.ri2py(robjects.r['as'](robjects.r('getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)'),'data.frame'))
+        cpgs_grange = robjects.r('makeGRangesFromDataFrame')(pandas2ri.py2ri(cpg_locations),start_field='pos',end_field='pos',starts_in_df_are_0based=False)
+        if not prediction_idx:
+            prediction_idx=range(len(self.top_cpgs))
+        else:
+            prediction_idx=map(int,prediction_idx)
+        output_dfs = {}
+        for i in prediction_idx:
+            cpg_dict = defaultdict()
+            list_cpgs=self.top_cpgs[i][:,0]
+            cpg_dict.update(self.top_cpgs[i].tolist())
+            cpg_location_subset = cpg_locations.loc[list_cpgs,:]
+            location_subset = robjects.r('makeGRangesFromDataFrame')(pandas2ri.py2ri(cpg_location_subset),start_field='pos',end_field='pos',starts_in_df_are_0based=False)
+            cpgs_overlap = list(pandas2ri.ri2py(robjects.r['as'](self.GRanges.findOverlaps(location_subset,cpgs_grange,maxgap=max_gap, type='any'),'data.frame')).index)
+            for cpg in cpgs_overlap:
+                cpg_dict[cpg]
+            top_cpgs=np.array(list(cpg_dict.items()))
+            output_dfs['prediction_{}'.format(self.prediction_classes[i])]=pd.DataFrame(top_cpgs,index_col=None,columns=['CpG','Shapley Value'])
+        return output_dfs
+
 
     def run_lola(self, all_cpgs=[], prediction_idx=[], lola_db='', cores=8):
         import rpy2.robjects as robjects
@@ -262,7 +304,6 @@ def return_important_cpgs(train_pkl, val, test_pkl, model_pickle, n_workers, bat
     train_methyl_array, val_methyl_array, test_methyl_array=MethylationArray.from_pickle(train_pkl), MethylationArray.from_pickle(val_pkl), MethylationArray.from_pickle(val_pkl), MethylationArray.from_pickle(test_pkl)#preprocessed_methyl_array.subset_index(train_test_idx_dict['train']), preprocessed_methyl_array.subset_index(train_test_idx_dict['test'])
     #preprocessed_methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
     train_methyl_array = MethylationArrays([train_methyl_array,val_methyl_array]).combine()
-    train_methyl_array
     cpgs, train_samples= train_methyl_array.return_cpgs(), train_methyl_array.return_idx()
     cpgs, test_samples= test_methyl_array.return_cpgs(), test_methyl_array.return_idx()
     model = torch.load(model_pickle)

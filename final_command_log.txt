@@ -21,13 +21,8 @@
     * python utils.py counts -i train_val_test_sets
     * mksub pbs_reserve_job.sh -l hostlist=g02 && ssh g02
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python embedding.py launch_hyperparameter_scan -sc disease --nohup -g
+    * CUDA_VISIBLE_DEVICES="1" nohup sh -c " python embedding.py perform_embedding --n_latent 200 --learning_rate 0.001 --weight_decay 0.0001 --n_epochs 1000 --hidden_layer_encoder_topology 300 --kl_warm_up 0 --beta 0 --scheduler warm_restarts --t_max 10 --eta_min 1e-6 --t_mult 1.5 --batch_size 256 --n_workers 4 --loss_reduction sum -bce -c -v -hl embeddings/embed_hyperparameters_log.csv -sc disease && python visualizations.py transform_plot -o visualizations/vae_umap.html -c disease -nn 10 " &
 
-    * rsync f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer/visualizations/* /Users/joshualevy/Desktop/methylation/final_runs/pancancer/visualizations
-    * rsync f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer/embeddings/embed_hyperparameters*.csv /Users/joshualevy/Desktop/methylation/final_runs/pancancer
-    * CUDA_VISIBLE_DEVICES="1" nohup sh -c " python embedding.py perform_embedding --n_latent 100 --learning_rate 0.001 --weight_decay 0.0001 --n_epochs 200 --hidden_layer_encoder_topology 200 --kl_warm_up 20 --beta 50 --scheduler warm_restarts --t_max 10 --eta_min 1e-6 --t_mult 2. --batch_size 512 --train_percent 0.85 --n_workers 4 --loss_reduction sum -bce -c -v -hl embeddings/embed_hyperparameters_log.csv -sc disease_only && python visualizations.py transform_plot -o visualizations/vae_umap.html -c disease_only -nn 10 " &
-    * python predictions.py launch_hyperparameter_scan -sc disease_only -g -t -gn 4
-    * mkdir predictions && python predictions.py launch_hyperparameter_scan -sc disease_only -g
-    * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease_only --nohup -g
 
 2. Brain Cancer
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda
@@ -51,13 +46,8 @@
     * python utils.py counts -i train_val_test_sets
     * mksub pbs_reserve_job.sh -l hostlist=g03 && ssh g03
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python embedding.py launch_hyperparameter_scan -sc disease --nohup -g
-
-    * rsync f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer/visualizations/* /Users/joshualevy/Desktop/methylation/final_runs/brain_cancer/visualizations
-    * rsync f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer/embeddings/embed_hyperparameters*.csv /Users/joshualevy/Desktop/methylation/final_runs/brain_cancer
-    * CUDA_VISIBLE_DEVICES="0" nohup sh -c " python embedding.py perform_embedding --n_latent 300 --learning_rate 0.005 --weight_decay 0.0001 --n_epochs 200 --hidden_layer_encoder_topology 200 --kl_warm_up 0 --beta 0.5 --scheduler warm_restarts --t_max 10 --eta_min 1e-7 --t_mult 1. --batch_size 256 --train_percent 0.85 --n_workers 4 --loss_reduction sum -bce -c -v -hl embeddings/embed_hyperparameters_log.csv -sc disease_only && python visualizations.py transform_plot -o visualizations/vae_umap.html -c disease_only -nn 10 " &
-    * mkdir predictions && python predictions.py launch_hyperparameter_scan -sc disease_only -g
-    * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease_only --nohup -g
-    * test: CUDA_VISIBLE_DEVICES="0" sh -c "python predictions.py make_prediction -cat -c -do -hl predictions/predict_hyperparameters_log.csv --hidden_layer_topology 100 --learning_rate_vae 0.0001 --learning_rate_mlp 0.0001 --weight_decay 0.0001 --n_epochs 5 --scheduler warm_restarts --t_max 10 --eta_min 1e-06 --t_mult 1.5 --batch_size 512 --train_percent 0.05 --n_workers 4 --loss_reduction sum "
+    * CUDA_VISIBLE_DEVICES="0" nohup sh -c " python embedding.py perform_embedding --n_latent 200 --learning_rate 5e-5 --weight_decay 0.0001 --n_epochs 200 --hidden_layer_encoder_topology 300,200 --kl_warm_up 20 --beta 0.5 --scheduler null --t_max 10 --eta_min 1e-6 --t_mult 1.2 --batch_size 50 --n_workers 4 --loss_reduction sum -bce -c -v -hl embeddings/embed_hyperparameters_log.csv -sc disease && python visualizations.py transform_plot -o visualizations/vae_umap.html -nn 8 " &
+    * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g
 
 
 3. Retired Commands
@@ -81,3 +71,15 @@
     * python embedding.py launch_hyperparameter_scan -sc disease_only -g -t -gn 3
     * python embedding.py launch_hyperparameter_scan -sc disease_only --nohup -g
     * g1 g2 g3 g5
+    * rsync f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer/visualizations/* /Users/joshualevy/Desktop/methylation/final_runs/brain_cancer/visualizations
+    * rsync f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer/embeddings/embed_hyperparameters*.csv /Users/joshualevy/Desktop/methylation/final_runs/brain_cancer
+    * CUDA_VISIBLE_DEVICES="0" nohup sh -c " python embedding.py perform_embedding --n_latent 300 --learning_rate 0.005 --weight_decay 0.0001 --n_epochs 200 --hidden_layer_encoder_topology 200 --kl_warm_up 0 --beta 0.5 --scheduler warm_restarts --t_max 10 --eta_min 1e-7 --t_mult 1. --batch_size 256 --train_percent 0.85 --n_workers 4 --loss_reduction sum -bce -c -v -hl embeddings/embed_hyperparameters_log.csv -sc disease_only && python visualizations.py transform_plot -o visualizations/vae_umap.html -c disease_only -nn 10 " &
+    * mkdir predictions && python predictions.py launch_hyperparameter_scan -sc disease_only -g
+    * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease_only --nohup -g
+    * test: CUDA_VISIBLE_DEVICES="0" sh -c "python predictions.py make_prediction -cat -c -do -hl predictions/predict_hyperparameters_log.csv --hidden_layer_topology 100 --learning_rate_vae 0.0001 --learning_rate_mlp 0.0001 --weight_decay 0.0001 --n_epochs 5 --scheduler warm_restarts --t_max 10 --eta_min 1e-06 --t_mult 1.5 --batch_size 512 --train_percent 0.05 --n_workers 4 --loss_reduction sum "
+    * rsync f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer/visualizations/* /Users/joshualevy/Desktop/methylation/final_runs/pancancer/visualizations
+    * rsync f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer/embeddings/embed_hyperparameters*.csv /Users/joshualevy/Desktop/methylation/final_runs/pancancer
+    * CUDA_VISIBLE_DEVICES="1" nohup sh -c " python embedding.py perform_embedding --n_latent 100 --learning_rate 0.001 --weight_decay 0.0001 --n_epochs 200 --hidden_layer_encoder_topology 200 --kl_warm_up 20 --beta 50 --scheduler warm_restarts --t_max 10 --eta_min 1e-6 --t_mult 2. --batch_size 512 --train_percent 0.85 --n_workers 4 --loss_reduction sum -bce -c -v -hl embeddings/embed_hyperparameters_log.csv -sc disease_only && python visualizations.py transform_plot -o visualizations/vae_umap.html -c disease_only -nn 10 " &
+    * python predictions.py launch_hyperparameter_scan -sc disease_only -g -t -gn 4
+    * mkdir predictions && python predictions.py launch_hyperparameter_scan -sc disease_only -g
+    * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease_only --nohup -g

@@ -159,8 +159,8 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
     if categorical:
         from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
         accuracy, precision, recall, f1 = accuracy_score(Y_true,Y_pred), precision_score(Y_true,Y_pred,average='weighted'), recall_score(Y_true,Y_pred,average='weighted'), f1_score(Y_true,Y_pred,average='weighted')
-    hyperparameter_row = [job_name,n_epochs, vae_mlp.best_epoch, vae_mlp.min_loss, vae_mlp.min_val_loss, accuracy, precision, recall, f1, vae_mlp.model.vae.n_input, vae_mlp.model.vae.n_latent, str(hidden_layer_topology), learning_rate_vae, learning_rate_mlp, weight_decay, scheduler, t_max, t_mult, eta_min, batch_size, p_dropout]
-    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "test_accuracy", "test_precision", "test_recall", "test_f1", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate_vae", "learning_rate_mlp", "weight_decay", "scheduler", "t_max", "t_mult", "eta_min","batch_size", "p_dropout"])
+    hyperparameter_row = [job_name,n_epochs, vae_mlp.best_epoch, vae_mlp.min_loss, vae_mlp.min_val_loss, accuracy, precision, recall, f1, vae_mlp.model.vae.n_input, vae_mlp.model.vae.n_latent, str(hidden_layer_topology), learning_rate_vae, learning_rate_mlp, weight_decay, scheduler, t_max, t_mult, eta_min, batch_size, dropout_p]
+    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "test_accuracy", "test_precision", "test_recall", "test_f1", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate_vae", "learning_rate_mlp", "weight_decay", "scheduler", "t_max", "t_mult", "eta_min","batch_size", "dropout_p"])
     hyperparameter_df.loc[0] = hyperparameter_row
     if os.path.exists(hyperparameter_log):
         print('APPEND')
