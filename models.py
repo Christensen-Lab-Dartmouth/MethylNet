@@ -499,18 +499,19 @@ class MLPFinetuneVAE:
         return test_mlp(self.model, test_data, self.categorical, self.cuda, self.output_latent)
 
 class VAE_MLP(nn.Module): # add ability to train decoder
-    def __init__(self, vae_model, n_output, categorical=False, hidden_layer_topology=[100,100,100]):
+    def __init__(self, vae_model, n_output, categorical=False, hidden_layer_topology=[100,100,100], dropout_p=0.2):
         super(VAE_MLP,self).__init__()
         self.vae = vae_model
         self.n_output = n_output
         self.categorical = categorical
         self.topology = [self.vae.n_latent]+(hidden_layer_topology if hidden_layer_topology else [])
         self.mlp_layers = []
+        self.dropout_p=dropout_p
         if len(self.topology)>1:
             for i in range(len(self.topology)-1):
                 layer = nn.Linear(self.topology[i],self.topology[i+1])
                 torch.nn.init.xavier_uniform_(layer.weight)
-                self.mlp_layers.append(nn.Sequential(layer,nn.ReLU()))
+                self.mlp_layers.append(nn.Sequential(layer,nn.ReLU(),nn.Dropout(self.dropout_p)))
         self.output_layer = nn.Linear(self.topology[-1],self.n_output)
         torch.nn.init.xavier_uniform_(self.output_layer.weight)
         self.mlp_layers.extend([self.output_layer])#+([nn.LogSoftmax()] if self.categorical else []))

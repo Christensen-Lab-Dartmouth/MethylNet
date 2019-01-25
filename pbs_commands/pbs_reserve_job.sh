@@ -3,9 +3,8 @@
 # declare a name for this job to be sample_job
 #PBS -N methyl_zombie
 # Specify the gpuq queue
-#PBS -l gpus=1
+#PBS -l gpus=4
 #PBS -l feature=gpu
-#PBS -l hostlist=g02
 # request 4 hours and 30 minutes of cpu time
 #PBS -l walltime=03:00:00
 # mail is sent to you when the job starts and when it terminates or aborts

@@ -18,7 +18,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def prediction():
     pass
 
-def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum'):
+def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum'):
     os.makedirs(output_dir,exist_ok=True)
 
     output_file = join(output_dir,'predictions.csv')
@@ -28,12 +28,12 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
     output_pkl = join(output_dir, 'vae_mlp_methyl_arr.pkl')
     output_onehot_encoder = join(output_dir, 'one_hot_encoder.p')
 
-    input_dict = pickle.load(open(input_pkl,'rb'))
+    #input_dict = pickle.load(open(input_pkl,'rb'))
     vae_model = torch.load(input_vae_pkl)
 
     train_methyl_array, val_methyl_array, test_methyl_array = MethylationArray.from_pickle(train_pkl), MethylationArray.from_pickle(val_pkl), MethylationArray.from_pickle(test_pkl)#methyl_array.split_train_test(train_p=train_percent, stratified=(True if categorical else False), disease_only=disease_only, key=interest_cols[0], subtype_delimiter=',')
 
-    if len(interest_cols) == 1 and disease_only:
+    if len(interest_cols) == 1 and disease_only and interest_cols[0].endswith('_only')==False:
         print(interest_cols)
         interest_cols[0] += '_only'
         print(train_methyl_array.pheno[interest_cols[0]].unique())
@@ -66,7 +66,7 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
         batch_size=min(batch_size,len(test_methyl_dataset)),
         shuffle=False)
 
-    model=VAE_MLP(vae_model=vae_model,categorical=categorical,hidden_layer_topology=hidden_layer_topology,n_output=train_methyl_dataset.outcome_col.shape[1])
+    model=VAE_MLP(vae_model=vae_model,categorical=categorical,hidden_layer_topology=hidden_layer_topology,n_output=train_methyl_dataset.outcome_col.shape[1],dropout_p=dropout_p)
 
     class_weights=[]
     if categorical:
@@ -133,6 +133,7 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
 @click.option('-lr_vae', '--learning_rate_vae', default=1e-5, help='Learning rate VAE.', show_default=True)
 @click.option('-lr_mlp', '--learning_rate_mlp', default=1e-3, help='Learning rate MLP.', show_default=True)
 @click.option('-wd', '--weight_decay', default=1e-4, help='Weight decay of adam optimizer.', show_default=True)
+@click.option('-dp', '--dropout_p', default=0.2, help='Dropout Percentage.', show_default=True)
 @click.option('-e', '--n_epochs', default=50, help='Number of epochs to train over.', show_default=True)
 @click.option('-s', '--scheduler', default='null', help='Type of learning rate scheduler.', type=click.Choice(['null','exp','warm_restarts']),show_default=True)
 @click.option('-d', '--decay', default=0.5, help='Learning rate scheduler decay for exp selection.', show_default=True)
@@ -146,20 +147,20 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
 @click.option('-l', '--loss_reduction', default='sum', show_default=True, help='Type of reduction on loss function.', type=click.Choice(['sum','elementwise_mean','none']))
 @click.option('-hl', '--hyperparameter_log', default='predictions/predict_hyperparameters_log.csv', show_default=True, help='CSV file containing prior runs.', type=click.Path(exists=False))
 @click.option('-j', '--job_name', default='predict_job', show_default=True, help='Embedding job name.', type=click.Path(exists=False))
-def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum', hyperparameter_log='predictions/predict_hyperparameters_log.csv', job_name='predict_job'):
+def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum', hyperparameter_log='predictions/predict_hyperparameters_log.csv', job_name='predict_job'):
     """Perform variational autoencoding on methylation dataset."""
     hlt_list=filter(None,hidden_layer_topology.split(','))
     if hlt_list:
         hidden_layer_topology=list(map(int,hlt_list))
     else:
         hidden_layer_topology=[]
-    latent_projection, Y_pred, Y_true, vae_mlp = predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,list(interest_cols),categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, val_pkl, n_workers, add_validation_set, loss_reduction)
+    latent_projection, Y_pred, Y_true, vae_mlp = predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,list(interest_cols),categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, val_pkl, n_workers, add_validation_set, loss_reduction)
     accuracy, precision, recall, f1 = -1,-1,-1,-1
     if categorical:
         from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
         accuracy, precision, recall, f1 = accuracy_score(Y_true,Y_pred), precision_score(Y_true,Y_pred,average='weighted'), recall_score(Y_true,Y_pred,average='weighted'), f1_score(Y_true,Y_pred,average='weighted')
-    hyperparameter_row = [job_name,n_epochs, vae_mlp.best_epoch, vae_mlp.min_loss, vae_mlp.min_val_loss, accuracy, precision, recall, f1, vae_mlp.model.vae.n_input, vae_mlp.model.vae.n_latent, str(hidden_layer_topology), learning_rate_vae, learning_rate_mlp, weight_decay, scheduler, t_max, t_mult, batch_size]
-    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "test_accuracy", "test_precision", "test_recall", "test_f1", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate_vae", "learning_rate_mlp", "weight_decay", "scheduler", "t_max", "t_mult", "batch_size"])
+    hyperparameter_row = [job_name,n_epochs, vae_mlp.best_epoch, vae_mlp.min_loss, vae_mlp.min_val_loss, accuracy, precision, recall, f1, vae_mlp.model.vae.n_input, vae_mlp.model.vae.n_latent, str(hidden_layer_topology), learning_rate_vae, learning_rate_mlp, weight_decay, scheduler, t_max, t_mult, eta_min, batch_size, p_dropout]
+    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "test_accuracy", "test_precision", "test_recall", "test_f1", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate_vae", "learning_rate_mlp", "weight_decay", "scheduler", "t_max", "t_mult", "eta_min","batch_size", "p_dropout"])
     hyperparameter_df.loc[0] = hyperparameter_row
     if os.path.exists(hyperparameter_log):
         print('APPEND')

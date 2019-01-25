@@ -9,17 +9,17 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
     if mlp:
         grid={'--hidden_layer_topology':['', '100', '100,100', '100,200', '100,4096,300', '300,500,400', '200', '200,200', '300', '200,300,200', '500,300', '500,100'],
               '--learning_rate_vae':[0,1e-5,5e-5,1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1],'--learning_rate_mlp':[1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1,5e-1],
-              '--weight_decay':[1e-4],'--n_epochs':[25,50,75,100,200,500,1000], '--scheduler':['warm_restarts','null'], '--t_max':[10],
+              '--weight_decay':[1e-4],'--n_epochs':[25,50,75,100,200,500], '--scheduler':['warm_restarts','null'], '--t_max':[10],
               '--eta_min':[1e-7,1e-6], '--t_mult':[1.,1.2,1.5,2],
-              '--batch_size':[50,100,256,512],
+              '--batch_size':[100,256,512], '--dropout_p':[0.2,0.5],
               '--n_workers':[4], '--loss_reduction':['sum']}
     else:
         grid={'--n_latent':[100,150,200,300,500],
-              '--learning_rate':[5e-5,1e-4,5e-4,1e-3,5e-3,1e-2,5e-2],
-              '--weight_decay':[1e-4],'--n_epochs':[25,50,75,100,200],
+              '--learning_rate':[5e-5,1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1],
+              '--weight_decay':[1e-4],'--n_epochs':[25,50,75,100,200,1000],
               '--hidden_layer_encoder_topology':['','100','100,100','200','200,200','300','300,300','500','500,500','500,300','500,100','300,200'],
               '--kl_warm_up':[0,20], '--beta':[0.,0.5,1,10,50,100,200,500],
-              '--scheduler':['warm_restarts'], '--t_max':[10],
+              '--scheduler':['warm_restarts','null'], '--t_max':[10],
               '--eta_min':[1e-7,1e-6], '--t_mult':[1.,1.2,1.5,2],
               '--batch_size':[50,100,256,512],
               '--n_workers':[4], '--loss_reduction':['sum']}
@@ -49,9 +49,9 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
     for i in range(df_final.shape[0]):
         job_id = str(np.random.randint(0,100000000))
         if not mlp:
-            commands.append('sh -c "python embedding.py perform_embedding -bce -c -v -j {} -hl {} -sc {} {} && python visualizations.py transform_plot -i embeddings/vae_methyl_arr.pkl -o visualizations/{}_vae_embed.html -c disease_only -nn 10 "'.format(job_id,hyperparameter_output_log,stratify_column,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if df_final.loc[i,k2] != '']),job_id))
+            commands.append('sh -c "python embedding.py perform_embedding -bce -c -v -j {} -hl {} -sc {} {} && python visualizations.py transform_plot -i embeddings/vae_methyl_arr.pkl -o visualizations/{}_vae_embed.html -c {} -nn 10 "'.format(job_id,hyperparameter_output_log,stratify_column,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if df_final.loc[i,k2] != '']),job_id,stratify_column))
         else:
-            commands.append('sh -c "python predictions.py make_prediction -cat -c -v -j {} -hl {} {} && python visualizations.py transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o visualizations/{}_mlp_embed.html -c disease_only -nn 10 "'.format(job_id,hyperparameter_output_log,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if df_final.loc[i,k2] != '']),job_id)) #-do
+            commands.append('sh -c "python predictions.py make_prediction -cat -c -v {} -j {} -hl {} {} && python visualizations.py transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o visualizations/{}_mlp_embed.html -c {} -nn 10 "'.format('-do' if stratify_column=='disease_only' else '',job_id,hyperparameter_output_log,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if df_final.loc[i,k2] != '']),job_id,stratify_column)) #-do
         df.loc[np.arange(df.shape[0])==np.where(df['--job_name'].astype(str).map(lower)=='false')[0][0],'--job_name']=job_id
     for i in range(len(commands)):
         commands[i] = '{} {} {} {}'.format('CUDA_VISIBLE_DEVICES="{}"'.format(next(gpus)),'nohup' if nohup else '',commands[i],'&' if nohup else '')
