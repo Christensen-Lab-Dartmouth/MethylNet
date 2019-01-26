@@ -1,14 +1,28 @@
 import os, pandas as pd, numpy as np, subprocess
 import time
 
-def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False):
+def find_top_jobs(hyperparameter_input_csv,hyperparameter_output_log, n_top_jobs, crossover_p=0):
+    custom_jobs = pd.read_csv(hyperparameter_input_csv)
+    hyperparam_output = pd.read_csv(hyperparameter_output_log)[['job_name','min_val_loss']]
+    best_outputs = hyperparam_output.sort_values('min_val_loss',ascending=True).iloc[:n_top_jobs,:]
+    custom_jobs = custom_jobs[np.isin(custom_jobs['--job_name'].values,best_outputs['job_name'].values)]
+    custom_jobs.loc[:,'--job_name']='False'
+    if crossover_p:
+        for j in range(1,custom_jobs.shape[1]):
+            vals=custom_jobs.iloc[:,j].unique()
+            for i in range(custom_jobs.shape[0]):
+                if np.random.rand() <= crossover_p:
+                    custom_jobs.iloc[i,j]=np.random.choice(vals)
+    return [custom_jobs]
+
+def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[]):
     from itertools import cycle
     from pathos.multiprocessing import ProcessingPool as Pool
     generated_input=[]
     np.random.seed(int(time.time()))
     if mlp:
-        grid={'--hidden_layer_topology':['', '100', '100,100', '100,200', '100,4096,300', '300,500,400', '200', '200,200', '300', '200,300,200', '500,300', '500,100'],
-              '--learning_rate_vae':[0,1e-5,5e-5,1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1],'--learning_rate_mlp':[1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1,5e-1],
+        grid={'--hidden_layer_topology':['', '100', '100,100', '100,200', '100,4096,300', '300,500,400', '200', '200,200', '300', '200,300,200', '500,300', '500,100', '1000,1000', '1000,2000,1000', '500,1000,500', '1000,3000,1000'],
+              '--learning_rate_vae':[1e-5,5e-5,1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1],'--learning_rate_mlp':[1e-5,5e-5,1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1,5e-1],
               '--weight_decay':[1e-4],'--n_epochs':[25,50,75,100,200,500], '--scheduler':['warm_restarts','null'], '--t_max':[10],
               '--eta_min':[1e-7,1e-6], '--t_mult':[1.,1.2,1.5,2],
               '--batch_size':[100,256,512], '--dropout_p':[0.,0.1,0.2,0.3,0.5],
@@ -27,6 +41,9 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
         for i in range(4):
             generated_input.append(['False']+[np.random.choice(grid[k]) for k in grid])
         generated_input=[pd.DataFrame(generated_input,columns=['--job_name']+list(grid.keys()))]
+    if custom_jobs:
+        custom_jobs[0].loc[:,'--job_name']='False'
+        generated_input=custom_jobs
     def run(x):
         print(x)
         subprocess.call(x,shell=True)
@@ -40,7 +57,7 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
         df=[df[[col for col in list(df) if not col.startswith('Unnamed')]]]
     else:
         df = []
-    df=pd.concat(df+generated_input,axis=0)
+    df=pd.concat(df+generated_input,axis=0)[['--job_name']+list(grid.keys())]
     print(df)
     if reset_all:
         df.loc[:,'--job_name']='False'
