@@ -388,9 +388,6 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
         y_predict, z = model(inputs)
         y_predict=np.squeeze(y_predict.detach().cpu().numpy())
         y_true=np.squeeze(y_true.detach().cpu().numpy())
-        if categorical:
-            y_predict=y_predict.argmax(axis=1)[:,np.newaxis]
-            y_true=y_true.argmax(axis=1)[:,np.newaxis]
         Y_pred.append(y_predict)
         final_latent.append(np.squeeze(z.detach().cpu().numpy()))
         sample_names_final.extend([name[0] for name in sample_names])
@@ -478,7 +475,7 @@ class MLPFinetuneVAE:
             if loss <= min(loss_list): # next get models for lowest reconstruction and kl, 3 models
                 best_model=copy.deepcopy(model)
                 best_epoch=epoch
-
+        self.training_plot_data=plt_data
         plts=Plotter([Plot(k,'epoch','lr' if 'loss' not in k else k,
                       pd.DataFrame(np.vstack((range(len(plt_data[k])),plt_data[k])).T,
                                    columns=['x','y'])) for k in plt_data if plt_data[k]],animation=False)
@@ -490,6 +487,7 @@ class MLPFinetuneVAE:
             self.min_val_loss = -1
         self.best_epoch = best_epoch
         self.model = best_model
+
         return self
 
     def add_validation_set(self, validation_data):

@@ -7,7 +7,7 @@ from torch.nn import MSELoss, BCELoss, CrossEntropyLoss, NLLLoss
 import pickle
 import pandas as pd, numpy as np
 import click
-import os
+import os, copy
 from os.path import join
 from collections import Counter
 
@@ -22,6 +22,8 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
     os.makedirs(output_dir,exist_ok=True)
 
     output_file = join(output_dir,'results.csv')
+    training_curve_file = join(output_dir, 'training_val_curve.p')
+    results_file = join(output_dir,'results.p')
     output_file_latent = join(output_dir,'latent.csv')
     output_model = join(output_dir,'output_model.p')
     output_pkl = join(output_dir, 'vae_mlp_methyl_arr.pkl')
@@ -94,6 +96,9 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
     vae_mlp = vae_mlp.fit(train_methyl_dataloader)
     if 'encoder' in dir(train_methyl_dataset):
         pickle.dump(train_methyl_dataset.encoder,open(output_onehot_encoder,'wb'))
+    results = dict(test={},train={},val={})
+    results['train']['y_pred'], results['train']['y_true'], _, _ = vae_mlp.predict(train_methyl_dataloader)
+    results['val']['y_pred'], results['val']['y_true'], _, _ = vae_mlp.predict(val_methyl_dataloader)
     del train_methyl_dataloader, train_methyl_dataset
     """methyl_dataset=get_methylation_dataset(methyl_array,interest_cols,predict=True)
     methyl_dataset_loader = DataLoader(
@@ -102,6 +107,10 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
         batch_size=1,
         shuffle=False)"""
     Y_pred, Y_true, latent_projection, sample_names = vae_mlp.predict(test_methyl_dataloader) # FIXME change to include predictions for all classes for AUC
+    results['test']['y_pred'], results['test']['y_true'] = copy.deepcopy(Y_pred), copy.deepcopy(Y_true)
+    if categorical:
+        Y_true=Y_true.argmax(axis=1)[:,np.newaxis]
+        Y_pred=Y_pred.argmax(axis=1)[:,np.newaxis]
     test_methyl_array = test_methyl_dataset.to_methyl_array()
     """if categorical:
         Y_true=test_methyl_dataset.encoder.inverse_transform(Y_true)[:,np.newaxis]
@@ -114,10 +123,14 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
     latent_projection=pd.DataFrame(latent_projection,index=test_methyl_array.beta.index)
     test_methyl_array.beta=latent_projection
     test_methyl_array.write_pickle(output_pkl)
+    pickle.dump(results,open(results_file,'wb'))
+    pickle.dump(vae_mlp.training_plot_data,open(training_curve_file,'wb'))
     latent_projection.to_csv(output_file_latent)
     torch.save(vae_mlp.model,output_model)
     results_df.to_csv(output_file)#pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
     return latent_projection, Y_pred, Y_true, vae_mlp
+
+# ADD OUTPUT METRICS AND TRAINING PLOT CURVE
 
 @prediction.command() # FIXME finish this!!
 @click.option('-i', '--train_pkl', default='./train_val_test_sets/train_methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)

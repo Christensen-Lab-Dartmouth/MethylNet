@@ -83,16 +83,18 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
             job=os.popen(command).read().strip('\n')
         #df.loc[np.arange(df.shape[0])==np.where(df['--job_name'].astype(str).map(lower)=='false')[0][0],'--job_name']=job
     else:
-        commands = np.array_split(commands,len(commands)//job_chunk_size)
-        for command_list in commands:
-            if nohup:
-                for command in command_list:
-                    print(command)
-                    subprocess.call(command,shell=True)
-            else:
-                pool = Pool(len(command_list))
-                pool.map(run, command_list)
-                pool.close()
-                pool.join()
-        #df.loc[:,'--job_name']=True
+        if len(commands) == 1:
+            subprocess.call(commands[0],shell=True)
+        else:
+            commands = np.array_split(commands,len(commands)//job_chunk_size)
+            for command_list in commands:
+                if nohup:
+                    for command in command_list:
+                        print(command)
+                        subprocess.call(command,shell=True)
+                else:
+                    pool = Pool(len(command_list))
+                    pool.map(run, command_list)
+                    pool.close()
+                    pool.join()
     df.to_csv(hyperparameter_input_csv)

@@ -142,9 +142,9 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
                 for i in range(shap_values.shape[0]):
                     class_name = prediction_classes[i] if prediction_classes != None else str(i)
                     shap_df = pd.DataFrame(shap_values[i,...],index=test_methyl_array.beta.index,columns=cpgs)
-                    if prediction_classes != None:
-                        shap_df = shap_df.loc[test_methyl_array.pheno[interest_col].values == class_name,:]
                     if shap_df.shape[0]:
+                        if prediction_classes != None:
+                            shap_df = shap_df.loc[test_methyl_array.pheno[interest_col].values == class_name,:]
                         shapley_data.add_class(class_name, shap_df, n_top_features)
             else: # regression tasks
                 shap_df = pd.DataFrame(shap_values,index=test_methyl_array.beta.index,columns=cpgs)
