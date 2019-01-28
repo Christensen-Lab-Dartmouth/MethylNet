@@ -21,8 +21,7 @@ def prediction():
 def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum'):
     os.makedirs(output_dir,exist_ok=True)
 
-    output_file = join(output_dir,'predictions.csv')
-    output_gt_file = join(output_dir,'ground_truth.csv')
+    output_file = join(output_dir,'results.csv')
     output_file_latent = join(output_dir,'latent.csv')
     output_model = join(output_dir,'output_model.p')
     output_pkl = join(output_dir, 'vae_mlp_methyl_arr.pkl')
@@ -107,17 +106,17 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
     """if categorical:
         Y_true=test_methyl_dataset.encoder.inverse_transform(Y_true)[:,np.newaxis]
         Y_pred=test_methyl_dataset.encoder.inverse_transform(Y_pred)[:,np.newaxis]"""
-    #sample_names = np.array([sample_name[0] for sample_name in sample_names]) # FIXME
+    #sample_names = np.array(list(test_methyl_array.beta.index)) # FIXME
     #outcomes = np.array([outcome[0] for outcome in outcomes]) # FIXME
-    Y_pred=pd.DataFrame(Y_pred,index=test_methyl_array.beta.index)#dict(zip(sample_names,outcomes))
-    Y_true=pd.DataFrame(Y_true,index=test_methyl_array.beta.index)
+    Y_pred=pd.DataFrame(Y_pred,index=test_methyl_array.beta.index,columns=['y_pred'])#dict(zip(sample_names,outcomes))
+    Y_true=pd.DataFrame(Y_true,index=test_methyl_array.beta.index,columns=['y_true'])
+    results_df = pd.concat([Y_pred,Y_true],axis=1)
     latent_projection=pd.DataFrame(latent_projection,index=test_methyl_array.beta.index)
     test_methyl_array.beta=latent_projection
     test_methyl_array.write_pickle(output_pkl)
     latent_projection.to_csv(output_file_latent)
     torch.save(vae_mlp.model,output_model)
-    Y_pred.to_csv(output_file)#pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
-    Y_true.to_csv(output_gt_file)
+    results_df.to_csv(output_file)#pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
     return latent_projection, Y_pred, Y_true, vae_mlp
 
 @prediction.command() # FIXME finish this!!

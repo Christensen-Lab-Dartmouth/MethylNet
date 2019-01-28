@@ -23,6 +23,7 @@
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python embedding.py launch_hyperparameter_scan -sc disease --nohup -g
     * CUDA_VISIBLE_DEVICES="1" nohup sh -c " python embedding.py perform_embedding --n_latent 200 --learning_rate 0.001 --weight_decay 0.0001 --n_epochs 1000 --hidden_layer_encoder_topology 300 --kl_warm_up 0 --beta 0 --scheduler warm_restarts --t_max 10 --eta_min 1e-6 --t_mult 1.5 --batch_size 256 --n_workers 4 --loss_reduction sum -bce -c -v -hl embeddings/embed_hyperparameters_log.csv -sc disease && python visualizations.py transform_plot -o visualizations/vae_umap.html -c disease -nn 10 " &
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g
+    * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g -n 4 -c 0
 
 2. Brain Cancer
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda
@@ -48,7 +49,7 @@
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python embedding.py launch_hyperparameter_scan -sc disease --nohup -g
     * CUDA_VISIBLE_DEVICES="0" nohup sh -c " python embedding.py perform_embedding --n_latent 200 --learning_rate 5e-5 --weight_decay 0.0001 --n_epochs 200 --hidden_layer_encoder_topology 300,200 --kl_warm_up 20 --beta 0.5 --scheduler null --t_max 10 --eta_min 1e-6 --t_mult 1.2 --batch_size 50 --n_workers 4 --loss_reduction sum -bce -c -v -hl embeddings/embed_hyperparameters_log.csv -sc disease && python visualizations.py transform_plot -o visualizations/vae_umap.html -nn 8 " &
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g
-    * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g -n 4 -c 0.2
+    * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g -n 4 -c 0
 
 
 3. Retired Commands
