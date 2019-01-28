@@ -24,6 +24,14 @@
     * CUDA_VISIBLE_DEVICES="1" nohup sh -c " python embedding.py perform_embedding --n_latent 200 --learning_rate 0.001 --weight_decay 0.0001 --n_epochs 1000 --hidden_layer_encoder_topology 300 --kl_warm_up 0 --beta 0 --scheduler warm_restarts --t_max 10 --eta_min 1e-6 --t_mult 1.5 --batch_size 256 --n_workers 4 --loss_reduction sum -bce -c -v -hl embeddings/embed_hyperparameters_log.csv -sc disease && python visualizations.py transform_plot -o visualizations/vae_umap.html -c disease -nn 10 " &
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g -n 1 -c 0
+    * CUDA_VISIBLE_DEVICES="0" nohup python model_interpretability.py produce_shapley_data -mth gradient -ssbs 25 -ns 100 -bs 512 -r 4 -rt 3 -col disease -nf 2000 -c & # -ssbs 25 -ns 100
+    * python model_interpretability.py shapley_jaccard -c ACC -c BLCA -c BRCA -c CESC -ov
+    * python model_interpretability.py list_individuals
+    * python model_interpretability.py list_classes
+    * python model_interpretability.py reduce_top_cpgs -nf 500
+    * python model_interpretability.py shapley_jaccard -c ACC -c BLCA -c BRCA -c CESC -ov -s ./interpretations/shapley_explanations/shapley_reduced_data.p
+    * # use original data
+    * nohup python model_interpretability.py interpret_biology -w GO -c BRCA -i 9298768134_R05C02 &
 
 2. Brain Cancer
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda
@@ -50,6 +58,8 @@
     * CUDA_VISIBLE_DEVICES="0" nohup sh -c " python embedding.py perform_embedding --n_latent 200 --learning_rate 5e-5 --weight_decay 0.0001 --n_epochs 200 --hidden_layer_encoder_topology 300,200 --kl_warm_up 20 --beta 0.5 --scheduler null --t_max 10 --eta_min 1e-6 --t_mult 1.2 --batch_size 50 --n_workers 4 --loss_reduction sum -bce -c -v -hl embeddings/embed_hyperparameters_log.csv -sc disease && python visualizations.py transform_plot -o visualizations/vae_umap.html -nn 8 " &
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g -n 1 -c 0
+    * CUDA_VISIBLE_DEVICES="2" nohup sh -c "python predictions.py make_prediction -cat -c -hl predictions/predict_hyperparameters_log.csv --job_name 347 --hidden_layer_topology 300,500,400 --learning_rate_vae 0.0001 --learning_rate_mlp 0.001 --weight_decay 0.0001 --n_epochs 250 --scheduler warm_restarts --t_max 10 --eta_min 1e-06 -v --t_mult 1.2 --batch_size 512 --n_workers 10 --loss_reduction sum -dp 0.05 && python visualizations.py transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o visualizations/347_umap.html -nn 8 " &
+    * CUDA_VISIBLE_DEVICES="0" nohup python model_interpretability.py produce_shapley_data -mth gradient -ssbs 25 -ns 100 -bs 512 -r 4 -rt 3 -col disease -nf 2000 -c &
 
 
 3. Retired Commands

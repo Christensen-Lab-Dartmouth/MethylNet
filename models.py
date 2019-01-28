@@ -124,9 +124,12 @@ class AutoEncoder:
             Plotter(animation_plts).write_plots(self.vae_animation_fname)
         self.min_loss = min(np.array(plt_data['kl_loss'])+np.array(plt_data['recon_loss']))
         if self.validation_set:
-            self.min_val_loss = min(plt_data['val_loss'])
+            min_val_loss_idx=np.argmin(min(plt_data['val_loss']))
+            self.min_val_loss = plt_data['val_loss'][min_val_loss_idx]
+            self.min_val_kl_loss = plt_data['val_kl_loss']
+            self.min_val_recon_loss = plt_data['val_recon_loss']
         else:
-            self.min_val_loss = -1
+            self.min_val_loss, self.min_val_kl_loss, self.min_val_recon_loss  = -1,-1,-1
         self.best_epoch = best_epoch
         self.model = best_model#self.model.load_state_dict(best_model)
         return self

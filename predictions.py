@@ -201,7 +201,6 @@ def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_l
         custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p)
     coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs)
 
-
 #################
 
 if __name__ == '__main__':

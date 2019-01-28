@@ -126,8 +126,8 @@ def perform_embedding(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_de
     else:
         hidden_layer_encoder_topology=[]
     _,_,n_input,autoencoder = embed_vae(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, val_pkl, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction, stratify_column)
-    hyperparameter_row = [job_name,n_epochs, autoencoder.best_epoch, autoencoder.min_loss, autoencoder.min_val_loss, n_input, n_latent, str(hidden_layer_encoder_topology), learning_rate, weight_decay, beta, kl_warm_up, scheduler, t_max, t_mult, batch_size]
-    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate", "weight_decay", "beta", "kl_warm_up", "scheduler", "t_max", "t_mult", "batch_size"])
+    hyperparameter_row = [job_name,n_epochs, autoencoder.best_epoch, autoencoder.min_loss, autoencoder.min_val_loss, autoencoder.min_val_kl_loss, autoencoder.min_val_recon_loss, autoencoder.min_val_recon_loss+(autoencoder.min_val_kl_loss/beta if beta > 0. else 0.), n_input, n_latent, str(hidden_layer_encoder_topology), learning_rate, weight_decay, beta, kl_warm_up, scheduler, t_max, t_mult, batch_size]
+    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "min_val_kl_loss", "min_val_recon_loss", "min_val_adj_loss", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate", "weight_decay", "beta", "kl_warm_up", "scheduler", "t_max", "t_mult", "batch_size"])
     hyperparameter_df.loc[0] = hyperparameter_row
     if os.path.exists(hyperparameter_log):
         print('APPEND')
