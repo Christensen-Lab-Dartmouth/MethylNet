@@ -95,14 +95,45 @@ class ShapleyData:
 class ShapleyDataExplorer:
     def __init__(self, shapley_data):
         self.shapley_data=shapley_data
+        self.indiv2class={}
+        for class_name in self.shapley_data.top_cpgs['by_class']:
+            for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys():
+                self.indiv2class[individual]=class_name
 
-    def extract_class(self, class_name):
-        return self.shapley_data.top_cpgs['by_class'][class_name]['overall']
+    def extract_class(self, class_name, class_intersect):
+        if class_intersect:
+            shap_dfs=[]
+            for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys():
+                shap_dfs.append(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual].set_index('cpg'))
+                df=pd.concat([shap_dfs],axis=1,join='inner')
+                df['shapley_value']=df.values.sum(axis=1)
+                df['cpg'] = np.array(list(df.index))
+            return df[['cpg','shapley_value']]
+        else:
+            return self.shapley_data.top_cpgs['by_class'][class_name]['overall']
 
     def extract_individual(self, individual):
-        for class_name in self.shapley_data.top_cpgs['by_class']:
-            if individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys():
-                return class_name,self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual]
+        class_name=self.indiv2class[individual]
+        return class_name,self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual]
+
+    def regenerate_individual_shap_values(self, n_top_cpgs):
+        shapley_data = copy.deepcopy(self.shapley_data)
+        for class_name in shapley_data.top_cpgs['by_class']:
+            cpgs=np.array(list(shapley_data.shapley_values['by_class'][class_name]))
+            shap_df=shapley_data.shapley_values['by_class'][class_name]
+            shap_vals=shap_df.values
+            class_importance_shaps = shap_vals.mean(0)
+            top_idx = np.argsort(class_importance_shaps*-1)[:n_top_cpgs]
+            shapley_data.top_cpgs['by_class'][class_name]['overall']=pd.DataFrame(np.hstack([cpgs[top_idx][:,np.newaxis],class_importance_shaps[top_idx][:,np.newaxis]]),columns=['cpg','shapley_value'])
+            top_idxs = np.argsort(shap_vals*-1)[:,:n_top_cpgs]
+            for i,individual in enumerate(shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys()):
+                shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual]=pd.DataFrame(shap_df.iloc[i,top_idxs[i,:]].T.reset_index(drop=False).values,columns=['cpg','shapley_value'])
+        return shapley_data
+
+    def view_methylation(self, individual, methyl_arr):
+        class_name,shap_df=self.extract_individual(individual)
+        shap_df['methylation']=methyl_arr.beta.loc[individual,shap_df['cpg'].values].values
+        return class_name,individual,shap_df
 
     def limit_number_top_cpgs(self, n_top_cpgs):
         shapley_data = copy.deepcopy(self.shapley_data)
@@ -114,28 +145,38 @@ class ShapleyDataExplorer:
                 shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual]=shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual].iloc[:n_top_cpgs]
         return shapley_data
 
-    def list_individuals(self):
-        individuals={class_name:list(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys()) for class_name in self.shapley_data.top_cpgs['by_class']}
-        return individuals
+    def list_individuals(self, return_list=False):
+        if not return_list:
+            individuals={class_name:list(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys()) for class_name in self.shapley_data.top_cpgs['by_class']}
+            return individuals
+        else:
+            from functools import reduce
+            return list(reduce(lambda x,y:x+y, [list(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys()) for class_name in self.shapley_data.top_cpgs['by_class']]))
 
-    def return_top_cpgs(self, classes=[], individuals=[]):
+    def list_classes(self):
+        classes = list(self.shapley_data.top_cpgs['by_class'].keys())
+        return classes
+
+    def return_top_cpgs(self, classes=[], individuals=[], class_intersect=False):
         top_cpgs={}
         if classes:
             for class_name in classes:
-                top_cpgs[class_name]= self.extract_class(class_name)
+                top_cpgs[class_name]= self.extract_class(class_name, class_intersect)
         if individuals:
             for indiv in individuals:
                 class_name,top_cpg_df=self.extract_individual(indiv)
                 top_cpgs['{}_{}'.format(class_name,indiv)]=top_cpg_df
         return top_cpgs
 
-    def jaccard_similarity_top_cpgs(self,class_names,overall=False):
+    def jaccard_similarity_top_cpgs(self,class_names,overall=False, cooccurrence=False):
         from itertools import combinations
         from functools import reduce
         def jaccard_similarity(list1, list2):
             s1 = set(list1)
             s2 = set(list2)
             return len(s1.intersection(s2)) / len(s1.union(s2))
+        def cooccurrence_fn(list1,list2):
+            return len(set(list1).intersection(set(list2)))
         x={}
         for class_name in class_names:
             if overall:
@@ -145,8 +186,11 @@ class ShapleyDataExplorer:
         indivs=list(x.keys())
         similarity_matrix=pd.DataFrame(np.eye(len(x)),index=indivs,columns=indivs)
         for i,j in combinations(indivs,r=2):
-            similarity_matrix.loc[i,j] = round(jaccard_similarity(x[i],x[j]),3)
+            similarity_matrix.loc[i,j] = (round(jaccard_similarity(x[i],x[j]),3) if not cooccurrence else cooccurrence_fn(x[i],x[j]))
             similarity_matrix.loc[j,i] = similarity_matrix.loc[i,j]
+        if cooccurrence:
+            for i in indivs:
+                similarity_matrix.loc[i,i]=len(x[i])
         return similarity_matrix
 
 class CpGExplainer: # consider shap.kmeans or grab representative sample of each outcome in training set for background ~ 39 * 2 samples, 39 cancers, should speed things up, small training set when building explainer https://github.com/slundberg/shap/issues/372
@@ -364,7 +408,7 @@ def main_prediction_function(n_workers,batch_size, model, cuda):
         return predict_function(dataloader_constructor(raw_beta_array))
     return main_predict
 
-@interpret.command()
+@interpret.command() # FIXME add abs or just -1, positive contributions or any contributions
 @click.option('-i', '--train_pkl', default='./train_val_test_sets/train_methyl_array.pkl', help='Input database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
 @click.option('-v', '--val_pkl', default='./train_val_test_sets/val_methyl_array.pkl', help='Val database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
 @click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
@@ -473,7 +517,8 @@ def grab_lola_db_cache(output_dir):
 @click.option('-i', '--individuals', default=[''], multiple=True, help='Individuals to evaluate.', show_default=True)
 @click.option('-c', '--classes', default=[''], multiple=True, help='Classes to evaluate.', show_default=True)
 @click.option('-m', '--max_gap', default=1000, help='Genomic distance to search for nearby CpGs than found top cpgs shapleys.', show_default=True)
-def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_workers, lola_db, individuals, classes, max_gap):
+@click.option('-ci', '--class_intersect', is_flag=True, help='Compute class shapleys by intersection of individuals.', show_default=True)
+def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_workers, lola_db, individuals, classes, max_gap, class_intersect):
     """Add categorical encoder as custom input, then can use to change names of output csvs to match disease if encoder exists."""
     os.makedirs(output_dir,exist_ok=True)
     if os.path.exists(all_cpgs_pickle):
@@ -483,8 +528,12 @@ def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_worke
     #top_cpgs=pickle.load(open(top_cpgs_pickle,'rb'))
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
-    individuals=filter(None,individuals)
-    classes=filter(None,classes)
+    individuals=list(filter(None,individuals))
+    classes=list(filter(None,classes))
+    if classes and classes[0]=='all':
+        classes = shapley_data_explorer.list_classes()
+    if individuals and individuals[0]=='all':
+        individuals = shapley_data_explorer.list_individuals(return_list=True)
     top_cpgs=shapley_data_explorer.return_top_cpgs(classes=classes,individuals=individuals)
     bio_interpreter = BioInterpreter(top_cpgs)
     if analysis in ['GO','KEGG','GENE']:
@@ -492,7 +541,7 @@ def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_worke
     elif analysis == 'LOLA':
         analysis_outputs=bio_interpreter.run_lola(all_cpgs=[], lola_db=lola_db, cores=n_workers)
     elif analysis == 'NEAR_CPGS':
-        analysis_outputs=bio_interpreter.get_nearby_cpg_shapleys(all_cpgs=[],max_gap=max_gap)
+        analysis_outputs=bio_interpreter.get_nearby_cpg_shapleys(all_cpgs=[],max_gap=max_gap, class_intersect=class_intersect)
     for k in analysis_outputs:
         output_csv=join(output_dir,'{}_{}.csv'.format(k,analysis))
         analysis_outputs[k].to_csv(output_csv)
@@ -503,12 +552,27 @@ def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_worke
 @click.option('-c', '--class_names', default=[''], multiple=True, help='Class names.', show_default=True)
 @click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/top_cpgs_jaccard/', help='Output directory for cpg jaccard_stats.', type=click.Path(exists=False), show_default=True)
 @click.option('-ov', '--overall', is_flag=True, help='Output overall similarity.', show_default=True)
-def shapley_jaccard(shapley_data,class_names, output_dir, overall):
+@click.option('-co', '--cooccurrence', is_flag=True, help='Output cooccurrence instead jaccard.', show_default=True)
+def shapley_jaccard(shapley_data,class_names, output_dir, overall, cooccurrence):
     os.makedirs(output_dir,exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
     outfilename=join(output_dir,'{}_jaccard.csv'.format('_'.join(class_names)))
-    shapley_data_explorer.jaccard_similarity_top_cpgs(class_names,overall).to_csv(outfilename)
+    shapley_data_explorer.jaccard_similarity_top_cpgs(class_names,overall, cooccurrence).to_csv(outfilename)
+
+@interpret.command()
+@click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
+@click.option('-i', '--individuals', default=[''], multiple=True, help='Individuals.', show_default=True)
+@click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/top_cpgs_methylation/', help='Output directory for cpg jaccard_stats.', type=click.Path(exists=False), show_default=True)
+@click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
+def view_methylation_top_cpgs(shapley_data,individuals, output_dir, test_pkl):
+    os.makedirs(output_dir,exist_ok=True)
+    shapley_data=ShapleyData.from_pickle(shapley_data)
+    shapley_data_explorer=ShapleyDataExplorer(shapley_data)
+    test_methyl_array=MethylationArray.from_pickle(test_pkl)
+    for individual in individuals:
+        class_name,individual,shap_df=shapley_data_explorer.view_methylation(individual=individual,methyl_arr=test_methyl_array)
+        shap_df.to_csv(join(output_dir,"{}_{}.csv".format(class_name,individual)))
 
 @interpret.command()
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
@@ -532,6 +596,16 @@ def reduce_top_cpgs(shapley_data,n_top_features,output_pkl):
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
     shapley_data_explorer.limit_number_top_cpgs(n_top_cpgs=n_top_features).to_pickle(output_pkl)
+
+@interpret.command()
+@click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
+@click.option('-nf', '--n_top_features', default=500, show_default=True, help='Top features to select for shap outputs.')
+@click.option('-o', '--output_pkl', default='./interpretations/shapley_explanations/shapley_reduced_data.p', help='Pickle containing top CpGs, reduced number.', type=click.Path(exists=False), show_default=True)
+def regenerate_top_cpgs(shapley_data,n_top_features,output_pkl):
+    os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
+    shapley_data=ShapleyData.from_pickle(shapley_data)
+    shapley_data_explorer=ShapleyDataExplorer(shapley_data)
+    shapley_data_explorer.regenerate_individual_shap_values(n_top_cpgs=n_top_features).to_pickle(output_pkl)
 
 #################
 
