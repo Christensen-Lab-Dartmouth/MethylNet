@@ -100,7 +100,41 @@ class ShapleyDataExplorer:
             for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys():
                 self.indiv2class[individual]=class_name
 
-    def extract_class(self, class_name, class_intersect):
+    def return_shapley_data_by_methylation_status(self, methyl_array):
+        methylation_shapley_data_dict = {'hyper':copy.deepcopy(self.shapley_data),'hypo':copy.deepcopy(self.shapley_data)}
+        for individual in self.list_individuals(return_list=True):
+            class_name,individual,top_shap_df=self.view_methylation(individual,methyl_array)
+            hyper_df = top_shap_df[top_shap_df['methylation']>0.5]
+            hypo_df = top_shap_df[top_shap_df['methylation']<0.5]
+            methylation_shapley_data_dict['hyper'].top_cpgs['by_class'][class_name]['by_individual'][individual]=hyper_df[['cpg','shapley_value']]
+            methylation_shapley_data_dict['hypo'].top_cpgs['by_class'][class_name]['by_individual'][individual]=hypo_df[['cpg','shapley_value']]
+        for class_name,individuals in self.list_individuals().items():
+            top_shap_df=self.extract_class(class_name)
+            top_shap_df['methylation']=methyl_array.beta.loc[individuals,self.shapley_data.top_cpgs['by_class'][class_name]['overall']['cpg'].values].mean(axis=0).values
+            hyper_df = top_shap_df[top_shap_df['methylation']>0.5]
+            hypo_df = top_shap_df[top_shap_df['methylation']<0.5]
+            methylation_shapley_data_dict['hyper'].top_cpgs['by_class'][class_name]['overall']=hyper_df[['cpg','shapley_value']]
+            methylation_shapley_data_dict['hypo'].top_cpgs['by_class'][class_name]['overall']=hypo_df[['cpg','shapley_value']]
+        return methylation_shapley_data_dict
+
+    def return_cpg_sets(self):
+        from functools import reduce
+        def return_cpg_set(shap_df):
+            return set(shap_df['cpg'].values.tolist())
+        cpg_sets={}
+        for class_name,individuals in self.list_individuals().items():
+            cpg_set = [set(self.extract_class(class_name)['cpg'].values.tolist())]
+            for individual in individuals:
+                cpg_set.append(set(self.extract_individual(individual)[1]['cpg'].values.tolist()))
+            cpg_set=set(reduce(lambda x,y: x.union(y),cpg_set))
+            cpg_sets[class_name] = cpg_set
+        cpg_exclusion_sets={}
+        for class_name in cpg_sets:
+            #print("Calculating exclusion set for {}".format(class_name))
+            cpg_exclusion_sets[class_name]=set(reduce(lambda x,y:x.union(y),[cpg_set for class_name_query,cpg_set in cpg_sets.items() if class_name_query != class_name]))
+        return cpg_sets, cpg_exclusion_sets
+
+    def extract_class(self, class_name, class_intersect=False):
         if class_intersect:
             shap_dfs=[]
             for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys():
@@ -131,9 +165,9 @@ class ShapleyDataExplorer:
         return shapley_data
 
     def view_methylation(self, individual, methyl_arr):
-        class_name,shap_df=self.extract_individual(individual)
-        shap_df['methylation']=methyl_arr.beta.loc[individual,shap_df['cpg'].values].values
-        return class_name,individual,shap_df
+        class_name,top_shap_df=self.extract_individual(individual)
+        top_shap_df['methylation']=methyl_arr.beta.loc[individual,top_shap_df['cpg'].values].values
+        return class_name,individual,top_shap_df
 
     def limit_number_top_cpgs(self, n_top_cpgs):
         shapley_data = copy.deepcopy(self.shapley_data)
@@ -157,15 +191,30 @@ class ShapleyDataExplorer:
         classes = list(self.shapley_data.top_cpgs['by_class'].keys())
         return classes
 
-    def return_top_cpgs(self, classes=[], individuals=[], class_intersect=False):
+    def return_top_cpgs(self, classes=[], individuals=[], class_intersect=False, cpg_exclusion_sets=None, cpg_sets=None):
         top_cpgs={}
         if classes:
             for class_name in classes:
-                top_cpgs[class_name]= self.extract_class(class_name, class_intersect)
+                top_cpg_df = self.extract_class(class_name, class_intersect)
+                if cpg_exclusion_sets != None:
+                    unique_cpgs = np.array(list(set(top_cpg_df['cpg'].values.tolist())-cpg_exclusion_sets[class_name]))
+                    top_cpgs[class_name]= top_cpg_df[np.isin(top_cpg_df['cpg'].values,unique_cpgs)]
+                else:
+                    top_cpgs[class_name]= top_cpg_df
         if individuals:
             for indiv in individuals:
                 class_name,top_cpg_df=self.extract_individual(indiv)
-                top_cpgs['{}_{}'.format(class_name,indiv)]=top_cpg_df
+                if cpg_exclusion_sets != None:
+                    unique_cpgs = np.array(list(set(top_cpg_df['cpg'].values.tolist())-cpg_exclusion_sets[class_name]))
+                    print(len(top_cpg_df['cpg'].values),len(unique_cpgs))
+                    top_cpgs['{}_{}'.format(class_name,indiv)]=top_cpg_df[np.isin(top_cpg_df['cpg'].values,unique_cpgs)]
+                else:
+                    top_cpgs['{}_{}'.format(class_name,indiv)]=top_cpg_df
+        if cpg_sets != None:
+            print(cpg_sets)
+            intersected_cpgs=np.array(list(set.intersection(*list(cpg_sets.values()))))
+            top_cpgs['intersection']=pd.DataFrame(intersected_cpgs[:,np.newaxis],columns=['cpg'])
+            top_cpgs['intersection']['shapley_value']=-1
         return top_cpgs
 
     def jaccard_similarity_top_cpgs(self,class_names,overall=False, cooccurrence=False):
@@ -193,6 +242,55 @@ class ShapleyDataExplorer:
                 similarity_matrix.loc[i,i]=len(x[i])
         return similarity_matrix
 
+class PlotCircos:
+    def __init__(self):
+        from rpy2.robjects.packages import importr
+        import rpy2.robjects as robjects
+        from rpy2.robjects import pandas2ri
+        pandas2ri.activate()
+        self.ggbio=importr('ggbio')
+        self.data = robjects.r("""data("CRC", package = "biovizBase")""")
+        self.hg19 = importr('IlluminaHumanMethylation450kanno.ilmn12.hg19')
+        self.GRanges = importr('GenomicRanges')
+        self.generate_base_plot = robjects.r("""function () {
+                                p <- ggbio()
+                                return(p)}""")
+        self.add_plot_data = robjects.r("""function(p_data_new, p_data=c()) {
+                                        p_data=c(p_data,p_data_new)
+                                        return(p_data)
+                                        }""")
+        self.generate_final_plot = robjects.r("""function(p,grs) {
+                                              p<- ggbio()
+                                              for (gr in grs) {
+                                              seqlevelsStyle(gr)<-"NCBI"
+                                              p<-p+circle(gr, geom = "rect", color = "steelblue")
+                                              }
+                                               p<-p + circle(hg19sub,geom = "ideo", fill = "gray70") + circle(hg19sub,geom = "scale", size = 2)+
+                                                circle(hg19sub,geom = "text", aes(label = seqnames), vjust = 0, size = 3)
+                                               return(p)}""")
+
+    def plot_cpgs(self, top_cpgs, output_dir='./'):
+        import rpy2.robjects as robjects
+        from rpy2.robjects import pandas2ri
+        from collections import defaultdict
+        pandas2ri.activate()
+        self.top_cpgs = top_cpgs
+        cpg_locations = pandas2ri.ri2py(robjects.r['as'](robjects.r('getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)'),'data.frame')).set_index(keys='Name',drop=False)
+        print(cpg_locations)
+        cpgs_grange = robjects.r('makeGRangesFromDataFrame')(pandas2ri.py2ri(cpg_locations),start_field='pos',end_field='pos',starts_in_df_are_0based=False)
+        output_dfs = {}
+        plots={}
+        p=self.generate_base_plot()
+        #ggsave = robjects.r("""function (file.name, p) {ggsave(file.name,p)}""")
+        for i,k in enumerate(list(self.top_cpgs.keys())):
+            list_cpgs=np.squeeze(self.top_cpgs[k].values[:,0])
+            cpg_location_subset = cpg_locations.loc[list_cpgs,:]
+            location_subset = robjects.r('makeGRangesFromDataFrame')(pandas2ri.py2ri(cpg_location_subset),start_field='pos',end_field='pos',starts_in_df_are_0based=False)
+            locations=self.add_plot_data(location_subset,locations) if i>0 else self.add_plot_data(location_subset)
+            #self.add_plot(p,location_subset)
+        self.generate_final_plot(p,locations)
+        self.ggbio.ggsave(join(output_dir,'{}.png'.format('_'.join([k for k in self.top_cpgs]))))
+
 class CpGExplainer: # consider shap.kmeans or grab representative sample of each outcome in training set for background ~ 39 * 2 samples, 39 cancers, should speed things up, small training set when building explainer https://github.com/slundberg/shap/issues/372
     def __init__(self,prediction_function=None, cuda=False):
         self.prediction_function=prediction_function
@@ -212,7 +310,7 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
             self.method = 'kernel'
             self.explainer=shap.KernelExplainer(self.prediction_function, train_methyl_array.return_raw_beta_array(), link="identity")
 
-    def return_top_shapley_features(self, test_methyl_array, n_samples, n_top_features, n_outputs, shap_sample_batch_size=None, interest_col='disease', prediction_classes=None, summary_plot_file='', return_shapley_values=True, feature_selection=False, top_outputs=None, pred_class = None):
+    def return_top_shapley_features(self, test_methyl_array, n_samples, n_top_features, n_outputs, shap_sample_batch_size=None, interest_col='disease', prediction_classes=None, return_shapley_values=True, feature_selection=False, top_outputs=None, pred_class = None, cross_class=False):
         n_batch = 1
         if shap_sample_batch_size != None and self.method != 'deep' and not feature_selection:
             n_batch = int(n_samples/shap_sample_batch_size)
@@ -242,15 +340,17 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
             shapley_data.add_global_importance(self.cpg_global_shapley_scores,cpgs, n_top_features)
         else:
             if n_classes: # classification tasks
+                if cross_class:
+                    shap_values = np.abs(shap_values).mean(axis=0)
                 for i in range(shap_values.shape[0]):
                     class_name = prediction_classes[i] if prediction_classes != None else str(i)
-                    shap_df = pd.DataFrame(shap_values[i,...],index=test_methyl_array.beta.index,columns=cpgs)
+                    shap_df = pd.DataFrame((shap_values[i,...] if not cross_class else shap_values),index=test_methyl_array.beta.index,columns=cpgs)
                     if shap_df.shape[0]:
                         if prediction_classes != None:
                             shap_df = shap_df.loc[test_methyl_array.pheno[interest_col].values == class_name,:]
                         shapley_data.add_class(class_name, shap_df, cpgs, n_top_features)
             else: # regression tasks
-                shap_df = pd.DataFrame(shap_values,index=test_methyl_array.beta.index,columns=cpgs)
+                shap_df = pd.DataFrame(shap_values if not cross_class else np.abs(shap_values),index=test_methyl_array.beta.index,columns=cpgs)
                 shapley_data.add_class('regression', shap_df, n_top_features)
         self.shapley_data = shapley_data
 
@@ -290,7 +390,7 @@ class BioInterpreter:
         else:
             self.prediction_classes=list(map(lambda x: x.replace(' ',''),prediction_classes))"""
 
-    def gometh(self, collection='GO', allcpgs=[]):# consider turn into generator go or kegg # add rgreat, lola, roadmap-chromatin hmm, atac-seq, chip-seq, gometh, Hi-C, bedtools, Owen's analysis
+    def gometh(self, collection='GO', allcpgs=[], length_output=20):# consider turn into generator go or kegg # add rgreat, lola, roadmap-chromatin hmm, atac-seq, chip-seq, gometh, Hi-C, bedtools, Owen's analysis
         import rpy2.robjects as robjects
         from rpy2.robjects import pandas2ri
         #robjects.packages.importr('org.Hs.eg.db')
@@ -306,11 +406,11 @@ class BioInterpreter:
             list_cpgs=robjects.vectors.StrVector(list_cpgs[:,0].tolist())
             if collection == 'GENE':
                 mappedEz = self.missMethyl.getMappedEntrezIDs(sig_cpg=list_cpgs, all_cpg = allcpgs, array_type='450K')
-                gometh_output = robjects.r('function (mappedEz) {data.frame(mappedEz$sig.eg[1:10])}')(mappedEz) # sig.eg[1:10]
+                gometh_output = robjects.r('function (mappedEz, length.output) {data.frame(mappedEz$sig.eg[1:length.output])}')(mappedEz,length_output) # sig.eg[1:10]
                 print(gometh_output)
             else:
-                gometh_output = self.missMethyl.gometh(sig_cpg=list_cpgs,all_cpg=allcpgs,collection=collection)
-                gometh_output = self.limma.topKEGG(gometh_output) if collection=='KEGG' else self.limma.topGO(gometh_output)
+                gometh_output = robjects.r('function (sig.cpg, all.cpg, collection, prior.prob) {gometh(sig.cpg=sig.cpg,all.cpg=all.cpg,collection=collection,prior.prob=prior.prob)}')(list_cpgs,allcpgs,collection,True)#self.missMethyl.gometh(sig_cpg=list_cpgs,all_cpg=allcpgs,collection=collection,prior_prob=False)
+                gometh_output = self.limma.topKEGG(gometh_output, number=length_output) if collection=='KEGG' else self.limma.topGO(gometh_output, number=length_output)
             # FIXME add get genes
             # genes = self.missMethyl.getMappedEntrezIDs(sig.cpg, all.cpg = NULL, array.type, anno = NULL)
             output_dfs['prediction_{}'.format(k)]=pandas2ri.ri2py(robjects.r['as'](gometh_output,'data.frame'))
@@ -322,7 +422,7 @@ class BioInterpreter:
         from rpy2.robjects import pandas2ri
         from collections import defaultdict
         pandas2ri.activate()
-        cpg_locations = pandas2ri.ri2py(robjects.r['as'](robjects.r('getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)'),'data.frame'))
+        cpg_locations = pandas2ri.ri2py(robjects.r['as'](robjects.r('getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)'),'data.frame')).set_index(keys='Name',drop=False)
         cpgs_grange = robjects.r('makeGRangesFromDataFrame')(pandas2ri.py2ri(cpg_locations),start_field='pos',end_field='pos',starts_in_df_are_0based=False)
         output_dfs = {}
         for k in self.top_cpgs:
@@ -344,7 +444,7 @@ class BioInterpreter:
         from rpy2.robjects import pandas2ri
         order_by_max_rnk=robjects.r("function (dt) {dt[order(meanRnk, decreasing=FALSE),]}")
         pandas2ri.activate()
-        cpg_locations = pandas2ri.ri2py(robjects.r['as'](robjects.r('getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)'),'data.frame'))
+        cpg_locations = pandas2ri.ri2py(robjects.r['as'](robjects.r('getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)'),'data.frame')).set_index(keys='Name',drop=False)
         all_cpg_regions = robjects.r('makeGRangesFromDataFrame')(pandas2ri.py2ri(cpg_locations if not all_cpgs else cpg_locations.loc[all_cpgs,:]),start_field='pos',end_field='pos',starts_in_df_are_0based=False)
         #robjects.r('load("{}")'.format(lola_rdata))
         lolaDB = self.lola.loadRegionDB(lola_db)#
@@ -354,7 +454,7 @@ class BioInterpreter:
             cpg_location_subset = cpg_locations.loc[list_cpgs,:]
             location_subset = robjects.r('makeGRangesFromDataFrame')(pandas2ri.py2ri(cpg_location_subset),start_field='pos',end_field='pos',starts_in_df_are_0based=False)
             lola_output=self.lola.runLOLA(location_subset,all_cpg_regions,lolaDB,cores=cores)
-            output_dfs['prediction_{}'.format(k)]=pandas2ri.ri2py(robjects.r['as'](order_by_max_rnk(lola_output),'data.frame')).iloc[:20,:]
+            output_dfs['prediction_{}'.format(k)]=pandas2ri.ri2py(robjects.r['as'](order_by_max_rnk(lola_output),'data.frame'))#.iloc[:20,:]
         return output_dfs
         #https://academic.oup.com/bioinformatics/article/32/4/587/1743969
 
@@ -425,14 +525,14 @@ def main_prediction_function(n_workers,batch_size, model, cuda):
 @click.option('-col', '--interest_col', default='disease', help='Column of interest for sample selection for explainer training.', type=click.Path(exists=False), show_default=True)
 @click.option('-rt', '--n_random_representative_test', default=0, help='Number of representative samples to choose for test set. Is this number for regression models, or this number per class for classification problems.', show_default=True)
 @click.option('-e', '--categorical_encoder', default='./predictions/one_hot_encoder.p', help='One hot encoder if categorical model. If path exists, then return top positive controbutions per samples of that class. Encoded values must be of sample class as interest_col.', type=click.Path(exists=False), show_default=True)
-@click.option('-plt', '--plot_summary', default='', help='Plot shap summaries for top cpgs of each class.', type=click.Path(exists=False), show_default=True)
+@click.option('-cc', '--cross_class', is_flag=True, help='Find importance of features for prediction across classes.')
 @click.option('-fs', '--feature_selection', is_flag=True, help='Perform feature selection using top global SHAP scores.', show_default=True)
 @click.option('-top', '--top_outputs', default=0, help='Get shapley values for fewer outputs if feature selection.', show_default=True)
 @click.option('-vae', '--vae_interpret', is_flag=True, help='Use model to get shapley values for VAE latent dimensions, only works if proper datasets are set.', show_default=True)
 @click.option('-cl', '--pred_class', default='', help='Prediction class top cpgs.', type=click.Path(exists=False), show_default=True)
 @click.option('-r', '--results_csv', default='./predictions/results.csv', help='Remove all misclassifications.', type=click.Path(exists=False), show_default=True)
 @click.option('-ind', '--individual', default='', help='One individual top cpgs.', type=click.Path(exists=False), show_default=True)
-def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, batch_size, cuda, n_samples, n_top_features, output_dir, method, shap_sample_batch_size, n_random_representative, interest_col, n_random_representative_test, categorical_encoder, plot_summary, feature_selection, top_outputs, vae_interpret, pred_class, results_csv, individual):
+def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, batch_size, cuda, n_samples, n_top_features, output_dir, method, shap_sample_batch_size, n_random_representative, interest_col, n_random_representative_test, categorical_encoder, cross_class, feature_selection, top_outputs, vae_interpret, pred_class, results_csv, individual):
     os.makedirs(output_dir,exist_ok=True)
     if not pred_class:
         pred_class = None
@@ -479,7 +579,7 @@ def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, 
     cpg_explainer.build_explainer(train_methyl_array, method, batch_size=batch_size)
     if not shap_sample_batch_size:
         shap_sample_batch_size = None
-    cpg_explainer.return_top_shapley_features(test_methyl_array, n_samples, n_top_features, n_outputs=n_test_results_outputs, shap_sample_batch_size=shap_sample_batch_size, interest_col=interest_col, prediction_classes=prediction_classes, top_outputs=top_outputs, summary_plot_file=(join(output_dir,'summary.png') if plot_summary else ''), feature_selection=feature_selection, pred_class=pred_class)
+    cpg_explainer.return_top_shapley_features(test_methyl_array, n_samples, n_top_features, n_outputs=n_test_results_outputs, shap_sample_batch_size=shap_sample_batch_size, interest_col=interest_col, prediction_classes=prediction_classes, top_outputs=top_outputs, cross_class=cross_class, feature_selection=feature_selection, pred_class=pred_class)
     if feature_selection:
         print('FEATURE SELECT')
         feature_selected_methyl_array=cpg_explainer.feature_select(MethylationArrays([train_methyl_array,test_methyl_array]).combine(),n_top_features)
@@ -518,7 +618,10 @@ def grab_lola_db_cache(output_dir):
 @click.option('-c', '--classes', default=[''], multiple=True, help='Classes to evaluate.', show_default=True)
 @click.option('-m', '--max_gap', default=1000, help='Genomic distance to search for nearby CpGs than found top cpgs shapleys.', show_default=True)
 @click.option('-ci', '--class_intersect', is_flag=True, help='Compute class shapleys by intersection of individuals.', show_default=True)
-def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_workers, lola_db, individuals, classes, max_gap, class_intersect):
+@click.option('-lo', '--length_output', default=20, help='Number enriched terms to print.', show_default=True)
+@click.option('-ss', '--set_subtraction', is_flag=True, help='Only consider CpGs relevant to particular class.', show_default=True)
+@click.option('-int', '--intersection', is_flag=True, help='CpGs common to all classes.', show_default=True)
+def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_workers, lola_db, individuals, classes, max_gap, class_intersect, length_output, set_subtraction, intersection):
     """Add categorical encoder as custom input, then can use to change names of output csvs to match disease if encoder exists."""
     os.makedirs(output_dir,exist_ok=True)
     if os.path.exists(all_cpgs_pickle):
@@ -534,10 +637,15 @@ def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_worke
         classes = shapley_data_explorer.list_classes()
     if individuals and individuals[0]=='all':
         individuals = shapley_data_explorer.list_individuals(return_list=True)
-    top_cpgs=shapley_data_explorer.return_top_cpgs(classes=classes,individuals=individuals)
+    cpg_exclusion_sets,cpg_sets=None,None
+    if set_subtraction:
+        _,cpg_exclusion_sets=shapley_data_explorer.return_cpg_sets()
+    elif intersection:
+        cpg_sets,_=shapley_data_explorer.return_cpg_sets()
+    top_cpgs=shapley_data_explorer.return_top_cpgs(classes=classes,individuals=individuals,cpg_exclusion_sets=cpg_exclusion_sets,cpg_sets=cpg_sets)
     bio_interpreter = BioInterpreter(top_cpgs)
     if analysis in ['GO','KEGG','GENE']:
-        analysis_outputs=bio_interpreter.gometh(analysis, allcpgs=[])
+        analysis_outputs=bio_interpreter.gometh(analysis, allcpgs=[], length_output=length_output)
     elif analysis == 'LOLA':
         analysis_outputs=bio_interpreter.run_lola(all_cpgs=[], lola_db=lola_db, cores=n_workers)
     elif analysis == 'NEAR_CPGS':
@@ -545,6 +653,27 @@ def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_worke
     for k in analysis_outputs:
         output_csv=join(output_dir,'{}_{}.csv'.format(k,analysis))
         analysis_outputs[k].to_csv(output_csv)
+
+@interpret.command()
+def interpret_lola_output(lola_csv, plot_output_dir, cell_types):
+    lola_results=pd.read_csv(lola_csv)
+    collections=lola_results.groupby('collection')
+    for name,df in collections:
+        print('FINISH, output relevant TFs')
+    # add shore island breakdown
+
+@interpret.command()
+@click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/shapley_data_by_methylation/', help='Output directory for cpg jaccard_stats.', type=click.Path(exists=False), show_default=True)
+@click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
+def split_hyper_hypo_methylation(shapley_data, output_dir, test_pkl):
+    os.makedirs(output_dir,exist_ok=True)
+    shapley_data=ShapleyData.from_pickle(shapley_data)
+    shapley_data_explorer=ShapleyDataExplorer(shapley_data)
+    test_methyl_array=MethylationArray.from_pickle(test_pkl)
+    shap_data_methylation=shapley_data_explorer.return_shapley_data_by_methylation_status(test_methyl_array)
+    shap_data_methylation['hypo'].to_pickle(join(output_dir,'hypo_shapley_data.p'))
+    shap_data_methylation['hyper'].to_pickle(join(output_dir,'hyper_shapley_data.p'))
 
 # create force plots for each sample??? use output shapley values and output explainer
 @interpret.command()
@@ -606,6 +735,31 @@ def regenerate_top_cpgs(shapley_data,n_top_features,output_pkl):
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
     shapley_data_explorer.regenerate_individual_shap_values(n_top_cpgs=n_top_features).to_pickle(output_pkl)
+
+@interpret.command()
+@click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_dir', default='./interpretations/output_plots/', help='Output directory for output plots.', type=click.Path(exists=False), show_default=True)
+@click.option('-i', '--individuals', default=[''], multiple=True, help='Individuals to evaluate.', show_default=True)
+@click.option('-c', '--classes', default=[''], multiple=True, help='Classes to evaluate.', show_default=True)
+def plot_top_cpgs(shapley_data,output_dir,individuals,classes):
+    os.makedirs(output_dir,exist_ok=True)
+    shapley_data=ShapleyData.from_pickle(shapley_data)
+    shapley_data_explorer=ShapleyDataExplorer(shapley_data)
+    individuals=list(filter(None,individuals))
+    classes=list(filter(None,classes))
+    if classes and classes[0]=='all':
+        classes = shapley_data_explorer.list_classes()
+    if individuals and individuals[0]=='all':
+        individuals = shapley_data_explorer.list_individuals(return_list=True)
+    cpg_exclusion_sets,cpg_sets=None,None
+    set_subtraction,intersection=False,False
+    if set_subtraction:
+        _,cpg_exclusion_sets=shapley_data_explorer.return_cpg_sets()
+    elif intersection:
+        cpg_sets,_=shapley_data_explorer.return_cpg_sets()
+    top_cpgs=shapley_data_explorer.return_top_cpgs(classes=classes,individuals=individuals,cpg_exclusion_sets=cpg_exclusion_sets,cpg_sets=cpg_sets)
+    circos_plotter=PlotCircos()
+    circos_plotter.plot_cpgs(top_cpgs,output_dir)
 
 #################
 
