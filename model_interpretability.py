@@ -439,7 +439,7 @@ class BioInterpreter:
         return output_dfs
 
 
-    def run_lola(self, all_cpgs=[], lola_db='', cores=8):
+    def run_lola(self, all_cpgs=[], lola_db='', cores=8, collections=[]):
         import rpy2.robjects as robjects
         from rpy2.robjects import pandas2ri
         order_by_max_rnk=robjects.r("function (dt) {dt[order(meanRnk, decreasing=FALSE),]}")
@@ -447,7 +447,7 @@ class BioInterpreter:
         cpg_locations = pandas2ri.ri2py(robjects.r['as'](robjects.r('getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)'),'data.frame')).set_index(keys='Name',drop=False)
         all_cpg_regions = robjects.r('makeGRangesFromDataFrame')(pandas2ri.py2ri(cpg_locations if not all_cpgs else cpg_locations.loc[all_cpgs,:]),start_field='pos',end_field='pos',starts_in_df_are_0based=False)
         #robjects.r('load("{}")'.format(lola_rdata))
-        lolaDB = self.lola.loadRegionDB(lola_db)#
+        lolaDB = self.lola.loadRegionDB(lola_db,collections=(robjects.r('NULL') if not collections else rpy2.robjects.vectors.StrVector(collections)))#
         output_dfs={}
         for k in self.top_cpgs:
             list_cpgs=self.top_cpgs[k].values[:,0]
@@ -621,7 +621,8 @@ def grab_lola_db_cache(output_dir):
 @click.option('-lo', '--length_output', default=20, help='Number enriched terms to print.', show_default=True)
 @click.option('-ss', '--set_subtraction', is_flag=True, help='Only consider CpGs relevant to particular class.', show_default=True)
 @click.option('-int', '--intersection', is_flag=True, help='CpGs common to all classes.', show_default=True)
-def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_workers, lola_db, individuals, classes, max_gap, class_intersect, length_output, set_subtraction, intersection):
+@click.option('-col', '--collections', default=[''], multiple=True, help='Lola collections.', type=click.Choice(['cistrome_cistrome','codex','encode_tfbs,ucsc_features','cistrome_epigenome','encode_segmentation','sheffield_dnase','jaspar_motifs','roadmap_epigenomics']), show_default=True)
+def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_workers, lola_db, individuals, classes, max_gap, class_intersect, length_output, set_subtraction, intersection, collections):
     """Add categorical encoder as custom input, then can use to change names of output csvs to match disease if encoder exists."""
     os.makedirs(output_dir,exist_ok=True)
     if os.path.exists(all_cpgs_pickle):
@@ -633,6 +634,7 @@ def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_worke
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
     individuals=list(filter(None,individuals))
     classes=list(filter(None,classes))
+    collections=list(filter(None,collections))
     if classes and classes[0]=='all':
         classes = shapley_data_explorer.list_classes()
     if individuals and individuals[0]=='all':
@@ -647,7 +649,7 @@ def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_worke
     if analysis in ['GO','KEGG','GENE']:
         analysis_outputs=bio_interpreter.gometh(analysis, allcpgs=[], length_output=length_output)
     elif analysis == 'LOLA':
-        analysis_outputs=bio_interpreter.run_lola(all_cpgs=[], lola_db=lola_db, cores=n_workers)
+        analysis_outputs=bio_interpreter.run_lola(all_cpgs=[], lola_db=lola_db, cores=n_workers, collections=collections)
     elif analysis == 'NEAR_CPGS':
         analysis_outputs=bio_interpreter.get_nearby_cpg_shapleys(all_cpgs=[],max_gap=max_gap, class_intersect=class_intersect)
     for k in analysis_outputs:
@@ -655,11 +657,43 @@ def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_worke
         analysis_outputs[k].to_csv(output_csv)
 
 @interpret.command()
-def interpret_lola_output(lola_csv, plot_output_dir, cell_types):
-    lola_results=pd.read_csv(lola_csv)
-    collections=lola_results.groupby('collection')
-    for name,df in collections:
-        print('FINISH, output relevant TFs')
+@click.option('-l', '--lola_csv', default='', help='Location of lola output csv.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--plot_output_dir', default='./interpretations/biological_explanations/lola_plots/', help='Output directory for interpretations.', type=click.Path(exists=False), show_default=True)
+@click.option('-c', '--cell_types', default=[''], multiple=True, help='Cell types.', show_default=True)
+def plot_lola_output(lola_csv, plot_output_dir, cell_types):
+    from rpy2.robjects.packages import importr
+    import rpy2.robjects as robjects
+    from rpy2.robjects import pandas2ri
+    os.makedirs(plot_output_dir,exist_ok=True)
+    ggplot=importr("ggplot2")
+    importr("ggpubr")
+    create_bar_chart=robjects.r("""function(df){
+                        ggbarplot(df, x = "description", y = "oddsRatio",
+                          fill = "cellType",               # change fill color by cyl
+                          color = "white",            # Set bar border colors to white
+                          palette = "jco",            # jco journal color palett. see ?ggpar
+                          sort.val = "desc",           # Sort the value in dscending order
+                          sort.by.groups = TRUE,      # Sort inside each group
+                          #x.text.angle = 90,           # Rotate vertically x axis texts
+                          orientation = "horiz"
+                          )
+                    }""")
+    pandas2ri.activate()
+    lola_results=pd.read_csv(lola_csv)[['collection','description','oddsRatio','cellType']]
+
+    # filter cell types here
+    collections_df=lola_results.groupby('collection')
+    for name,df in collections_df:
+        top_results_df=df.iloc[:min(25,df.shape[0]),:]
+        print(top_results_df)
+        top_results_df=pandas2ri.py2ri(top_results_df)
+        try:
+            top_results_df=robjects.r("droplevels")(top_results_df)
+        except:
+            pass
+        """RESET FACTORS ^^^"""
+        create_bar_chart(top_results_df)
+        ggplot2.ggsave(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
     # add shore island breakdown
 
 @interpret.command()
