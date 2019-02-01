@@ -664,36 +664,41 @@ def plot_lola_output(lola_csv, plot_output_dir, cell_types):
     from rpy2.robjects.packages import importr
     import rpy2.robjects as robjects
     from rpy2.robjects import pandas2ri
+    pandas2ri.activate()
     os.makedirs(plot_output_dir,exist_ok=True)
     ggplot=importr("ggplot2")
     importr("ggpubr")
-    create_bar_chart=robjects.r("""function(df){
-                        ggbarplot(df, x = "description", y = "oddsRatio",
-                          fill = "cellType",               # change fill color by cyl
-                          color = "white",            # Set bar border colors to white
+    forcats=importr('forcats')
+
+    create_bar_chart=robjects.r("""function(df,fill.col=NULL){
+                        ggboxplot(df, x = "description", y = "oddsRatio", fill = fill.col,#,
+                          color = "white",           # Set bar border colors to white
                           palette = "jco",            # jco journal color palett. see ?ggpar
-                          sort.val = "desc",           # Sort the value in dscending order
-                          sort.by.groups = TRUE,      # Sort inside each group
-                          #x.text.angle = 90,           # Rotate vertically x axis texts
-                          orientation = "horiz"
-                          )
-                    }""")
-    pandas2ri.activate()
+
+                          orientation = "horiz")}           # Sort the value in dscending order
+                          #sort.by.groups = F, #TRUE,      # Sort inside each group
+                          # sort.val = "desc",
+                          #)
+                    #}""")
+
     lola_results=pd.read_csv(lola_csv)[['collection','description','oddsRatio','cellType']]
 
     # filter cell types here
     collections_df=lola_results.groupby('collection')
     for name,df in collections_df:
-        top_results_df=df.iloc[:min(25,df.shape[0]),:]
+        top_results_df=df.iloc[:min(25,df.shape[0]),:].reset_index(drop=True)
+
+        top_results_df=pandas2ri.py2ri(top_results_df)#pandas2ri.py2ri(top_results_df)
+        #robjects.r("print")(top_results_df)
+        #top_results_df=robjects.r("function(df){data.frame(df,stringsAsFactors=FALSE)}")(robjects.r("function(df){lapply(df,as.character)}")(top_results_df)) # FIX
         print(top_results_df)
-        top_results_df=pandas2ri.py2ri(top_results_df)
-        try:
-            top_results_df=robjects.r("droplevels")(top_results_df)
-        except:
-            pass
         """RESET FACTORS ^^^"""
-        create_bar_chart(top_results_df)
-        ggplot2.ggsave(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
+        diagnose_df=pandas2ri.ri2py(top_results_df)
+        if 'cellType' not in list(diagnose_df):
+            create_bar_chart(top_results_df, 'white')
+        else:
+            create_bar_chart(top_results_df,'cellType')
+        ggplot.ggsave(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
     # add shore island breakdown
 
 @interpret.command()

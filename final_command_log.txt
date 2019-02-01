@@ -36,6 +36,7 @@
     * nohup python model_interpretability.py interpret_biology -w GO -c BRCA -i 9298768134_R05C02 -ss -lo 50 -o ./interpretations/biological_explanations/hyper/ -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p &
     * nohup python model_interpretability.py interpret_biology -w GO -c BRCA -i 9298768134_R05C02 -i 6285633054_R01C01 -lo 50 -o ./interpretations/biological_explanations/hypo/ -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p &
     * nohup python model_interpretability.py plot_top_cpgs -c BRCA -c LUSC -c COAD &
+    * python model_interpretability.py plot_lola_output -l interpretations/biological_explanations/prediction_BRCA_LOLA.csv 
     * nohup python model_interpretability.py interpret_biology -w LOLA -c BRCA -i 9298768134_R05C02 -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -l ./../lola_store/nm/t1/resources/regions/LOLACore/hg19/ &
 
 
