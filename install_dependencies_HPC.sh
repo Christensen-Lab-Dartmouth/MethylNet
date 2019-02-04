@@ -24,6 +24,6 @@ conda install -y -c plotly plotly=3.4.2 python=3.6.7
 conda install -y -c pytorch pytorch=0.4.1 torchvision python=3.6.7
 conda install -y -c anaconda cudatoolkit=9.0
 python -m pip install fancyimpute==0.4.2 pandas==0.23.4
-python -m pip install shap matplotlib
+python -m pip install shap matplotlib seaborn mlxtend
 python -m pip install git+https://github.com/scikit-learn/scikit-learn.git@iterativeimputer
 conda install -y -c menpo ffmpeg=3.1.3

@@ -201,6 +201,104 @@ def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_l
         custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p)
     coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs)
 
+@prediction.command()
+@click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))
+@click.option('-o', '--output_dir', default='results/', show_default=True, help='Output directory.', type=click.Path(exists=False))
+def classification_report(results_pickle,output_dir):
+    from mlxtend.evaluate import bootstrap
+    from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
+    os.makedirs(output_dir,exist_ok=True)
+    def extract_ys(Y):
+        return Y[:,0], Y[:,1:]
+
+    def accuracy(Y):
+        y_true, y_pred=extract_ys(Y)
+        y_pred = np.argmax(y_pred,axis=1)
+        return accuracy_score(y_true, y_pred)
+
+    def recall(Y):
+        y_true, y_pred=extract_ys(Y)
+        y_pred = np.argmax(y_pred,axis=1)
+        return recall_score(y_true, y_pred, average='weighted')
+
+    def precision(Y):
+        y_true, y_pred=extract_ys(Y)
+        y_pred = np.argmax(y_pred,axis=1)
+        return precision_score(y_true, y_pred, average='weighted')
+
+    def f1(Y):
+        y_true, y_pred=extract_ys(Y)
+        y_pred = np.argmax(y_pred,axis=1)
+        return f1_score(y_true, y_pred, average='weighted')
+
+    def auc(Y):
+        y_true, y_pred=extract_ys(Y)
+        return metrics.roc_auc_score(y_true, y_pred, average='weighted')
+
+    def to_y_probas(y_pred):
+        return np.exp(y_pred)/np.exp(y_pred).sum(1)[:,np.newaxis]
+
+    results_dict=pickle.load(open(results_pickle,'rb'))
+
+    df_roc=[]
+    final_results=[]
+    for k in results_dict:
+        y_true=results_dict[k]['y_true']
+        y_true_labels=np.argmax(y_true,axis=1)[:,np.newaxis]
+        n_classes=int(max(y_true_labels))
+        y_pred=to_y_probas(results_dict[k]['y_pred'])
+        y_pred_labels=np.argmax(y_pred,1)
+        Y=np.hstack((y_true_labels,y_pred))
+        supports={i:sum((y_pred_labels[y_true_labels==i]==i).astype(int)) for i in range(n_classes)}
+        fpr = dict()
+        tpr = dict()
+        for i in supports:
+            fpr, tpr, _ = metrics.roc_curve(y_true[:,i], y_pred[:,i])
+        all_fpr = np.unique(np.concatenate([fpr[i] for i in supports]))
+        mean_tpr = np.zeros_like(all_fpr)
+        for i in supports:
+            mean_tpr += supports[i]*interp(all_fpr, fpr[i], tpr[i])
+        mean_tpr/=sum(list(supports.values()))
+        tpr,fpr=mean_tpr,all_fpr
+        df=pd.DataFrame({'fpr' : fpr, 'tpr' : tpr})
+        df['Legend'] = "{} Weighted ROC, AUC={}".format(k,round(auc(Y),2))
+        df_roc.append(df)
+        fns = dict(accuracy=accuracy,recall=recall,precision=precision,f1=f1,auc=auc)
+        for fn in fns:
+            original, std_err, ci_bounds = bootstrap(Y, num_rounds=1000,
+                                             func=fns[fn],
+                                             ci=0.95,
+                                             seed=123)
+            low,high=ci_bounds
+            final_results.append([k,fn,original,std_err,low,high])
+    final_results=pd.DataFrame(final_results,columns=['DataSet','Metric','Score','Error','95% CI Low','95% CI High'])
+    df_roc=pd.concat(df_roc)
+    final_results.to_csv(join(output_dir,'final_classification_results.csv'))
+    df_roc.to_csv(join(output_dir,'Weighted_ROC.csv'))
+
+@prediction.command()
+@click.option('-t', '--training_curve_file', default='predictions/training_val_curve.p', show_default=True, help='Training and validation loss and learning curves.', type=click.Path(exists=False))
+@click.option('-o', '--outputfilename', default='results/training_curve.png', show_default=True, help='Output image.', type=click.Path(exists=False))
+def plot_training_curve(training_curve_file, outputfilename):
+    os.makedirs(outputfilename[:outputfilename.rfind('/')],exist_ok=True)
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    sns.set(style="whitegrid")
+    df=pd.DataFrame(pickle.load(open(training_curve_file,'rb')))
+    plt.subplots((1,2),fig_size=(10,5))
+    plt.subplot(111)
+    sns.lineplot(data=df[['loss','val_loss']], palette="tab10", linewidth=2.5)
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.subplot(112)
+    sns.lineplot(data=data[['lr_vae', 'lr_mlp']], palette="tab10", linewidth=2.5)
+    plt.xlabel('Epoch')
+    plt.ylabel('Learning Rate')
+    plt.tight_layout()
+    plt.savefig(outputfilename)
+
 #################
 
 if __name__ == '__main__':

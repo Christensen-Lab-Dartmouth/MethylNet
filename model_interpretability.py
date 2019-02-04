@@ -227,6 +227,8 @@ class ShapleyDataExplorer:
         def cooccurrence_fn(list1,list2):
             return len(set(list1).intersection(set(list2)))
         x={}
+        if class_names[0]=='all':
+            class_names=list(self.shapley_data.top_cpgs['by_class'].keys())
         for class_name in class_names:
             if overall:
                 x[class_name]=self.shapley_data.top_cpgs['by_class'][class_name]['overall']['cpg'].values.tolist()
@@ -322,6 +324,7 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
             additional_opts['ranked_outputs']=top_outputs
             test_arr=to_tensor(test_arr) if not self.cuda else to_tensor(test_arr).cuda()
         for i in range(n_batch):
+            click.echo("Batch {}".format(i))
             print("Batch {}".format(i))
             shap_values += return_shap_values(test_arr, self.explainer, self.method, n_samples, additional_opts)
         shap_values/=float(n_batch)
@@ -390,7 +393,7 @@ class BioInterpreter:
         else:
             self.prediction_classes=list(map(lambda x: x.replace(' ',''),prediction_classes))"""
 
-    def gometh(self, collection='GO', allcpgs=[], length_output=20):# consider turn into generator go or kegg # add rgreat, lola, roadmap-chromatin hmm, atac-seq, chip-seq, gometh, Hi-C, bedtools, Owen's analysis
+    def gometh(self, collection='GO', allcpgs=[], length_output=20, gsea_analyses=[], gsea_pickle=''):# consider turn into generator go or kegg # add rgreat, lola, roadmap-chromatin hmm, atac-seq, chip-seq, gometh, Hi-C, bedtools, Owen's analysis
         import rpy2.robjects as robjects
         from rpy2.robjects import pandas2ri
         #robjects.packages.importr('org.Hs.eg.db')
@@ -400,6 +403,12 @@ class BioInterpreter:
             allcpgs=robjects.vectors.StrVector(allcpgs)
         else:
             allcpgs=robjects.r('NULL')
+        if gsea_analyses:
+            gsea_collections=pickle.load(open(gsea_pickle,'rb'))
+            gene_sets=[]
+            for analysis in gsea_analyses:
+                gene_sets.extend(list(gsea_analyses[analysis].items()))
+            gene_sets=robjects.ListVector(dict(gene_sets))
         for k in self.top_cpgs:
             list_cpgs=self.top_cpgs[k].values
             print('Start Prediction {} BIO'.format(k))
@@ -408,13 +417,16 @@ class BioInterpreter:
                 mappedEz = self.missMethyl.getMappedEntrezIDs(sig_cpg=list_cpgs, all_cpg = allcpgs, array_type='450K')
                 gometh_output = robjects.r('function (mappedEz, length.output) {data.frame(mappedEz$sig.eg[1:length.output])}')(mappedEz,length_output) # sig.eg[1:10]
                 print(gometh_output)
-            else:
-                gometh_output = robjects.r('function (sig.cpg, all.cpg, collection, prior.prob) {gometh(sig.cpg=sig.cpg,all.cpg=all.cpg,collection=collection,prior.prob=prior.prob)}')(list_cpgs,allcpgs,collection,True)#self.missMethyl.gometh(sig_cpg=list_cpgs,all_cpg=allcpgs,collection=collection,prior_prob=False)
+            elif collection in ['GO','KEGG']:
+                gometh_output = self.missMethyl.gometh(sig_cpg=list_cpgs,all_cpg=allcpgs,collection=collection,prior_prob=True)
                 gometh_output = self.limma.topKEGG(gometh_output, number=length_output) if collection=='KEGG' else self.limma.topGO(gometh_output, number=length_output)
+            else:
+                gometh_output = self.missMethyl.gometh(sig_cpg=list_cpgs,all_cpg=allcpgs,collection=gene_sets,prior_prob=True)
+                gometh_output = self.limma.topGSA(gometh_output, number=length_output)
             # FIXME add get genes
             # genes = self.missMethyl.getMappedEntrezIDs(sig.cpg, all.cpg = NULL, array.type, anno = NULL)
             output_dfs['prediction_{}'.format(k)]=pandas2ri.ri2py(robjects.r['as'](gometh_output,'data.frame'))
-            print('GO/KEGG Computed for Prediction {} Cpgs: {}'.format(k, ' '.join(list_cpgs)))
+            print('GO/KEGG/GSEA Computed for Prediction {} Cpgs: {}'.format(k, ' '.join(list_cpgs)))
         return output_dfs
 
     def get_nearby_cpg_shapleys(self, all_cpgs, max_gap):
@@ -439,7 +451,7 @@ class BioInterpreter:
         return output_dfs
 
 
-    def run_lola(self, all_cpgs=[], lola_db='', cores=8, collections=[]):
+    def run_lola(self, all_cpgs=[], lola_db='', cores=8, collections=[],depletion=False):
         import rpy2.robjects as robjects
         from rpy2.robjects import pandas2ri
         order_by_max_rnk=robjects.r("function (dt) {dt[order(meanRnk, decreasing=FALSE),]}")
@@ -453,7 +465,7 @@ class BioInterpreter:
             list_cpgs=self.top_cpgs[k].values[:,0]
             cpg_location_subset = cpg_locations.loc[list_cpgs,:]
             location_subset = robjects.r('makeGRangesFromDataFrame')(pandas2ri.py2ri(cpg_location_subset),start_field='pos',end_field='pos',starts_in_df_are_0based=False)
-            lola_output=self.lola.runLOLA(location_subset,all_cpg_regions,lolaDB,cores=cores)
+            lola_output=self.lola.runLOLA(location_subset,all_cpg_regions,lolaDB,cores=cores,direction=('depletion' if depletion else 'enrichment'))
             output_dfs['prediction_{}'.format(k)]=pandas2ri.ri2py(robjects.r['as'](order_by_max_rnk(lola_output),'data.frame'))#.iloc[:20,:]
         return output_dfs
         #https://academic.oup.com/bioinformatics/article/32/4/587/1743969
@@ -609,7 +621,7 @@ def grab_lola_db_cache(output_dir):
 
 @interpret.command()
 @click.option('-a', '--all_cpgs_pickle', default='./interpretations/shapley_explanations/all_cpgs.p', help='List of all cpgs used in shapley analysis.', type=click.Path(exists=False), show_default=True)
-@click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
+@click.option('-s', '--shapley_data_list', default=['./interpretations/shapley_explanations/shapley_data.p'], multiple=True, help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./interpretations/biological_explanations/', help='Output directory for interpretations.', type=click.Path(exists=False), show_default=True)
 @click.option('-w', '--analysis', default='GO', help='Choose biological analysis.', type=click.Choice(['GO','KEGG','GENE', 'LOLA', 'NEAR_CPGS']), show_default=True)
 @click.option('-n', '--n_workers', default=8, help='Number workers.', show_default=True)
@@ -622,7 +634,10 @@ def grab_lola_db_cache(output_dir):
 @click.option('-ss', '--set_subtraction', is_flag=True, help='Only consider CpGs relevant to particular class.', show_default=True)
 @click.option('-int', '--intersection', is_flag=True, help='CpGs common to all classes.', show_default=True)
 @click.option('-col', '--collections', default=[''], multiple=True, help='Lola collections.', type=click.Choice(['cistrome_cistrome','codex','encode_tfbs,ucsc_features','cistrome_epigenome','encode_segmentation','sheffield_dnase','jaspar_motifs','roadmap_epigenomics']), show_default=True)
-def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_workers, lola_db, individuals, classes, max_gap, class_intersect, length_output, set_subtraction, intersection, collections):
+@click.option('-gsea', '--gsea_analyses', default=[''], multiple=True, help='Gene set enrichment analysis to choose from, if chosen will override other analysis options. http://software.broadinstitute.org/gsea/msigdb/collections.jsp', type=click.Choice(['','C1','C2','C2.KEGG,C2.REACTOME','C3','C3.TFT','C4.CGN','C4.CM','C4','C5','C6','C7','C8','H']), show_default=True)
+@click.option('-gsp', '--gsea_pickle', default='./data/GSEA_GeneSets/gsea_collections.p', help='Gene set enrichment analysis to choose from.', type=click.Path(exists=False), show_default=True)
+@click.option('-d', '--depletion', is_flag=True, help='Run depletion LOLA analysis instead of enrichment.', show_default=True)
+def interpret_biology(all_cpgs_pickle,shapley_data_list,output_dir, analysis, n_workers, lola_db, individuals, classes, max_gap, class_intersect, length_output, set_subtraction, intersection, collections, gsea_analyses, gsea_pickle, depletion):
     """Add categorical encoder as custom input, then can use to change names of output csvs to match disease if encoder exists."""
     os.makedirs(output_dir,exist_ok=True)
     if os.path.exists(all_cpgs_pickle):
@@ -630,56 +645,85 @@ def interpret_biology(all_cpgs_pickle,shapley_data,output_dir, analysis, n_worke
     else:
         all_cpgs = []
     #top_cpgs=pickle.load(open(top_cpgs_pickle,'rb'))
-    shapley_data=ShapleyData.from_pickle(shapley_data)
-    shapley_data_explorer=ShapleyDataExplorer(shapley_data)
-    individuals=list(filter(None,individuals))
-    classes=list(filter(None,classes))
+    head_individuals=list(filter(None,individuals))
+    head_classes=list(filter(None,classes))
     collections=list(filter(None,collections))
-    if classes and classes[0]=='all':
-        classes = shapley_data_explorer.list_classes()
-    if individuals and individuals[0]=='all':
-        individuals = shapley_data_explorer.list_individuals(return_list=True)
-    cpg_exclusion_sets,cpg_sets=None,None
-    if set_subtraction:
-        _,cpg_exclusion_sets=shapley_data_explorer.return_cpg_sets()
-    elif intersection:
-        cpg_sets,_=shapley_data_explorer.return_cpg_sets()
-    top_cpgs=shapley_data_explorer.return_top_cpgs(classes=classes,individuals=individuals,cpg_exclusion_sets=cpg_exclusion_sets,cpg_sets=cpg_sets)
-    bio_interpreter = BioInterpreter(top_cpgs)
-    if analysis in ['GO','KEGG','GENE']:
-        analysis_outputs=bio_interpreter.gometh(analysis, allcpgs=[], length_output=length_output)
-    elif analysis == 'LOLA':
-        analysis_outputs=bio_interpreter.run_lola(all_cpgs=[], lola_db=lola_db, cores=n_workers, collections=collections)
-    elif analysis == 'NEAR_CPGS':
-        analysis_outputs=bio_interpreter.get_nearby_cpg_shapleys(all_cpgs=[],max_gap=max_gap, class_intersect=class_intersect)
-    for k in analysis_outputs:
-        output_csv=join(output_dir,'{}_{}.csv'.format(k,analysis))
-        analysis_outputs[k].to_csv(output_csv)
+    gsea_analyses=list(filter(None,gsea_analyses))
+    for i,shapley_data in enumerate(shapley_data_list):
+        shapley_data=ShapleyData.from_pickle(shapley_data)
+        shapley_data_explorer=ShapleyDataExplorer(shapley_data)
+        if head_classes and head_classes[0]=='all':
+            classes = shapley_data_explorer.list_classes()
+        else:
+            classes = copy.deepcopy(head_classes)
+        if head_individuals and head_individuals[0]=='all':
+            individuals = shapley_data_explorer.list_individuals(return_list=True)
+        else:
+            individuals = copy.deepcopy(head_individuals)
+        cpg_exclusion_sets,cpg_sets=None,None
+        if set_subtraction:
+            _,cpg_exclusion_sets=shapley_data_explorer.return_cpg_sets()
+        elif intersection:
+            cpg_sets,_=shapley_data_explorer.return_cpg_sets()
+        top_cpgs=shapley_data_explorer.return_top_cpgs(classes=classes,individuals=individuals,cpg_exclusion_sets=cpg_exclusion_sets,cpg_sets=cpg_sets)
+        bio_interpreter = BioInterpreter(top_cpgs)
+        if analysis in ['GO','KEGG','GENE']:
+            analysis_outputs=bio_interpreter.gometh(analysis, allcpgs=[], length_output=length_output)
+        elif analysis == 'LOLA':
+            analysis_outputs=bio_interpreter.run_lola(all_cpgs=[], lola_db=lola_db, cores=n_workers, collections=collections, depletion=depletion)
+        elif analysis == 'NEAR_CPGS':
+            analysis_outputs=bio_interpreter.get_nearby_cpg_shapleys(all_cpgs=[],max_gap=max_gap, class_intersect=class_intersect)
+        elif gsea_analyses:
+            analysis_outputs=bio_interpreter.gometh('', allcpgs=[], length_output=length_output, gsea_analyses=gsea_analyses, gsea_pickle=gsea_pickle)
+        for k in analysis_outputs:
+            output_csv=join(output_dir,'{}_{}_{}.csv'.format(shapley_data_list[i].split('/')[-1],k,analysis if not gsea_analyses else '_'.join(gsea_analyses)))
+            analysis_outputs[k].to_csv(output_csv)
 
 @interpret.command()
 @click.option('-l', '--lola_csv', default='', help='Location of lola output csv.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--plot_output_dir', default='./interpretations/biological_explanations/lola_plots/', help='Output directory for interpretations.', type=click.Path(exists=False), show_default=True)
 @click.option('-c', '--cell_types', default=[''], multiple=True, help='Cell types.', show_default=True)
 def plot_lola_output(lola_csv, plot_output_dir, cell_types):
-    from rpy2.robjects.packages import importr
-    import rpy2.robjects as robjects
-    from rpy2.robjects import pandas2ri
-    pandas2ri.activate()
     os.makedirs(plot_output_dir,exist_ok=True)
-    ggplot=importr("ggplot2")
-    importr("ggpubr")
-    forcats=importr('forcats')
+    import matplotlib
+    matplotlib.use('Agg')
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    # from rpy2.robjects.packages import importr
+    # import rpy2.robjects as robjects
+    # from rpy2.robjects import pandas2ri
+    # pandas2ri.activate()
+    # ggplot=importr("ggplot2")
+    # importr("ggpubr")
+    # forcats=importr('forcats')
+    #
+    # create_bar_chart=robjects.r("""function(df,fill.col=NULL){
+    #                     ggboxplot(df, x = "description", y = "oddsRatio", fill = fill.col,#,
+    #                       color = "white",           # Set bar border colors to white
+    #                       palette = "jco",            # jco journal color palett. see ?ggpar
+    #
+    #                       orientation = "horiz")}           # Sort the value in dscending order
+    #                       #sort.by.groups = F, #TRUE,      # Sort inside each group
+    #                       # sort.val = "desc",
+    #                       #)
+    #                 #}""")
 
-    create_bar_chart=robjects.r("""function(df,fill.col=NULL){
-                        ggboxplot(df, x = "description", y = "oddsRatio", fill = fill.col,#,
-                          color = "white",           # Set bar border colors to white
-                          palette = "jco",            # jco journal color palett. see ?ggpar
-
-                          orientation = "horiz")}           # Sort the value in dscending order
-                          #sort.by.groups = F, #TRUE,      # Sort inside each group
-                          # sort.val = "desc",
-                          #)
-                    #}""")
+    def create_bar_chart(df, cell_type=None):
+        sns.set(style="whitegrid")
+        f, ax = plt.subplots(figsize=(10,7))
+        sns.despine(bottom=True, left=True)
+        sns.stripplot(x="oddsRatio", y="description", hue=cell_type,
+              data=df, dodge=True, jitter=True,
+              alpha=.25, zorder=1)
+        sns.pointplot(x="oddsRatio", y="description", hue=cell_type,
+              data=df, dodge=.532, join=False, palette="dark",
+              markers="d", scale=.75, ci=None)
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles[3:], labels[3:], title="Cell Types",
+                  handletextpad=0, columnspacing=1,
+                  loc="lower right", ncol=3, frameon=True)
+        ax.set_xlim(left=0)
+        return f,ax
 
     lola_results=pd.read_csv(lola_csv)[['collection','description','oddsRatio','cellType']]
 
@@ -688,17 +732,17 @@ def plot_lola_output(lola_csv, plot_output_dir, cell_types):
     for name,df in collections_df:
         top_results_df=df.iloc[:min(25,df.shape[0]),:].reset_index(drop=True)
 
-        top_results_df=pandas2ri.py2ri(top_results_df)#pandas2ri.py2ri(top_results_df)
+        #top_results_df=pandas2ri.py2ri(top_results_df)#pandas2ri.py2ri(top_results_df)
         #robjects.r("print")(top_results_df)
         #top_results_df=robjects.r("function(df){data.frame(df,stringsAsFactors=FALSE)}")(robjects.r("function(df){lapply(df,as.character)}")(top_results_df)) # FIX
         print(top_results_df)
         """RESET FACTORS ^^^"""
-        diagnose_df=pandas2ri.ri2py(top_results_df)
-        if 'cellType' not in list(diagnose_df):
-            create_bar_chart(top_results_df, 'white')
-        else:
-            create_bar_chart(top_results_df,'cellType')
-        ggplot.ggsave(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
+        #diagnose_df=pandas2ri.ri2py(top_results_df)
+        top_results_df=top_results_df.fillna('NULL')
+        f,ax=create_bar_chart(top_results_df,'cellType')
+        plt.tight_layout()
+        plt.savefig(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
+        #ggplot.ggsave(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
     # add shore island breakdown
 
 @interpret.command()

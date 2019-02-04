@@ -24,20 +24,19 @@
     * CUDA_VISIBLE_DEVICES="1" nohup sh -c " python embedding.py perform_embedding --n_latent 200 --learning_rate 0.001 --weight_decay 0.0001 --n_epochs 1000 --hidden_layer_encoder_topology 300 --kl_warm_up 0 --beta 0 --scheduler warm_restarts --t_max 10 --eta_min 1e-6 --t_mult 1.5 --batch_size 256 --n_workers 4 --loss_reduction sum -bce -c -v -hl embeddings/embed_hyperparameters_log.csv -sc disease && python visualizations.py transform_plot -o visualizations/vae_umap.html -c disease -nn 10 " &
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g -n 1 -c 0
-    * CUDA_VISIBLE_DEVICES="0" nohup python model_interpretability.py produce_shapley_data -mth gradient -ssbs 25 -ns 100 -bs 512 -r 4 -rt 3 -col disease -nf 2000 -c & # -ssbs 25 -ns 100
-    * python model_interpretability.py shapley_jaccard -c ACC -c BLCA -c BRCA -c CESC -ov
-    * python model_interpretability.py list_individuals
-    * python model_interpretability.py list_classes
-    * python model_interpretability.py reduce_top_cpgs -nf 800
-    * python model_interpretability.py regenerate_top_cpgs -nf 10000
-    * python model_interpretability.py shapley_jaccard -c ACC -c BLCA -c BRCA -c CESC -ov -s ./interpretations/shapley_explanations/shapley_reduced_data.p
-    * # use original data
-    * python model_interpretability.py reduce_top_cpgs -nf 600 && python model_interpretability.py split_hyper_hypo_methylation -s ./interpretations/shapley_explanations/shapley_reduced_data.p
-    * nohup python model_interpretability.py interpret_biology -w GO -c BRCA -i 9298768134_R05C02 -ss -lo 50 -o ./interpretations/biological_explanations/hyper/ -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p &
-    * nohup python model_interpretability.py interpret_biology -w GO -c BRCA -i 9298768134_R05C02 -i 6285633054_R01C01 -lo 50 -o ./interpretations/biological_explanations/hypo/ -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p &
-    * nohup python model_interpretability.py plot_top_cpgs -c BRCA -c LUSC -c COAD &
-    * python model_interpretability.py plot_lola_output -l interpretations/biological_explanations/prediction_BRCA_LOLA.csv 
-    * nohup python model_interpretability.py interpret_biology -w LOLA -c BRCA -i 9298768134_R05C02 -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -l ./../lola_store/nm/t1/resources/regions/LOLACore/hg19/ &
+    * CUDA_VISIBLE_DEVICES="0" nohup python model_interpretability.py produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 512 -r 4 -rt 5 -col disease -nf 4000 -c & # -ssbs 25 -ns 100
+    * python model_interpretability.py reduce_top_cpgs -nf 1000 && python model_interpretability.py split_hyper_hypo_methylation -s ./interpretations/shapley_explanations/shapley_reduced_data.p
+    * python model_interpretability.py shapley_jaccard -c all -ov -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -o ./interpretations/shapley_explanations/top_cpgs_jaccard/hypo/
+    * python model_interpretability.py shapley_jaccard -c all -ov -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p -o ./interpretations/shapley_explanations/top_cpgs_jaccard/hyper/
+    * nohup python model_interpretability.py interpret_biology -w LOLA -c all -i all -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p  -l ./../lola_store/nm/t1/resources/regions/LOLACore/hg19/ -o ./interpretations/biological_explanations/lola_core_enrich/ &
+    * nohup python model_interpretability.py interpret_biology -w LOLA -c all -i all -d -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p  -l ./../lola_store/nm/t1/resources/regions/LOLACore/hg19/ -o ./interpretations/biological_explanations/lola_core_deplete/ &
+    * nohup python model_interpretability.py interpret_biology -w LOLA -c all -i all -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p  -l ./../lola_store/extended/scratch/ns5bc/resources/regions/LOLAExt/hg19/ -o ./interpretations/biological_explanations/lola_ext_enrich/ &
+    * nohup python model_interpretability.py interpret_biology -w LOLA -c all -i all -d -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p  -l ./../lola_store/extended/scratch/ns5bc/resources/regions/LOLAExt/hg19/ -o ./interpretations/biological_explanations/lola_ext_deplete/ &
+    * nohup python model_interpretability.py interpret_biology -gsea H -c all -i all -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p -o ./interpretations/biological_explanations/GSEA/ &
+    * nohup python model_interpretability.py interpret_biology -gsea C4.CM -c all -i all -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p -o ./interpretations/biological_explanations/GSEA/ &
+    * python predictions.py plot_training_curve
+    * python predictions.py classification_report
+    * To-do: what are the cpgs, where are they, where are neighbors (report methylation value)
 
 
 2. Brain Cancer
@@ -66,12 +65,19 @@
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/brain_cancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g -n 1 -c 0
     * CUDA_VISIBLE_DEVICES="2" nohup sh -c "python predictions.py make_prediction -cat -c -hl predictions/predict_hyperparameters_log.csv --job_name 347 --hidden_layer_topology 300,500,400 --learning_rate_vae 0.0001 --learning_rate_mlp 0.001 --weight_decay 0.0001 --n_epochs 250 --scheduler warm_restarts --t_max 10 --eta_min 1e-06 -v --t_mult 1.2 --batch_size 512 --n_workers 10 --loss_reduction sum -dp 0.05 && python visualizations.py transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o visualizations/347_umap.html -nn 8 " &
-    * CUDA_VISIBLE_DEVICES="0" nohup python model_interpretability.py produce_shapley_data -mth gradient -ssbs 25 -ns 100 -bs 512 -r 4 -rt 3 -col disease -nf 2000 -c &
-    * nohup python model_interpretability.py interpret_biology -w GO -c all -i all &
-    * nohup python model_interpretability.py interpret_biology -w GENE -c all -i all &
-    * nohup python model_interpretability.py interpret_biology -w KEGG -c all -i all &
-    * nohup python model_interpretability.py interpret_biology -w NEAR_CPGS -c all -i all &
-
+    * CUDA_VISIBLE_DEVICES="0" nohup python model_interpretability.py produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 512 -r 4 -rt 5 -col disease -nf 4000 -c &
+    * python model_interpretability.py reduce_top_cpgs -nf 1000 && python model_interpretability.py split_hyper_hypo_methylation -s ./interpretations/shapley_explanations/shapley_reduced_data.p
+    * python model_interpretability.py shapley_jaccard -c all -ov -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -o ./interpretations/shapley_explanations/top_cpgs_jaccard/hypo/
+    * python model_interpretability.py shapley_jaccard -c all -ov -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p -o ./interpretations/shapley_explanations/top_cpgs_jaccard/hyper/
+    * nohup python model_interpretability.py interpret_biology -w LOLA -c all -i all -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p  -l ./../lola_store/nm/t1/resources/regions/LOLACore/hg19/ -o ./interpretations/biological_explanations/lola_core_enrich/ &
+    * nohup python model_interpretability.py interpret_biology -w LOLA -c all -i all -d -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p  -l ./../lola_store/nm/t1/resources/regions/LOLACore/hg19/ -o ./interpretations/biological_explanations/lola_core_deplete/ &
+    * nohup python model_interpretability.py interpret_biology -w LOLA -c all -i all -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p  -l ./../lola_store/extended/scratch/ns5bc/resources/regions/LOLAExt/hg19/ -o ./interpretations/biological_explanations/lola_ext_enrich/ &
+    * nohup python model_interpretability.py interpret_biology -w LOLA -c all -i all -d -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p  -l ./../lola_store/extended/scratch/ns5bc/resources/regions/LOLAExt/hg19/ -o ./interpretations/biological_explanations/lola_ext_deplete/ &
+    * nohup python model_interpretability.py interpret_biology -gsea H -c all -i all -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p -o ./interpretations/biological_explanations/GSEA/ &
+    * nohup python model_interpretability.py interpret_biology -gsea C4.CM -c all -i all -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p -o ./interpretations/biological_explanations/GSEA/ &
+    * python predictions.py plot_training_curve
+    * python predictions.py classification_report
+    * To-do: what are the cpgs, where are they, where are neighbors (report methylation value)
 
 3. Retired Commands
     * nohup python preprocess.py preprocess_pipeline -i preprocess_outputs/BLCA/ -o preprocess_outputs/BLCA/methyl_array.pkl -bns 0.05 -bnc 0.05 -pds 0.05 -pdc 0.05 -pc -1 -m -qc -n 4 &
@@ -107,3 +113,22 @@
     * mkdir predictions && python predictions.py launch_hyperparameter_scan -sc disease_only -g
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease_only --nohup -g
     * cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/pancancer && module load python/3-Anaconda && source activate methylnet_pro2 && module load cuda && python predictions.py launch_hyperparameter_scan -sc disease --nohup -g -n 4 -c 0.2
+    * python model_interpretability.py shapley_jaccard -c ACC -c BLCA -c BRCA -c CESC -ov
+    * python model_interpretability.py list_individuals
+    * python model_interpretability.py list_classes
+    * python model_interpretability.py reduce_top_cpgs -nf 800
+    * python model_interpretability.py regenerate_top_cpgs -nf 10000
+    * python model_interpretability.py shapley_jaccard -c ACC -c BLCA -c BRCA -c CESC -ov -s ./interpretations/shapley_explanations/shapley_reduced_data.p
+    * # use original data
+    * python model_interpretability.py reduce_top_cpgs -nf 1000 && python model_interpretability.py split_hyper_hypo_methylation -s ./interpretations/shapley_explanations/shapley_reduced_data.p
+    * nohup python model_interpretability.py interpret_biology -w GO -c BRCA -i 9298768134_R05C02 -ss -lo 50 -o ./interpretations/biological_explanations/hyper/ -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p &
+    * nohup python model_interpretability.py interpret_biology -w GO -c BRCA -i 9298768134_R05C02 -i 6285633054_R01C01 -lo 50 -o ./interpretations/biological_explanations/hypo/ -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p &
+    * nohup python model_interpretability.py plot_top_cpgs -c BRCA -c LUSC -c COAD &
+    * python model_interpretability.py plot_lola_output -l interpretations/biological_explanations/prediction_BRCA_LOLA.csv
+    * nohup python model_interpretability.py interpret_biology -w LOLA -c BRCA -i 9298768134_R05C02 -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -l ./../lola_store/nm/t1/resources/regions/LOLACore/hg19/ &
+    * python model_interpretability.py plot_lola_output -l interpretations/biological_explanations/prediction_BRCA_LOLA.csv
+    * nohup python model_interpretability.py interpret_biology -w GO -c all -i all &
+    * nohup python model_interpretability.py interpret_biology -w GENE -c all -i all &
+    * nohup python model_interpretability.py interpret_biology -w KEGG -c all -i all &
+    * nohup python model_interpretability.py interpret_biology -w NEAR_CPGS -c all -i all &
+    * nohup python model_interpretability.py plot_top_cpgs -c BRCA -s interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p &

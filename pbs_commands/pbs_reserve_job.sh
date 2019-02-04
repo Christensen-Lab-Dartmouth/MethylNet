@@ -6,7 +6,7 @@
 #PBS -l gpus=4
 #PBS -l feature=gpu
 # request 4 hours and 30 minutes of cpu time
-#PBS -l walltime=03:00:00
+#PBS -l walltime=10:00:00
 # mail is sent to you when the job starts and when it terminates or aborts
 
 # Join error and standard output into one file

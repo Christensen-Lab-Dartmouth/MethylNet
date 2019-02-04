@@ -4,16 +4,13 @@
 #PBS -N methyl_interpret
 # Specify the gpuq queue
 #PBS -q gpuq
-# Specify the number of gpus
-#PBS -l nodes=1
+# Specify the number of gpus nodes=1:ppn=8:
 #PBS -l gpus=1
 # gpus ppn was 4 and 4, figure out in future
-#PBS -l hostlist=g03
 # Specify the gpu feature
 #PBS -l feature=gpu
-#PBS -l mem=100GB
 # request 4 hours and 30 minutes of cpu time
-#PBS -l walltime=02:00:00
+#PBS -l walltime=08:00:00
 # mail is sent to you when the job starts and when it terminates or aborts
 
 # Join error and standard output into one file
@@ -30,6 +27,5 @@ module load python/3-Anaconda
 module load cuda
 echo $gpuNum
 source activate methylnet_pro2
-CUDA_VISIBLE_DEVICES="$gpuNum" python model_interpretability.py return_important_cpgs -mth gradient -ssbs 25 -ns 100 -bs 512 -r 4 -rt 3 -col disease -nf 2000 -c
-#python model_interpretability.py gometh_cpgs
+CUDA_VISIBLE_DEVICES="$gpuNum" python model_interpretability.py produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 512 -r 4 -rt 5 -col disease -nf 4000 -c
 exit 0
