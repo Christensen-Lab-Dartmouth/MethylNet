@@ -407,7 +407,7 @@ class BioInterpreter:
             gsea_collections=pickle.load(open(gsea_pickle,'rb'))
             gene_sets=[]
             for analysis in gsea_analyses:
-                gene_sets.extend(list(gsea_analyses[analysis].items()))
+                gene_sets.extend(list(gsea_collections[analysis].items()))
             gene_sets=robjects.ListVector(dict(gene_sets))
         for k in self.top_cpgs:
             list_cpgs=self.top_cpgs[k].values
@@ -421,12 +421,14 @@ class BioInterpreter:
                 gometh_output = self.missMethyl.gometh(sig_cpg=list_cpgs,all_cpg=allcpgs,collection=collection,prior_prob=True)
                 gometh_output = self.limma.topKEGG(gometh_output, number=length_output) if collection=='KEGG' else self.limma.topGO(gometh_output, number=length_output)
             else:
-                gometh_output = self.missMethyl.gometh(sig_cpg=list_cpgs,all_cpg=allcpgs,collection=gene_sets,prior_prob=True)
-                gometh_output = self.limma.topGSA(gometh_output, number=length_output)
+                gometh_output = self.missMethyl.gsameth(sig_cpg=list_cpgs,all_cpg=allcpgs,collection=gene_sets,prior_prob=True)
+                gometh_output = robjects.r('as.table')(self.missMethyl.topGSA(gometh_output, number=length_output))
+                #robjects.r('print')(gometh_output)
             # FIXME add get genes
             # genes = self.missMethyl.getMappedEntrezIDs(sig.cpg, all.cpg = NULL, array.type, anno = NULL)
-            output_dfs['prediction_{}'.format(k)]=pandas2ri.ri2py(robjects.r['as'](gometh_output,'data.frame'))
-            print('GO/KEGG/GSEA Computed for Prediction {} Cpgs: {}'.format(k, ' '.join(list_cpgs)))
+            output_dfs['prediction_{}'.format(k)]=pandas2ri.ri2py(robjects.r['as'](gometh_output,'data.frame')) if not gsea_analyses else pandas2ri.ri2py(robjects.r('as.data.frame')(gometh_output)).pivot(index='Var1',columns='Var2',values='Freq').sort_values('P.DE')
+            print(output_dfs['prediction_{}'.format(k)].head())
+            #print('GO/KEGG/GSEA Computed for Prediction {} Cpgs: {}'.format(k, ' '.join(list_cpgs)))
         return output_dfs
 
     def get_nearby_cpg_shapleys(self, all_cpgs, max_gap):
@@ -467,6 +469,7 @@ class BioInterpreter:
             location_subset = robjects.r('makeGRangesFromDataFrame')(pandas2ri.py2ri(cpg_location_subset),start_field='pos',end_field='pos',starts_in_df_are_0based=False)
             lola_output=self.lola.runLOLA(location_subset,all_cpg_regions,lolaDB,cores=cores,direction=('depletion' if depletion else 'enrichment'))
             output_dfs['prediction_{}'.format(k)]=pandas2ri.ri2py(robjects.r['as'](order_by_max_rnk(lola_output),'data.frame'))#.iloc[:20,:]
+            print(output_dfs['prediction_{}'.format(k)].head())
         return output_dfs
         #https://academic.oup.com/bioinformatics/article/32/4/587/1743969
 
@@ -685,7 +688,7 @@ def grab_lola_db_cache(output_dir):
 @click.option('-a', '--all_cpgs_pickle', default='./interpretations/shapley_explanations/all_cpgs.p', help='List of all cpgs used in shapley analysis.', type=click.Path(exists=False), show_default=True)
 @click.option('-s', '--shapley_data_list', default=['./interpretations/shapley_explanations/shapley_data.p'], multiple=True, help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./interpretations/biological_explanations/', help='Output directory for interpretations.', type=click.Path(exists=False), show_default=True)
-@click.option('-w', '--analysis', default='GO', help='Choose biological analysis.', type=click.Choice(['GO','KEGG','GENE', 'LOLA', 'NEAR_CPGS']), show_default=True)
+@click.option('-w', '--analysis', default='GO', help='Choose biological analysis.', type=click.Choice(['GSEA','GO','KEGG','GENE', 'LOLA', 'NEAR_CPGS']), show_default=True)
 @click.option('-n', '--n_workers', default=8, help='Number workers.', show_default=True)
 @click.option('-l', '--lola_db', default='./lola_db/core/nm/t1/resources/regions/LOLACore/hg19/', help='LOLA region db.', type=click.Path(exists=False), show_default=True)
 @click.option('-i', '--individuals', default=[''], multiple=True, help='Individuals to evaluate.', show_default=True)
@@ -711,6 +714,8 @@ def interpret_biology(all_cpgs_pickle,shapley_data_list,output_dir, analysis, n_
     head_classes=list(filter(None,classes))
     collections=list(filter(None,collections))
     gsea_analyses=list(filter(None,gsea_analyses))
+    if gsea_analyses:
+        analysis='GSEA'
     for i,shapley_data in enumerate(shapley_data_list):
         shapley_data=ShapleyData.from_pickle(shapley_data)
         shapley_data_explorer=ShapleyDataExplorer(shapley_data)
