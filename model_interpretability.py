@@ -520,6 +520,68 @@ def main_prediction_function(n_workers,batch_size, model, cuda):
         return predict_function(dataloader_constructor(raw_beta_array))
     return main_predict
 
+def plot_lola_output_(lola_csv, plot_output_dir, cell_types):
+    os.makedirs(plot_output_dir,exist_ok=True)
+    import matplotlib
+    matplotlib.use('Agg')
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    # from rpy2.robjects.packages import importr
+    # import rpy2.robjects as robjects
+    # from rpy2.robjects import pandas2ri
+    # pandas2ri.activate()
+    # ggplot=importr("ggplot2")
+    # importr("ggpubr")
+    # forcats=importr('forcats')
+    #
+    # create_bar_chart=robjects.r("""function(df,fill.col=NULL){
+    #                     ggboxplot(df, x = "description", y = "oddsRatio", fill = fill.col,#,
+    #                       color = "white",           # Set bar border colors to white
+    #                       palette = "jco",            # jco journal color palett. see ?ggpar
+    #
+    #                       orientation = "horiz")}           # Sort the value in dscending order
+    #                       #sort.by.groups = F, #TRUE,      # Sort inside each group
+    #                       # sort.val = "desc",
+    #                       #)
+    #                 #}""")
+
+    def create_bar_chart(df, cell_type=None):
+        sns.set(style="whitegrid")
+        f, ax = plt.subplots(figsize=(10,7))
+        sns.despine(bottom=True, left=True)
+        sns.stripplot(x="oddsRatio", y="description", hue=cell_type,
+              data=df, dodge=True, jitter=True,
+              alpha=.25, zorder=1)
+        sns.pointplot(x="oddsRatio", y="description", hue=cell_type,
+              data=df, dodge=.532, join=False, palette="dark",
+              markers="d", scale=.75, ci=None)
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles[3:], labels[3:], title="Cell Types",
+                  handletextpad=0, columnspacing=1,
+                  loc="lower right", ncol=3, frameon=True)
+        ax.set_xlim(left=0)
+        return f,ax
+
+    lola_results=pd.read_csv(lola_csv)[['collection','description','oddsRatio','cellType']]
+
+    # filter cell types here
+    collections_df=lola_results.groupby('collection')
+    for name,df in collections_df:
+        top_results_df=df.iloc[:min(25,df.shape[0]),:].reset_index(drop=True)
+
+        #top_results_df=pandas2ri.py2ri(top_results_df)#pandas2ri.py2ri(top_results_df)
+        #robjects.r("print")(top_results_df)
+        #top_results_df=robjects.r("function(df){data.frame(df,stringsAsFactors=FALSE)}")(robjects.r("function(df){lapply(df,as.character)}")(top_results_df)) # FIX
+        print(top_results_df)
+        """RESET FACTORS ^^^"""
+        #diagnose_df=pandas2ri.ri2py(top_results_df)
+        top_results_df=top_results_df.fillna('NULL')
+        f,ax=create_bar_chart(top_results_df,'cellType')
+        plt.tight_layout()
+        plt.savefig(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
+        #ggplot.ggsave(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
+    # add shore island breakdown
+
 @interpret.command() # FIXME add abs or just -1, positive contributions or any contributions
 @click.option('-i', '--train_pkl', default='./train_val_test_sets/train_methyl_array.pkl', help='Input database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
 @click.option('-v', '--val_pkl', default='./train_val_test_sets/val_methyl_array.pkl', help='Val database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
@@ -679,71 +741,24 @@ def interpret_biology(all_cpgs_pickle,shapley_data_list,output_dir, analysis, n_
             output_csv=join(output_dir,'{}_{}_{}.csv'.format(shapley_data_list[i].split('/')[-1],k,analysis if not gsea_analyses else '_'.join(gsea_analyses)))
             analysis_outputs[k].to_csv(output_csv)
 
+
+
+@interpret.command()
+@click.option('-l', '--head_lola_dir', default='interpretations/biological_explanations/', help='Location of lola output csvs.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--plot_output_dir', default='./interpretations/biological_explanations/lola_plots/', help='Output directory for interpretations.', type=click.Path(exists=False), show_default=True)
+@click.option('-c', '--cell_types', default=[''], multiple=True, help='Cell types.', show_default=True)
+def plot_all_lola_outputs(head_lola_dir,plot_output_dir,cell_types):
+    import glob
+    for lola_csv in glob.iglob(join(head_lola_dir,'**','*_LOLA.csv'),recursive=True):
+        output_dir=join(plot_output_dir,lola_file.split('/')[-2])
+        plot_lola_output_(lola_csv, output_dir, cell_types)
+
 @interpret.command()
 @click.option('-l', '--lola_csv', default='', help='Location of lola output csv.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--plot_output_dir', default='./interpretations/biological_explanations/lola_plots/', help='Output directory for interpretations.', type=click.Path(exists=False), show_default=True)
 @click.option('-c', '--cell_types', default=[''], multiple=True, help='Cell types.', show_default=True)
 def plot_lola_output(lola_csv, plot_output_dir, cell_types):
-    os.makedirs(plot_output_dir,exist_ok=True)
-    import matplotlib
-    matplotlib.use('Agg')
-    import seaborn as sns
-    import matplotlib.pyplot as plt
-    # from rpy2.robjects.packages import importr
-    # import rpy2.robjects as robjects
-    # from rpy2.robjects import pandas2ri
-    # pandas2ri.activate()
-    # ggplot=importr("ggplot2")
-    # importr("ggpubr")
-    # forcats=importr('forcats')
-    #
-    # create_bar_chart=robjects.r("""function(df,fill.col=NULL){
-    #                     ggboxplot(df, x = "description", y = "oddsRatio", fill = fill.col,#,
-    #                       color = "white",           # Set bar border colors to white
-    #                       palette = "jco",            # jco journal color palett. see ?ggpar
-    #
-    #                       orientation = "horiz")}           # Sort the value in dscending order
-    #                       #sort.by.groups = F, #TRUE,      # Sort inside each group
-    #                       # sort.val = "desc",
-    #                       #)
-    #                 #}""")
-
-    def create_bar_chart(df, cell_type=None):
-        sns.set(style="whitegrid")
-        f, ax = plt.subplots(figsize=(10,7))
-        sns.despine(bottom=True, left=True)
-        sns.stripplot(x="oddsRatio", y="description", hue=cell_type,
-              data=df, dodge=True, jitter=True,
-              alpha=.25, zorder=1)
-        sns.pointplot(x="oddsRatio", y="description", hue=cell_type,
-              data=df, dodge=.532, join=False, palette="dark",
-              markers="d", scale=.75, ci=None)
-        handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles[3:], labels[3:], title="Cell Types",
-                  handletextpad=0, columnspacing=1,
-                  loc="lower right", ncol=3, frameon=True)
-        ax.set_xlim(left=0)
-        return f,ax
-
-    lola_results=pd.read_csv(lola_csv)[['collection','description','oddsRatio','cellType']]
-
-    # filter cell types here
-    collections_df=lola_results.groupby('collection')
-    for name,df in collections_df:
-        top_results_df=df.iloc[:min(25,df.shape[0]),:].reset_index(drop=True)
-
-        #top_results_df=pandas2ri.py2ri(top_results_df)#pandas2ri.py2ri(top_results_df)
-        #robjects.r("print")(top_results_df)
-        #top_results_df=robjects.r("function(df){data.frame(df,stringsAsFactors=FALSE)}")(robjects.r("function(df){lapply(df,as.character)}")(top_results_df)) # FIX
-        print(top_results_df)
-        """RESET FACTORS ^^^"""
-        #diagnose_df=pandas2ri.ri2py(top_results_df)
-        top_results_df=top_results_df.fillna('NULL')
-        f,ax=create_bar_chart(top_results_df,'cellType')
-        plt.tight_layout()
-        plt.savefig(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
-        #ggplot.ggsave(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
-    # add shore island breakdown
+    plot_lola_output_(lola_csv, plot_output_dir, cell_types)
 
 @interpret.command()
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)

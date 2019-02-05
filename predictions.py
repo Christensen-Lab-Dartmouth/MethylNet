@@ -277,6 +277,25 @@ def classification_report(results_pickle,output_dir):
     df_roc.to_csv(join(output_dir,'Weighted_ROC.csv'))
 
 @prediction.command()
+@click.option('-r', '--roc_curve_csv', default='Weighted_ROC.csv', show_default=True, help='Weighted ROC Curve.', type=click.Path(exists=False))
+@click.option('-o', '--outputfilename', default='results/roc_curve.png', show_default=True, help='Output image.', type=click.Path(exists=False))
+def plot_roc_curve(training_curve_csv, outputfilename):
+    from rpy2.robjects.packages import importr
+    import rpy2.robjects as robjects
+    os.makedirs(outputfilename[:outputfilename.rfind('/')],exist_ok=True)
+    tidyverse=importr('tidyverse')
+    robjects.r("""function (in.csv, out.file.name) {
+        df<-read.csv(in.csv)
+        df %>%
+            ggplot() +
+            geom_line(aes(x = fpr, y = tpr,color=Legend)) +
+            ggtitle('ROC Curve') +
+            xlab('1-Specificity') +
+            ylab('Sensitivity')
+        ggsave(out.file.name)
+        }""")(training_curve_csv,outputfilename)
+
+@prediction.command()
 @click.option('-t', '--training_curve_file', default='predictions/training_val_curve.p', show_default=True, help='Training and validation loss and learning curves.', type=click.Path(exists=False))
 @click.option('-o', '--outputfilename', default='results/training_curve.png', show_default=True, help='Output image.', type=click.Path(exists=False))
 def plot_training_curve(training_curve_file, outputfilename):
