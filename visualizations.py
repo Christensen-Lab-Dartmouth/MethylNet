@@ -96,6 +96,33 @@ def transform_plot(input_pkl, column_of_interest, output_file, n_neighbors,axes_
     print(t_data)
     plotly_plot(t_data, output_file, axes_off=axes_off)
 
+@visualize.command()
+@click.option('-i', '--input_csv', default='', help='Input csv.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--outfilename', default='output.png', help='Output png.', type=click.Path(exists=False), show_default=True)
+@click.option('-idx', '--index_col', default=0, help='Index load dataframe', show_default=True)
+@click.option('-fs', '--font_scale', default=1., help='Font scaling', show_default=True)
+@click.option('-min', '--min_val', default=0., help='Min heat val', show_default=True)
+@click.option('-max', '--max_val', default=1., help='Max heat val, if -1, defaults to None', show_default=True)
+@click.option('-a', '--annot', is_flag=True, help='Annotate heatmap', show_default=True)
+@click.option('-n', '--norm', is_flag=True, help='Normalize matrix data', show_default=True)
+def plot_heatmap(input_csv,outfilename,index_col,font_scale, min_val, max_val, annot,norm):
+    import os
+    os.makedirs(outfilename[:outfilename.rfind('/')],exist_ok=True)
+    import matplotlib
+    matplotlib.use('Agg')
+    import seaborn as sns
+    sns.set(font_scale=font_scale)
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(20,20))
+    df=pd.read_csv(input_csv,index_col=index_col)
+    if norm:
+        df.loc[:,:]=df.values.astype(np.float)/df.values.astype(np.float).sum(axis=1)[:, np.newaxis]
+    #print(df)
+    sns.heatmap(df,vmin=min_val, vmax=max_val if max_val!=-1 else None, annot=annot)#,fmt='g'
+    plt.tight_layout()
+    plt.savefig(outfilename, dpi=300)
+
+
 #################
 
 if __name__ == '__main__':

@@ -206,7 +206,7 @@ def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_l
 @click.option('-o', '--output_dir', default='results/', show_default=True, help='Output directory.', type=click.Path(exists=False))
 def classification_report(results_pickle,output_dir):
     from mlxtend.evaluate import bootstrap
-    from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
+    from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, roc_curve, roc_auc_score, confusion_matrix
     os.makedirs(output_dir,exist_ok=True)
     def extract_ys(Y):
         return Y[:,0], Y[:,1:]
@@ -233,7 +233,13 @@ def classification_report(results_pickle,output_dir):
 
     def auc(Y):
         y_true, y_pred=extract_ys(Y)
-        return metrics.roc_auc_score(y_true, y_pred, average='weighted')
+        y_pred_labels=np.argmax(y_pred,1)
+        supports={i:sum((y_pred_labels[np.squeeze(y_true==i)]==i).astype(int)) for i in np.unique(y_true)}
+        final_auc_score=0.
+        for i in supports:
+            final_auc_score+=supports[i]*roc_auc_score((y_true==i).astype(int), y_pred[:,int(i)], average='weighted')
+        final_auc_score/=sum(list(supports.values()))
+        return final_auc_score
 
     def to_y_probas(y_pred):
         return np.exp(y_pred)/np.exp(y_pred).sum(1)[:,np.newaxis]
@@ -245,19 +251,20 @@ def classification_report(results_pickle,output_dir):
     for k in results_dict:
         y_true=results_dict[k]['y_true']
         y_true_labels=np.argmax(y_true,axis=1)[:,np.newaxis]
-        n_classes=int(max(y_true_labels))
+        classes=np.unique(y_true_labels)
         y_pred=to_y_probas(results_dict[k]['y_pred'])
         y_pred_labels=np.argmax(y_pred,1)
+        pd.DataFrame(confusion_matrix(y_true_labels.astype(int),y_pred_labels.astype(int),labels=classes.astype(int)),index=classes.astype(int),columns=classes.astype(int)).to_csv(join(output_dir,'{}_confusion_mat.csv'.format(k)))
         Y=np.hstack((y_true_labels,y_pred))
-        supports={i:sum((y_pred_labels[y_true_labels==i]==i).astype(int)) for i in range(n_classes)}
+        supports={i:sum((y_pred_labels[np.squeeze(y_true_labels==i)]==i).astype(int)) for i in classes}
         fpr = dict()
         tpr = dict()
         for i in supports:
-            fpr, tpr, _ = metrics.roc_curve(y_true[:,i], y_pred[:,i])
+            fpr[i], tpr[i], _ = roc_curve(y_true[:,i], y_pred[:,i])
         all_fpr = np.unique(np.concatenate([fpr[i] for i in supports]))
         mean_tpr = np.zeros_like(all_fpr)
         for i in supports:
-            mean_tpr += supports[i]*interp(all_fpr, fpr[i], tpr[i])
+            mean_tpr += supports[i]*np.interp(all_fpr, fpr[i], tpr[i])
         mean_tpr/=sum(list(supports.values()))
         tpr,fpr=mean_tpr,all_fpr
         df=pd.DataFrame({'fpr' : fpr, 'tpr' : tpr})
@@ -265,6 +272,7 @@ def classification_report(results_pickle,output_dir):
         df_roc.append(df)
         fns = dict(accuracy=accuracy,recall=recall,precision=precision,f1=f1,auc=auc)
         for fn in fns:
+            print(k,fn)
             original, std_err, ci_bounds = bootstrap(Y, num_rounds=1000,
                                              func=fns[fn],
                                              ci=0.95,
@@ -277,9 +285,9 @@ def classification_report(results_pickle,output_dir):
     df_roc.to_csv(join(output_dir,'Weighted_ROC.csv'))
 
 @prediction.command()
-@click.option('-r', '--roc_curve_csv', default='Weighted_ROC.csv', show_default=True, help='Weighted ROC Curve.', type=click.Path(exists=False))
+@click.option('-r', '--roc_curve_csv', default='results/Weighted_ROC.csv', show_default=True, help='Weighted ROC Curve.', type=click.Path(exists=False))
 @click.option('-o', '--outputfilename', default='results/roc_curve.png', show_default=True, help='Output image.', type=click.Path(exists=False))
-def plot_roc_curve(training_curve_csv, outputfilename):
+def plot_roc_curve(roc_curve_csv, outputfilename):
     from rpy2.robjects.packages import importr
     import rpy2.robjects as robjects
     os.makedirs(outputfilename[:outputfilename.rfind('/')],exist_ok=True)
@@ -293,7 +301,7 @@ def plot_roc_curve(training_curve_csv, outputfilename):
             xlab('1-Specificity') +
             ylab('Sensitivity')
         ggsave(out.file.name)
-        }""")(training_curve_csv,outputfilename)
+        }""")(roc_curve_csv,outputfilename)
 
 @prediction.command()
 @click.option('-t', '--training_curve_file', default='predictions/training_val_curve.p', show_default=True, help='Training and validation loss and learning curves.', type=click.Path(exists=False))
@@ -306,13 +314,14 @@ def plot_training_curve(training_curve_file, outputfilename):
     import seaborn as sns
     sns.set(style="whitegrid")
     df=pd.DataFrame(pickle.load(open(training_curve_file,'rb')))
-    plt.subplots((1,2),fig_size=(10,5))
-    plt.subplot(111)
+    plt.subplots(1,2,figsize=(10,5))
+    plt.subplot(121)
     sns.lineplot(data=df[['loss','val_loss']], palette="tab10", linewidth=2.5)
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.subplot(112)
-    sns.lineplot(data=data[['lr_vae', 'lr_mlp']], palette="tab10", linewidth=2.5)
+    plt.tight_layout()
+    plt.subplot(122)
+    sns.lineplot(data=df[['lr_vae', 'lr_mlp']], palette="tab10", linewidth=2.5)
     plt.xlabel('Epoch')
     plt.ylabel('Learning Rate')
     plt.tight_layout()

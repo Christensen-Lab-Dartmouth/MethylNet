@@ -695,7 +695,7 @@ def grab_lola_db_cache(output_dir):
 @click.option('-lo', '--length_output', default=20, help='Number enriched terms to print.', show_default=True)
 @click.option('-ss', '--set_subtraction', is_flag=True, help='Only consider CpGs relevant to particular class.', show_default=True)
 @click.option('-int', '--intersection', is_flag=True, help='CpGs common to all classes.', show_default=True)
-@click.option('-col', '--collections', default=[''], multiple=True, help='Lola collections.', type=click.Choice(['cistrome_cistrome','codex','encode_tfbs,ucsc_features','cistrome_epigenome','encode_segmentation','sheffield_dnase','jaspar_motifs','roadmap_epigenomics']), show_default=True)
+@click.option('-col', '--collections', default=[''], multiple=True, help='Lola collections.', type=click.Choice(['','cistrome_cistrome','codex','encode_tfbs,ucsc_features','cistrome_epigenome','encode_segmentation','sheffield_dnase','jaspar_motifs','roadmap_epigenomics']), show_default=True)
 @click.option('-gsea', '--gsea_analyses', default=[''], multiple=True, help='Gene set enrichment analysis to choose from, if chosen will override other analysis options. http://software.broadinstitute.org/gsea/msigdb/collections.jsp', type=click.Choice(['','C1','C2','C2.KEGG,C2.REACTOME','C3','C3.TFT','C4.CGN','C4.CM','C4','C5','C6','C7','C8','H']), show_default=True)
 @click.option('-gsp', '--gsea_pickle', default='./data/GSEA_GeneSets/gsea_collections.p', help='Gene set enrichment analysis to choose from.', type=click.Path(exists=False), show_default=True)
 @click.option('-d', '--depletion', is_flag=True, help='Run depletion LOLA analysis instead of enrichment.', show_default=True)
