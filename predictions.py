@@ -204,7 +204,8 @@ def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_l
 @prediction.command()
 @click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))
 @click.option('-o', '--output_dir', default='results/', show_default=True, help='Output directory.', type=click.Path(exists=False))
-def classification_report(results_pickle,output_dir):
+@click.option('-e', '--categorical_encoder', default='./predictions/one_hot_encoder.p', help='One hot encoder if categorical model. If path exists, then return top positive controbutions per samples of that class. Encoded values must be of sample class as interest_col.', type=click.Path(exists=False), show_default=True)
+def classification_report(results_pickle,output_dir, categorical_encoder):
     from mlxtend.evaluate import bootstrap
     from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, roc_curve, roc_auc_score, confusion_matrix
     os.makedirs(output_dir,exist_ok=True)
@@ -245,7 +246,10 @@ def classification_report(results_pickle,output_dir):
         return np.exp(y_pred)/np.exp(y_pred).sum(1)[:,np.newaxis]
 
     results_dict=pickle.load(open(results_pickle,'rb'))
-
+    if os.path.exists(categorical_encoder):
+        categorical_encoder=pickle.load(open(categorical_encoder,'rb'))
+    else:
+        categorical_encoder=None
     df_roc=[]
     final_results=[]
     for k in results_dict:
@@ -254,7 +258,9 @@ def classification_report(results_pickle,output_dir):
         classes=np.unique(y_true_labels)
         y_pred=to_y_probas(results_dict[k]['y_pred'])
         y_pred_labels=np.argmax(y_pred,1)
-        pd.DataFrame(confusion_matrix(y_true_labels.astype(int),y_pred_labels.astype(int),labels=classes.astype(int)),index=classes.astype(int),columns=classes.astype(int)).to_csv(join(output_dir,'{}_confusion_mat.csv'.format(k)))
+        out_classes = classes.astype(int) if categorical_encoder == None else categorical_encoder.inverse_transform(classes.astype(int))
+        pd.DataFrame(confusion_matrix(y_true_labels.astype(int) if categorical_encoder == None else categorical_encoder.inverse_transform(y_true_labels.astype(int)),
+                                      y_pred_labels.astype(int)  if categorical_encoder == None else categorical_encoder.inverse_transform(y_pred_labels.astype(int)),labels=out_classes),index=out_classes,columns=out_classes).to_csv(join(output_dir,'{}_confusion_mat.csv'.format(k)))
         Y=np.hstack((y_true_labels,y_pred))
         supports={i:sum((y_pred_labels[np.squeeze(y_true_labels==i)]==i).astype(int)) for i in classes}
         fpr = dict()

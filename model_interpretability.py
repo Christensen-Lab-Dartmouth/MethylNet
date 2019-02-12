@@ -169,6 +169,19 @@ class ShapleyDataExplorer:
         top_shap_df['methylation']=methyl_arr.beta.loc[individual,top_shap_df['cpg'].values].values
         return class_name,individual,top_shap_df
 
+    def extract_methylation_array(self, methyl_arr, classes_only=True):
+        from functools import reduce
+        total_cpgs=[]
+        for class_name in shapley_data.top_cpgs['by_class']:
+            cpgs=np.array(list(shapley_data.shapley_values['by_class'][class_name]['overall'][:,0]))
+            if not classes_only:
+                cpgs = reduce(np.union1d,[cpgs]+[shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual][:,0]
+                                          for individual in shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys()])
+            total_cpgs.append(cpgs)
+        all_cpgs = reduce(np.union1d,total_cpgs)
+        methyl_arr.beta=methyl_arr.beta.loc[:,all_cpgs]
+        return methyl_arr
+
     def limit_number_top_cpgs(self, n_top_cpgs):
         shapley_data = copy.deepcopy(self.shapley_data)
         if shapley_data.top_cpgs['overall']:
@@ -217,7 +230,7 @@ class ShapleyDataExplorer:
             top_cpgs['intersection']['shapley_value']=-1
         return top_cpgs
 
-    def jaccard_similarity_top_cpgs(self,class_names,overall=False, cooccurrence=False):
+    def jaccard_similarity_top_cpgs(self,class_names,individuals=False,overall=False, cooccurrence=False):
         from itertools import combinations
         from functools import reduce
         def jaccard_similarity(list1, list2):
@@ -232,8 +245,9 @@ class ShapleyDataExplorer:
         for class_name in class_names:
             if overall:
                 x[class_name]=self.shapley_data.top_cpgs['by_class'][class_name]['overall']['cpg'].values.tolist()
-            for indiv,df in list(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].items()):
-                x['{}_{}'.format(class_name,indiv)]=df['cpg'].values.tolist()
+            if individuals:
+                for indiv,df in list(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].items()):
+                    x['{}_{}'.format(class_name,indiv)]=df['cpg'].values.tolist()
         indivs=list(x.keys())
         similarity_matrix=pd.DataFrame(np.eye(len(x)),index=indivs,columns=indivs)
         for i,j in combinations(indivs,r=2):
@@ -523,7 +537,7 @@ def main_prediction_function(n_workers,batch_size, model, cuda):
         return predict_function(dataloader_constructor(raw_beta_array))
     return main_predict
 
-def plot_lola_output_(lola_csv, plot_output_dir, cell_types):
+def plot_lola_output_(lola_csv, plot_output_dir, description_col, cell_types):
     os.makedirs(plot_output_dir,exist_ok=True)
     import matplotlib
     matplotlib.use('Agg')
@@ -548,14 +562,14 @@ def plot_lola_output_(lola_csv, plot_output_dir, cell_types):
     #                       #)
     #                 #}""")
 
-    def create_bar_chart(df, cell_type=None):
+    def create_bar_chart(df, description='description', cell_type=None):
         sns.set(style="whitegrid")
         f, ax = plt.subplots(figsize=(10,7))
         sns.despine(bottom=True, left=True)
-        sns.stripplot(x="oddsRatio", y="description", hue=cell_type,
+        sns.stripplot(x="oddsRatio", y=description, hue=cell_type,
               data=df, dodge=True, jitter=True,
               alpha=.25, zorder=1)
-        sns.pointplot(x="oddsRatio", y="description", hue=cell_type,
+        sns.pointplot(x="oddsRatio", y=description, hue=cell_type,
               data=df, dodge=.532, join=False, palette="dark",
               markers="d", scale=.75, ci=None)
         handles, labels = ax.get_legend_handles_labels()
@@ -565,7 +579,7 @@ def plot_lola_output_(lola_csv, plot_output_dir, cell_types):
         ax.set_xlim(left=0)
         return f,ax
 
-    lola_results=pd.read_csv(lola_csv)[['collection','description','oddsRatio','cellType']]
+    lola_results=pd.read_csv(lola_csv)#[['collection','description','oddsRatio','cellType']]
 
     # filter cell types here
     collections_df=lola_results.groupby('collection')
@@ -575,13 +589,15 @@ def plot_lola_output_(lola_csv, plot_output_dir, cell_types):
         #top_results_df=pandas2ri.py2ri(top_results_df)#pandas2ri.py2ri(top_results_df)
         #robjects.r("print")(top_results_df)
         #top_results_df=robjects.r("function(df){data.frame(df,stringsAsFactors=FALSE)}")(robjects.r("function(df){lapply(df,as.character)}")(top_results_df)) # FIX
-        print(top_results_df)
+        #print(top_results_df)
         """RESET FACTORS ^^^"""
         #diagnose_df=pandas2ri.ri2py(top_results_df)
         top_results_df=top_results_df.fillna('NULL')
-        f,ax=create_bar_chart(top_results_df,'cellType')
+        plt.figure()
+        f,ax=create_bar_chart(top_results_df,description_col,'cellType')
         plt.tight_layout()
         plt.savefig(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
+        plt.close()
         #ggplot.ggsave(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
     # add shore island breakdown
 
@@ -743,27 +759,44 @@ def interpret_biology(all_cpgs_pickle,shapley_data_list,output_dir, analysis, n_
         elif gsea_analyses:
             analysis_outputs=bio_interpreter.gometh('', allcpgs=[], length_output=length_output, gsea_analyses=gsea_analyses, gsea_pickle=gsea_pickle)
         for k in analysis_outputs:
-            output_csv=join(output_dir,'{}_{}_{}.csv'.format(shapley_data_list[i].split('/')[-1],k,analysis if not gsea_analyses else '_'.join(gsea_analyses)))
+            output_csv=join(output_dir,'{}_{}_{}.csv'.format(shapley_data_list[i].split('/')[-1],k,analysis if not gsea_analyses else '_'.join(gsea_analyses)).replace('/','-'))
             analysis_outputs[k].to_csv(output_csv)
 
-
+@interpret.command()
+@click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
+@click.option('-c', '--classes_only', is_flag=True, help='Only take top CpGs from each class.', show_default=True)
+@click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/top_cpgs_extracted_methylarr/', help='Output directory for methylation array.', type=click.Path(exists=False), show_default=True)
+@click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
+def extract_methylation_array(shapley_data, classes_only, output_dir, test_pkl):
+    os.makedirs(output_dir,exist_ok=True)
+    shapley_data=ShapleyData.from_pickle(shapley_data)
+    shapley_data_explorer=ShapleyDataExplorer(shapley_data)
+    output_methyl_arr = shapley_data_explorer.extract_methylation_array(MethylationArray.from_pickle(test_pkl),classes_only)
+    output_methyl_arr.write_pickle(os.join(output_dir,'extracted_methyl_arr.pkl'))
+    output_methyl_arr.write_csvs(output_dir)
 
 @interpret.command()
 @click.option('-l', '--head_lola_dir', default='interpretations/biological_explanations/', help='Location of lola output csvs.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--plot_output_dir', default='./interpretations/biological_explanations/lola_plots/', help='Output directory for interpretations.', type=click.Path(exists=False), show_default=True)
+@click.option('-d', '--description_col', default='description', help='Description column for categorical variables', type=click.Path(exists=False),show_default=True)
 @click.option('-c', '--cell_types', default=[''], multiple=True, help='Cell types.', show_default=True)
-def plot_all_lola_outputs(head_lola_dir,plot_output_dir,cell_types):
+@click.option('-ov', '--overwrite', is_flag=True, help='Overwrite existing plots.', show_default=True)
+def plot_all_lola_outputs(head_lola_dir,plot_output_dir,description_col,cell_types,overwrite):
     import glob
     for lola_csv in glob.iglob(join(head_lola_dir,'**','*_LOLA.csv'),recursive=True):
-        output_dir=join(plot_output_dir,lola_file.split('/')[-2])
-        plot_lola_output_(lola_csv, output_dir, cell_types)
+        output_dir=join(plot_output_dir,lola_csv.split('/')[-2])
+        if overwrite and len(glob.glob(join(output_dir,'{}*.png'.format(lola_csv.split('/')[-1].replace('.csv',''))))):
+            continue
+        else:
+            plot_lola_output_(lola_csv, output_dir, description_col, cell_types)
 
 @interpret.command()
 @click.option('-l', '--lola_csv', default='', help='Location of lola output csv.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--plot_output_dir', default='./interpretations/biological_explanations/lola_plots/', help='Output directory for interpretations.', type=click.Path(exists=False), show_default=True)
+@click.option('-d', '--description_col', default='description', help='Description column for categorical variables', type=click.Path(exists=False),show_default=True)
 @click.option('-c', '--cell_types', default=[''], multiple=True, help='Cell types.', show_default=True)
-def plot_lola_output(lola_csv, plot_output_dir, cell_types):
-    plot_lola_output_(lola_csv, plot_output_dir, cell_types)
+def plot_lola_output(lola_csv, plot_output_dir, description_col, cell_types):
+    plot_lola_output_(lola_csv, plot_output_dir, description_col, cell_types)
 
 @interpret.command()
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
@@ -784,13 +817,14 @@ def split_hyper_hypo_methylation(shapley_data, output_dir, test_pkl):
 @click.option('-c', '--class_names', default=[''], multiple=True, help='Class names.', show_default=True)
 @click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/top_cpgs_jaccard/', help='Output directory for cpg jaccard_stats.', type=click.Path(exists=False), show_default=True)
 @click.option('-ov', '--overall', is_flag=True, help='Output overall similarity.', show_default=True)
+@click.option('-i', '--include_individuals', is_flag=True, help='Output individuals.', show_default=True)
 @click.option('-co', '--cooccurrence', is_flag=True, help='Output cooccurrence instead jaccard.', show_default=True)
-def shapley_jaccard(shapley_data,class_names, output_dir, overall, cooccurrence):
+def shapley_jaccard(shapley_data,class_names, output_dir, overall, include_individuals, cooccurrence):
     os.makedirs(output_dir,exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
     outfilename=join(output_dir,'{}_jaccard.csv'.format('_'.join(class_names)))
-    shapley_data_explorer.jaccard_similarity_top_cpgs(class_names,overall, cooccurrence).to_csv(outfilename)
+    shapley_data_explorer.jaccard_similarity_top_cpgs(class_names,include_individuals,overall, cooccurrence).to_csv(outfilename)
 
 @interpret.command()
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)

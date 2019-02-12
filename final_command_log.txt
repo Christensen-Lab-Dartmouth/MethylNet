@@ -41,6 +41,8 @@
     x* python visualizations.py plot_heatmap -n -max -1 -i ./results/test_confusion_mat.csv -o ./results/test_confusion.png
     x* python predictions.py plot_roc_curve
     * python model_interpretability.py plot_all_lola_outputs
+    * python model_interpretability.py extract_methylation_array -c
+    * python visualizations.py plot_heatmap -i ./interpretations/shapley_explanations/top_cpgs_extracted_methylarr/beta.csv -y -fs .4 -o ./interpretations/shapley_explanations/top_cpgs_extracted_methylarr/top_cpg_array.png
     * To-do: what are the cpgs, where are they, where are neighbors (report methylation value)
 
 
@@ -87,6 +89,9 @@
     x* python visualizations.py plot_heatmap -n -max -1 -i ./results/test_confusion_mat.csv -o ./results/test_confusion.png
     x* python predictions.py plot_roc_curve
     * python model_interpretability.py plot_all_lola_outputs
+    * nohup python model_interpretability.py plot_all_lola_outputs -l interpretations/biological_explanations/lola_ext_enrich/ -d antibody &
+    * python model_interpretability.py extract_methylation_array -c
+    * python visualizations.py plot_heatmap -i ./interpretations/shapley_explanations/top_cpgs_extracted_methylarr/beta.csv -y -fs .4 -o ./interpretations/shapley_explanations/top_cpgs_extracted_methylarr/top_cpg_array.png
     * To-do: what are the cpgs, where are they, where are neighbors (report methylation value)
 
 3. Retired Commands

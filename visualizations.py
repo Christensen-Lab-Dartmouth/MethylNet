@@ -105,7 +105,11 @@ def transform_plot(input_pkl, column_of_interest, output_file, n_neighbors,axes_
 @click.option('-max', '--max_val', default=1., help='Max heat val, if -1, defaults to None', show_default=True)
 @click.option('-a', '--annot', is_flag=True, help='Annotate heatmap', show_default=True)
 @click.option('-n', '--norm', is_flag=True, help='Normalize matrix data', show_default=True)
-def plot_heatmap(input_csv,outfilename,index_col,font_scale, min_val, max_val, annot,norm):
+@click.option('-c', '--cluster', is_flag=True, help='Cluster matrix data', show_default=True)
+@click.option('-m', '--matrix_type', default='none', help='Type of matrix supplied', type=click.Choice(['none','similarity','distance']), show_default=True)
+@click.option('-x', '--xticks', is_flag=True, help='Show x ticks', show_default=True)
+@click.option('-y', '--yticks', is_flag=True, help='Show y ticks', show_default=True)
+def plot_heatmap(input_csv,outfilename,index_col,font_scale, min_val, max_val, annot,norm,cluster,matrix_type, xticks, yticks):
     import os
     os.makedirs(outfilename[:outfilename.rfind('/')],exist_ok=True)
     import matplotlib
@@ -118,7 +122,19 @@ def plot_heatmap(input_csv,outfilename,index_col,font_scale, min_val, max_val, a
     if norm:
         df.loc[:,:]=df.values.astype(np.float)/df.values.astype(np.float).sum(axis=1)[:, np.newaxis]
     #print(df)
-    sns.heatmap(df,vmin=min_val, vmax=max_val if max_val!=-1 else None, annot=annot)#,fmt='g'
+    if cluster:
+        import scipy.spatial as sp, scipy.cluster.hierarchy as hc
+        if matrix_type=='none':
+            linkage=None
+        else:
+            if matrix_type=='similarity':
+                df = (df+df.T)/2
+                print(df)
+                df = 1.-df
+            linkage = hc.linkage(sp.distance.squareform(df), method='average')
+        sns.clustermap(df, row_linkage=linkage, col_linkage=linkage, xticklabels=xticks, yticklabels=yticks)
+    else:
+        sns.heatmap(df,vmin=min_val, vmax=max_val if max_val!=-1 else None, annot=annot, xticklabels=xticks, yticklabels=yticks)#,fmt='g'
     plt.tight_layout()
     plt.savefig(outfilename, dpi=300)
 
