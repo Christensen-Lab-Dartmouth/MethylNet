@@ -190,7 +190,7 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
 @click.option('-r', '--reset_all', is_flag=True, help='Run all jobs again.')
 @click.option('-t', '--torque', is_flag=True, help='Submit jobs on torque.')
 @click.option('-gpu', '--gpu', default=-1, help='If torque submit, which gpu to use.', show_default=True)
-@click.option('-gn', '--gpu_node', default=1, help='If torque submit, which gpu node to use.', show_default=True)
+@click.option('-gn', '--gpu_node', default=-1, help='If torque submit, which gpu node to use.', show_default=True)
 @click.option('-nh', '--nohup', is_flag=True, help='Nohup launch jobs.')
 @click.option('-n', '--n_jobs_relaunch', default=0, help='Relaunch n top jobs from previous run.', show_default=True)
 @click.option('-c', '--crossover_p', default=0., help='Rate of crossover between hyperparameters.', show_default=True)

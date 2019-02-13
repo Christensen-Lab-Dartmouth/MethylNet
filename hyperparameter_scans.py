@@ -100,7 +100,7 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
                 deploy_txt=f.read().replace('COMMAND',command)#.replace('HOST','g0{}'.format(gpu_node))
             with open('pbs_gpu_deploy.sh','w') as f:
                 f.write(deploy_txt)
-            command = 'mksub pbs_gpu_deploy.sh'
+            command = 'mksub pbs_gpu_deploy.sh'+('' if gpu_node == -1 else ' -l hostlist=g0{}'.format(gpu_node))
             print(command)
             job=os.popen(command).read().strip('\n')
         #df.loc[np.arange(df.shape[0])==np.where(df['--job_name'].astype(str).map(lower)=='false')[0][0],'--job_name']=job

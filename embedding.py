@@ -147,7 +147,7 @@ def perform_embedding(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_de
 @click.option('-r', '--reset_all', is_flag=True, help='Run all jobs again.')
 @click.option('-t', '--torque', is_flag=True, help='Submit jobs on torque.')
 @click.option('-gpu', '--gpu', default=-1, help='If torque submit, which gpu to use.', show_default=True)
-@click.option('-gn', '--gpu_node', default=1, help='If torque submit, which gpu node to use.', show_default=True)
+@click.option('-gn', '--gpu_node', default=-1, help='If torque submit, which gpu node to use.', show_default=True)
 @click.option('-nh', '--nohup', is_flag=True, help='Nohup launch jobs.')
 @click.option('-mc', '--model_complexity_factor', default=1., help='Degree of neural network model complexity for hyperparameter search. Search for less wide and less deep networks with a lower complexity value, bounded between 0 and infinity.', show_default=True)
 @click.option('-b', '--set_beta', default=1., help='Set beta value, bounded between 0 and infinity. Set to -1 ', show_default=True)
