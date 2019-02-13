@@ -194,12 +194,13 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
 @click.option('-nh', '--nohup', is_flag=True, help='Nohup launch jobs.')
 @click.option('-n', '--n_jobs_relaunch', default=0, help='Relaunch n top jobs from previous run.', show_default=True)
 @click.option('-c', '--crossover_p', default=0., help='Rate of crossover between hyperparameters.', show_default=True)
-def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p):
+@click.option('-mc', '--model_complexity_factor', default=1., help='Degree of neural network model complexity for hyperparameter search. Search for less wide networks with a lower complexity value, bounded between 0 and infinity.', show_default=True)
+def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor):
     from hyperparameter_scans import coarse_scan, find_top_jobs
     custom_jobs=[]
     if n_jobs_relaunch:
         custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p)
-    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs)
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor)
 
 @prediction.command()
 @click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))
@@ -308,30 +309,6 @@ def plot_roc_curve(roc_curve_csv, outputfilename):
             ylab('Sensitivity')
         ggsave(out.file.name)
         }""")(roc_curve_csv,outputfilename)
-
-@prediction.command()
-@click.option('-t', '--training_curve_file', default='predictions/training_val_curve.p', show_default=True, help='Training and validation loss and learning curves.', type=click.Path(exists=False))
-@click.option('-o', '--outputfilename', default='results/training_curve.png', show_default=True, help='Output image.', type=click.Path(exists=False))
-def plot_training_curve(training_curve_file, outputfilename):
-    os.makedirs(outputfilename[:outputfilename.rfind('/')],exist_ok=True)
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-    sns.set(style="whitegrid")
-    df=pd.DataFrame(pickle.load(open(training_curve_file,'rb')))
-    plt.subplots(1,2,figsize=(10,5))
-    plt.subplot(121)
-    sns.lineplot(data=df[['loss','val_loss']], palette="tab10", linewidth=2.5)
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.tight_layout()
-    plt.subplot(122)
-    sns.lineplot(data=df[['lr_vae', 'lr_mlp']], palette="tab10", linewidth=2.5)
-    plt.xlabel('Epoch')
-    plt.ylabel('Learning Rate')
-    plt.tight_layout()
-    plt.savefig(outputfilename)
 
 #################
 

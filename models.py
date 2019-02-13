@@ -126,12 +126,13 @@ class AutoEncoder:
         if self.validation_set:
             min_val_loss_idx=np.argmin(min(plt_data['val_loss']))
             self.min_val_loss = plt_data['val_loss'][min_val_loss_idx]
-            self.min_val_kl_loss = plt_data['val_kl_loss']
-            self.min_val_recon_loss = plt_data['val_recon_loss']
+            self.min_val_kl_loss = plt_data['val_kl_loss'][min_val_loss_idx]
+            self.min_val_recon_loss = plt_data['val_recon_loss'][min_val_loss_idx]
         else:
-            self.min_val_loss, self.min_val_kl_loss, self.min_val_recon_loss  = -1,-1,-1
+            self.min_val_loss, self.min_val_kl_loss, self.min_val_recon_loss  = -1.,-1.,-1.
         self.best_epoch = best_epoch
         self.model = best_model#self.model.load_state_dict(best_model)
+        self.training_plot_data = plt_data
         return self
 
     def add_validation_set(self, validation_data):

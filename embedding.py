@@ -23,6 +23,7 @@ def embed_vae(train_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
 
     output_file = join(output_dir,'output_latent.csv')
     output_model = join(output_dir,'output_model.p')
+    training_curve_file = join(output_dir, 'training_val_curve.p')
     outcome_dict_file = join(output_dir,'output_outcomes.p')
     output_pkl = join(output_dir, 'vae_methyl_arr.pkl')
 
@@ -86,6 +87,7 @@ def embed_vae(train_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     methyl_array.beta=latent_projection
     methyl_array.write_pickle(output_pkl)
     latent_projection.to_csv(output_file)
+    pickle.dump(auto_encoder.training_plot_data,open(training_curve_file,'wb'))
     torch.save(auto_encoder.model,output_model)
     pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
     return latent_projection, outcome_dict, n_input, auto_encoder
@@ -147,9 +149,11 @@ def perform_embedding(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_de
 @click.option('-gpu', '--gpu', default=-1, help='If torque submit, which gpu to use.', show_default=True)
 @click.option('-gn', '--gpu_node', default=1, help='If torque submit, which gpu node to use.', show_default=True)
 @click.option('-nh', '--nohup', is_flag=True, help='Nohup launch jobs.')
-def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup):
+@click.option('-mc', '--model_complexity_factor', default=1., help='Degree of neural network model complexity for hyperparameter search. Search for less wide and less deep networks with a lower complexity value, bounded between 0 and infinity.', show_default=True)
+@click.option('-b', '--set_beta', default=1., help='Set beta value, bounded between 0 and infinity. Set to -1 ', show_default=True)
+def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, model_complexity_factor, set_beta):
     from hyperparameter_scans import coarse_scan
-    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False)
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, model_complexity_factor=model_complexity_factor, set_beta=set_beta)
 
 #################
 
