@@ -67,6 +67,7 @@ class MethylationDataSet(Dataset):
             self.outcome_col=self.encoder.transform(self.outcome_col)
         self.transform = transform
         self.new_shape = self.transform.shape
+        self.length = self.methylation_array.beta.shape[0]
         print(self.outcome_col)
         print(self.outcome_col.shape)
 
@@ -91,7 +92,7 @@ class MethylationDataSet(Dataset):
         return transform(self.methylation_array.beta.iloc[index,:].values),self.samples[index],self.outcome_col.iloc[index,:].values
         """
     def __len__(self):
-        return self.methylation_array.beta.shape[0]
+        return self.length
 
 class MethylationPredictionDataSet(MethylationDataSet):
     def __init__(self, methylation_array, transform, outcome_col='', categorical=False, categorical_encoder=False):
@@ -105,9 +106,10 @@ class RawBetaArrayDataSet(Dataset):
     def __init__(self, beta_array, transform):
         self.beta_array = beta_array
         self.transform = transform
+        self.length = self.beta_array.shape[0]
 
     def __getitem__(self,index):
         return self.transform.generate()(self.beta_array[index,:])
 
     def __len__(self):
-        return self.beta_array.shape[0]
+        return self.length

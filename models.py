@@ -12,7 +12,11 @@ def train_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_u
     model.train(True) #FIXME
     #print(model)
     total_loss,total_recon_loss,total_kl_loss=0.,0.,0.
-    for inputs, _, _ in loader:
+    stop_iter = loader.dataset.length // loader.batch_size
+    total_loss,total_recon_loss,total_kl_loss=0.,0.,0.
+    for i,(inputs, _, _) in enumerate(loader):
+        if i == stop_iter:
+            break
         inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
         #print(inputs.size())
         if cuda:
@@ -25,13 +29,16 @@ def train_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_u
         total_loss+=loss.item()
         total_recon_loss+=reconstruction_loss.item()
         total_kl_loss+=kl_loss.item()
-    return model, total_loss,total_recon_loss,total_kl_loss
+    return model, total_loss/stop_iter,total_recon_loss/stop_iter,total_kl_loss/stop_iter
 
 def val_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
     model.eval() #FIXME
     #print(model)
+    stop_iter = loader.dataset.length // loader.batch_size
     total_loss,total_recon_loss,total_kl_loss=0.,0.,0.
-    for inputs, _, _ in loader:
+    for i,(inputs, _, _) in enumerate(loader):
+        if i == stop_iter:
+            break
         inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
         #print(inputs.size())
         if cuda:
@@ -41,7 +48,7 @@ def val_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=
         total_loss+=loss.item()
         total_recon_loss+=reconstruction_loss.item()
         total_kl_loss+=kl_loss.item()
-    return model, total_loss,total_recon_loss,total_kl_loss
+    return model, total_loss/stop_iter,total_recon_loss/stop_iter,total_kl_loss/stop_iter
 
 def project_vae(model, loader, cuda=True):
     print(model)
@@ -64,7 +71,7 @@ def project_vae(model, loader, cuda=True):
     return z, sample_names, outcomes
 
 class AutoEncoder:
-    def __init__(self, autoencoder_model, n_epochs, loss_fn, optimizer, cuda=True, kl_warm_up=0,beta=1.,scheduler_opts={}):
+    def __init__(self, autoencoder_model, n_epochs, loss_fn, optimizer, cuda=True, kl_warm_up=0, beta=1.,scheduler_opts={}):
         self.model=autoencoder_model
         #print(self.model)
         if cuda:
