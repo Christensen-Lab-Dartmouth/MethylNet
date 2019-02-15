@@ -33,7 +33,7 @@ def generate_topology(topology_grid, probability_decay_factor=0.9):
         return ''
     return ''
 
-def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[], model_complexity_factor=0.9, set_beta=-1.):
+def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[], model_complexity_factor=0.9, set_beta=-1., n_jobs=4):
     from itertools import cycle
     from pathos.multiprocessing import ProcessingPool as Pool
     os.makedirs(hyperparameter_input_csv[:hyperparameter_input_csv.rfind('/')],exist_ok=True)
@@ -60,7 +60,7 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
         topology_grid=[0,100,200,300,500,1000,2000]
     grid['--hidden_layer_topology' if mlp else '--hidden_layer_encoder_topology']=[generate_topology(topology_grid,probability_decay_factor=model_complexity_factor) for i in range(40)]
     if generate_input:
-        for i in range(4):
+        for i in range(n_jobs):
             generated_input.append(['False']+[np.random.choice(grid[k]) for k in grid])
         generated_input=[pd.DataFrame(generated_input,columns=['--job_name']+list(grid.keys()))]
     if custom_jobs:

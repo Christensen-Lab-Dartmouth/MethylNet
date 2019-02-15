@@ -39,20 +39,27 @@ def embed_vae(train_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     if not batch_size:
         batch_size=len(methyl_dataset)
 
+    train_batch_size = min(batch_size,len(train_methyl_dataset))
+    val_batch_size = min(batch_size,len(val_methyl_dataset))
+
     train_methyl_dataloader = DataLoader(
         dataset=train_methyl_dataset,
         num_workers=n_workers,#n_workers
-        batch_size=batch_size,
+        batch_size=train_batch_size,
         shuffle=True,
         pin_memory=False)
 
     val_methyl_dataloader = DataLoader(
         dataset=val_methyl_dataset,
         num_workers=n_workers,
-        batch_size=min(batch_size,len(val_methyl_dataset)),
+        batch_size=val_batch_size,
         shuffle=True,
         pin_memory=False)
 
+    scaling_factors = dict(train=float(len(train_methyl_dataset))/((len(train_methyl_dataset)//train_batch_size)*train_batch_size),
+                           val=float(len(val_methyl_dataset))/((len(val_methyl_dataset)//val_batch_size)*val_batch_size),
+                           train_batch_size=train_batch_size,val_batch_size=val_batch_size)
+    print('SCALE',len(train_methyl_dataset),len(val_methyl_dataset),train_batch_size,val_batch_size, scaling_factors)
     n_input = train_methyl_array.return_shape()[1]
     if not convolutional:
         model=TybaltTitusVAE(n_input=n_input,n_latent=n_latent,hidden_layer_encoder_topology=hidden_layer_encoder_topology,cuda=cuda)
@@ -90,7 +97,7 @@ def embed_vae(train_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     pickle.dump(auto_encoder.training_plot_data,open(training_curve_file,'wb'))
     torch.save(auto_encoder.model,output_model)
     pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
-    return latent_projection, outcome_dict, n_input, auto_encoder
+    return latent_projection, outcome_dict, scaling_factors, n_input, auto_encoder
 
 @embed.command()
 @click.option('-i', '--train_pkl', default='./train_val_test_sets/train_methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
@@ -127,9 +134,9 @@ def perform_embedding(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_de
         hidden_layer_encoder_topology=list(map(int,hlt_list))
     else:
         hidden_layer_encoder_topology=[]
-    _,_,n_input,autoencoder = embed_vae(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, val_pkl, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction, stratify_column)
-    hyperparameter_row = [job_name,n_epochs, autoencoder.best_epoch, autoencoder.min_loss, autoencoder.min_val_loss, autoencoder.min_val_kl_loss, autoencoder.min_val_recon_loss, autoencoder.min_val_recon_loss+(autoencoder.min_val_kl_loss/beta if beta > 0. else 0.), n_input, n_latent, str(hidden_layer_encoder_topology), learning_rate, weight_decay, beta, kl_warm_up, scheduler, t_max, t_mult, batch_size]
-    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "min_val_kl_loss", "min_val_recon_loss", "min_val_adj_loss", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate", "weight_decay", "beta", "kl_warm_up", "scheduler", "t_max", "t_mult", "batch_size"])
+    _,_,scaling_factors,n_input,autoencoder = embed_vae(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_decay,n_epochs,hidden_layer_encoder_topology,kl_warm_up,beta, scheduler, decay, t_max, eta_min, t_mult, bce_loss, batch_size, val_pkl, n_workers, convolutional, height_kernel_sizes, width_kernel_sizes, add_validation_set, loss_reduction, stratify_column)
+    hyperparameter_row = [job_name,n_epochs, autoencoder.best_epoch, autoencoder.min_loss, autoencoder.min_val_loss, autoencoder.min_val_kl_loss, autoencoder.min_val_recon_loss, autoencoder.min_loss*scaling_factors['train'], autoencoder.min_val_loss*scaling_factors['val'], autoencoder.min_val_kl_loss*scaling_factors['val'], autoencoder.min_val_recon_loss*scaling_factors['val'], autoencoder.min_val_recon_loss+(autoencoder.min_val_kl_loss/beta if beta > 0. else 0.), n_input, n_latent, str(hidden_layer_encoder_topology), learning_rate, weight_decay, beta, kl_warm_up, scheduler, t_max, t_mult, scaling_factors['train_batch_size'], scaling_factors['val_batch_size']]
+    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "min_val_kl_loss", "min_val_recon_loss", "min_loss-batchsize_adj", "min_val_loss-batchsize_adj", "min_val_kl_loss-batchsize_adj", "min_val_recon_loss-batchsize_adj", "min_val_beta-adj_loss", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate", "weight_decay", "beta", "kl_warm_up", "scheduler", "t_max", "t_mult", "train_batch_size",'val_batch_size'])
     hyperparameter_df.loc[0] = hyperparameter_row
     if os.path.exists(hyperparameter_log):
         print('APPEND')
@@ -151,9 +158,10 @@ def perform_embedding(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_de
 @click.option('-nh', '--nohup', is_flag=True, help='Nohup launch jobs.')
 @click.option('-mc', '--model_complexity_factor', default=1., help='Degree of neural network model complexity for hyperparameter search. Search for less wide and less deep networks with a lower complexity value, bounded between 0 and infinity.', show_default=True)
 @click.option('-b', '--set_beta', default=1., help='Set beta value, bounded between 0 and infinity. Set to -1 ', show_default=True)
-def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, model_complexity_factor, set_beta):
+@click.option('-j', '--n_jobs', default=4, help='Number of jobs to generate.')
+def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, model_complexity_factor, set_beta,n_jobs):
     from hyperparameter_scans import coarse_scan
-    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, model_complexity_factor=model_complexity_factor, set_beta=set_beta)
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, model_complexity_factor=model_complexity_factor, set_beta=set_beta,n_jobs=n_jobs)
 
 #################
 

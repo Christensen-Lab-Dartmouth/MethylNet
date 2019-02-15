@@ -29,7 +29,7 @@ def train_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_u
         total_loss+=loss.item()
         total_recon_loss+=reconstruction_loss.item()
         total_kl_loss+=kl_loss.item()
-    return model, total_loss/stop_iter,total_recon_loss/stop_iter,total_kl_loss/stop_iter
+    return model, total_loss,total_recon_loss,total_kl_loss
 
 def val_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
     model.eval() #FIXME
@@ -48,7 +48,7 @@ def val_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=
         total_loss+=loss.item()
         total_recon_loss+=reconstruction_loss.item()
         total_kl_loss+=kl_loss.item()
-    return model, total_loss/stop_iter,total_recon_loss/stop_iter,total_kl_loss/stop_iter
+    return model, total_loss,total_recon_loss,total_kl_loss
 
 def project_vae(model, loader, cuda=True):
     print(model)
@@ -108,7 +108,7 @@ class AutoEncoder:
                 plt_data['val_recon_loss'].append(val_recon_loss)
                 plt_data['val_loss'].append(val_loss)
                 print("Epoch {}: Val-Loss {}, Val-Recon Loss {}, Val-KL-Loss {}".format(epoch,val_loss,val_recon_loss,val_kl_loss))
-            if epoch > self.kl_warm_up:
+            if epoch >= self.kl_warm_up:
                 loss = loss if not self.validation_set else val_loss
                 loss_list.append(loss)
                 if loss <= min(loss_list): # next get models for lowest reconstruction and kl, 3 models
@@ -122,19 +122,18 @@ class AutoEncoder:
                 z,_,outcomes=project_vae(model, train_data, self.cuda)
                 animation_plts.append(Plot('Latent Embedding, epoch {}'.format(epoch),
                         data=PlotTransformer(z,LabelEncoder().fit_transform(outcomes)).transform()))
-
-        plts=Plotter([Plot(k,'epoch','lr' if 'loss' not in k else k,
-                      pd.DataFrame(np.vstack((range(len(plt_data[k])),plt_data[k])).T,
-                                   columns=['x','y'])) for k in plt_data if plt_data[k]],animation=False)
-        plts.write_plots(self.loss_plt_fname)
+        if 0:
+            plts=Plotter([Plot(k,'epoch','lr' if 'loss' not in k else k,
+                          pd.DataFrame(np.vstack((range(len(plt_data[k])),plt_data[k])).T,
+                                       columns=['x','y'])) for k in plt_data if plt_data[k]],animation=False)
+            plts.write_plots(self.loss_plt_fname)
         if 0 and self.plot_interval:
             Plotter(animation_plts).write_plots(self.vae_animation_fname)
         self.min_loss = min(np.array(plt_data['kl_loss'])+np.array(plt_data['recon_loss']))
         if self.validation_set:
-            min_val_loss_idx=np.argmin(min(plt_data['val_loss']))
-            self.min_val_loss = plt_data['val_loss'][min_val_loss_idx]
-            self.min_val_kl_loss = plt_data['val_kl_loss'][min_val_loss_idx]
-            self.min_val_recon_loss = plt_data['val_recon_loss'][min_val_loss_idx]
+            self.min_val_loss = plt_data['val_loss'][best_epoch]
+            self.min_val_kl_loss = plt_data['val_kl_loss'][best_epoch]
+            self.min_val_recon_loss = plt_data['val_recon_loss'][best_epoch]
         else:
             self.min_val_loss, self.min_val_kl_loss, self.min_val_recon_loss  = -1.,-1.,-1.
         self.best_epoch = best_epoch
@@ -487,10 +486,11 @@ class MLPFinetuneVAE:
                 best_model=copy.deepcopy(model)
                 best_epoch=epoch
         self.training_plot_data=plt_data
-        plts=Plotter([Plot(k,'epoch','lr' if 'loss' not in k else k,
-                      pd.DataFrame(np.vstack((range(len(plt_data[k])),plt_data[k])).T,
-                                   columns=['x','y'])) for k in plt_data if plt_data[k]],animation=False)
-        plts.write_plots(self.loss_plt_fname)
+        if 0:
+            plts=Plotter([Plot(k,'epoch','lr' if 'loss' not in k else k,
+                          pd.DataFrame(np.vstack((range(len(plt_data[k])),plt_data[k])).T,
+                                       columns=['x','y'])) for k in plt_data if plt_data[k]],animation=False)
+            plts.write_plots(self.loss_plt_fname)
         self.min_loss = min(plt_data['loss'])
         if self.validation_set:
             self.min_val_loss = min(plt_data['val_loss'])

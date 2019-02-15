@@ -195,12 +195,13 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
 @click.option('-n', '--n_jobs_relaunch', default=0, help='Relaunch n top jobs from previous run.', show_default=True)
 @click.option('-c', '--crossover_p', default=0., help='Rate of crossover between hyperparameters.', show_default=True)
 @click.option('-mc', '--model_complexity_factor', default=1., help='Degree of neural network model complexity for hyperparameter search. Search for less wide networks with a lower complexity value, bounded between 0 and infinity.', show_default=True)
-def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor):
+@click.option('-j', '--n_jobs', default=4, help='Number of jobs to generate.')
+def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs):
     from hyperparameter_scans import coarse_scan, find_top_jobs
     custom_jobs=[]
     if n_jobs_relaunch:
         custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p)
-    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor)
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs)
 
 @prediction.command()
 @click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))
