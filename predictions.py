@@ -186,7 +186,8 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
 @click.option('-hl', '--hyperparameter_output_log', default='predictions/predict_hyperparameters_log.csv', show_default=True, help='CSV file containing prior runs.', type=click.Path(exists=False))
 @click.option('-g', '--generate_input', is_flag=True, help='Generate hyperparameter input csv.')
 @click.option('-c', '--job_chunk_size', default=4, help='If not series, chunk up and run these number of commands at once..')
-@click.option('-sc', '--stratify_column', default='disease_only', show_default=True, help='Column to stratify samples on.', type=click.Path(exists=False))
+@click.option('-ic', '--interest_cols', default=['disease_only'], multiple=True, help='Column to stratify samples on.')
+@click.option('-cat', '--categorical', is_flag=True, help='Whether to run categorical analysis or not.', type=click.Path(exists=False))
 @click.option('-r', '--reset_all', is_flag=True, help='Run all jobs again.')
 @click.option('-t', '--torque', is_flag=True, help='Submit jobs on torque.')
 @click.option('-gpu', '--gpu', default=-1, help='If torque submit, which gpu to use.', show_default=True)
@@ -196,12 +197,13 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
 @click.option('-c', '--crossover_p', default=0., help='Rate of crossover between hyperparameters.', show_default=True)
 @click.option('-mc', '--model_complexity_factor', default=1., help='Degree of neural network model complexity for hyperparameter search. Search for less wide networks with a lower complexity value, bounded between 0 and infinity.', show_default=True)
 @click.option('-j', '--n_jobs', default=4, help='Number of jobs to generate.')
-def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs):
+@click.option('-v', '--val_loss_column', default='min_val_loss', help='Validation loss column.', type=click.Path(exists=False))
+def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column):
     from hyperparameter_scans import coarse_scan, find_top_jobs
     custom_jobs=[]
     if n_jobs_relaunch:
-        custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p)
-    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs)
+        custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p, val_loss_column)
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs, categorical=categorical)
 
 @prediction.command()
 @click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))
@@ -291,25 +293,6 @@ def classification_report(results_pickle,output_dir, categorical_encoder):
     df_roc=pd.concat(df_roc)
     final_results.to_csv(join(output_dir,'final_classification_results.csv'))
     df_roc.to_csv(join(output_dir,'Weighted_ROC.csv'))
-
-@prediction.command()
-@click.option('-r', '--roc_curve_csv', default='results/Weighted_ROC.csv', show_default=True, help='Weighted ROC Curve.', type=click.Path(exists=False))
-@click.option('-o', '--outputfilename', default='results/roc_curve.png', show_default=True, help='Output image.', type=click.Path(exists=False))
-def plot_roc_curve(roc_curve_csv, outputfilename):
-    from rpy2.robjects.packages import importr
-    import rpy2.robjects as robjects
-    os.makedirs(outputfilename[:outputfilename.rfind('/')],exist_ok=True)
-    tidyverse=importr('tidyverse')
-    robjects.r("""function (in.csv, out.file.name) {
-        df<-read.csv(in.csv)
-        df %>%
-            ggplot() +
-            geom_line(aes(x = fpr, y = tpr,color=Legend)) +
-            ggtitle('ROC Curve') +
-            xlab('1-Specificity') +
-            ylab('Sensitivity')
-        ggsave(out.file.name)
-        }""")(roc_curve_csv,outputfilename)
 
 #################
 

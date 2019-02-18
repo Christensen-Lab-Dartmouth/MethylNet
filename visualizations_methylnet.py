@@ -46,6 +46,25 @@ def plot_training_curve(training_curve_file, outputfilename, vae_train):
     plt.tight_layout()
     plt.savefig(outputfilename)
 
+@visualize.command()
+@click.option('-r', '--roc_curve_csv', default='results/Weighted_ROC.csv', show_default=True, help='Weighted ROC Curve.', type=click.Path(exists=False))
+@click.option('-o', '--outputfilename', default='results/roc_curve.png', show_default=True, help='Output image.', type=click.Path(exists=False))
+def plot_roc_curve(roc_curve_csv, outputfilename):
+    from rpy2.robjects.packages import importr
+    import rpy2.robjects as robjects
+    os.makedirs(outputfilename[:outputfilename.rfind('/')],exist_ok=True)
+    tidyverse=importr('tidyverse')
+    robjects.r("""function (in.csv, out.file.name) {
+        df<-read.csv(in.csv)
+        df %>%
+            ggplot() +
+            geom_line(aes(x = fpr, y = tpr,color=Legend)) +
+            ggtitle('ROC Curve') +
+            xlab('1-Specificity') +
+            ylab('Sensitivity')
+        ggsave(out.file.name)
+        }""")(roc_curve_csv,outputfilename)
+
 #################
 
 if __name__ == '__main__':

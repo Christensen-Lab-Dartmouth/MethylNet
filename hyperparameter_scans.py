@@ -1,10 +1,10 @@
 import os, pandas as pd, numpy as np, subprocess
 import time
 
-def find_top_jobs(hyperparameter_input_csv,hyperparameter_output_log, n_top_jobs, crossover_p=0):
+def find_top_jobs(hyperparameter_input_csv,hyperparameter_output_log, n_top_jobs, crossover_p=0, val_loss_column='min_val_loss'):
     custom_jobs = pd.read_csv(hyperparameter_input_csv)
-    hyperparam_output = pd.read_csv(hyperparameter_output_log)[['job_name','min_val_loss']]
-    best_outputs = hyperparam_output.sort_values('min_val_loss',ascending=True).iloc[:n_top_jobs,:]
+    hyperparam_output = pd.read_csv(hyperparameter_output_log)[['job_name',val_loss_column]]
+    best_outputs = hyperparam_output.sort_values(val_loss_column,ascending=True).iloc[:n_top_jobs,:]
     custom_jobs = custom_jobs[np.isin(custom_jobs['--job_name'].values,best_outputs['job_name'].values)]
     if custom_jobs.shape[0]==0 and best_outputs.shape[0]>0:
         custom_jobs = best_outputs.rename(columns={'--{}'.format(k):k for k in list(best_outputs)})[list(custom_jobs)]
@@ -33,7 +33,7 @@ def generate_topology(topology_grid, probability_decay_factor=0.9):
         return ''
     return ''
 
-def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[], model_complexity_factor=0.9, set_beta=-1., n_jobs=4):
+def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[], model_complexity_factor=0.9, set_beta=-1., n_jobs=4, categorical=True):
     from itertools import cycle
     from pathos.multiprocessing import ProcessingPool as Pool
     os.makedirs(hyperparameter_input_csv[:hyperparameter_input_csv.rfind('/')],exist_ok=True)
@@ -88,9 +88,10 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
     for i in range(df_final.shape[0]):
         job_id = str(np.random.randint(0,100000000))
         if not mlp:
-            commands.append('sh -c "python embedding.py perform_embedding -bce -c -v -j {} -hl {} -sc {} {} && python visualizations.py transform_plot -i embeddings/vae_methyl_arr.pkl -o visualizations/{}_vae_embed.html -c {} -nn 10 "'.format(job_id,hyperparameter_output_log,stratify_column,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),job_id,stratify_column))
+            commands.append('sh -c "time python embedding.py perform_embedding -bce -c -v -j {} -hl {} -sc {} {} && python visualizations.py transform_plot -i embeddings/vae_methyl_arr.pkl -o visualizations/{}_vae_embed.html -c {} -nn 10 "'.format(job_id,hyperparameter_output_log,stratify_column,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),job_id,stratify_column))
         else:
-            commands.append('sh -c "python predictions.py make_prediction -cat -c -v {} -j {} -hl {} {} && python visualizations.py transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o visualizations/{}_mlp_embed.html -c {} -nn 10 "'.format('-do' if stratify_column=='disease_only' else '',job_id,hyperparameter_output_log,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),job_id,stratify_column)) #-do
+            commands.append('sh -c "time python predictions.py make_prediction {} {} -c -v {} -j {} -hl {} {} && {}"'.format('-cat' if categorical else '',''.join(['-ic {}'.format(col) for col in stratify_column]),'-do' if stratify_column[0]=='disease_only' else '',job_id,hyperparameter_output_log,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),
+                                '&&'.join([" python visualizations.py transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o visualizations/{}_{}_mlp_embed.html -c {} -nn 8 ".format(job_id,col,col) for col in stratify_column]))) #-do
         df.loc[np.arange(df.shape[0])==np.where(df['--job_name'].astype(str).map(lower)=='false')[0][0],'--job_name']=job_id
     for i in range(len(commands)):
         commands[i] = '{} {} {} {}'.format('CUDA_VISIBLE_DEVICES="{}"'.format(next(gpus) if not torque else "$gpuNum"),'nohup' if nohup else '',commands[i],'&' if nohup else '')

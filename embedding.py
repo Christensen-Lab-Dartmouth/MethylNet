@@ -159,9 +159,15 @@ def perform_embedding(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_de
 @click.option('-mc', '--model_complexity_factor', default=1., help='Degree of neural network model complexity for hyperparameter search. Search for less wide and less deep networks with a lower complexity value, bounded between 0 and infinity.', show_default=True)
 @click.option('-b', '--set_beta', default=1., help='Set beta value, bounded between 0 and infinity. Set to -1 ', show_default=True)
 @click.option('-j', '--n_jobs', default=4, help='Number of jobs to generate.')
-def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, model_complexity_factor, set_beta,n_jobs):
+@click.option('-n', '--n_jobs_relaunch', default=0, help='Relaunch n top jobs from previous run.', show_default=True)
+@click.option('-c', '--crossover_p', default=0., help='Rate of crossover between hyperparameters.', show_default=True)
+@click.option('-v', '--val_loss_column', default='min_val_loss-batchsize_adj', help='Validation loss column.', type=click.Path(exists=False))
+def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, model_complexity_factor, set_beta,n_jobs, n_jobs_relaunch, crossover_p, val_loss_column):
     from hyperparameter_scans import coarse_scan
-    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, model_complexity_factor=model_complexity_factor, set_beta=set_beta,n_jobs=n_jobs)
+    custom_jobs=[]
+    if n_jobs_relaunch:
+        custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p, val_loss_column)
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, model_complexity_factor=model_complexity_factor, set_beta=set_beta,n_jobs=n_jobs, custom_jobs=custom_jobs)
 
 #################
 
