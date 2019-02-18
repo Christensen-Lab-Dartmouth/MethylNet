@@ -1,6 +1,3 @@
-from umap import UMAP
-import plotly.graph_objs as go
-import plotly.offline as py
 import pandas as pd
 import numpy as np
 import networkx as nx

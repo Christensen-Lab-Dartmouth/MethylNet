@@ -1,4 +1,4 @@
-from MethylationDataTypes import MethylationArray, extract_pheno_beta_df_from_pickle_dict
+from pymethylprocess.MethylationDataTypes import MethylationArray, extract_pheno_beta_df_from_pickle_dict
 from models import TybaltTitusVAE, CVAE, VAE_MLP, MLPFinetuneVAE
 from datasets import get_methylation_dataset
 import torch

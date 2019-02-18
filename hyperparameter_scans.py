@@ -88,10 +88,10 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
     for i in range(df_final.shape[0]):
         job_id = str(np.random.randint(0,100000000))
         if not mlp:
-            commands.append('sh -c "time python embedding.py perform_embedding -bce -c -v -j {} -hl {} -sc {} {} && python visualizations.py transform_plot -i embeddings/vae_methyl_arr.pkl -o visualizations/{}_vae_embed.html -c {} -nn 10 "'.format(job_id,hyperparameter_output_log,stratify_column,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),job_id,stratify_column))
+            commands.append('sh -c "time python embedding.py perform_embedding -bce -c -v -j {} -hl {} -sc {} {} && pymethyl-visualize transform_plot -i embeddings/vae_methyl_arr.pkl -o visualizations/{}_vae_embed.html -c {} -nn 10 "'.format(job_id,hyperparameter_output_log,stratify_column,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),job_id,stratify_column))
         else:
             commands.append('sh -c "time python predictions.py make_prediction {} {} -c -v {} -j {} -hl {} {} && {}"'.format('-cat' if categorical else '',''.join(['-ic {}'.format(col) for col in stratify_column]),'-do' if stratify_column[0]=='disease_only' else '',job_id,hyperparameter_output_log,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),
-                                '&&'.join([" python visualizations.py transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o visualizations/{}_{}_mlp_embed.html -c {} -nn 8 ".format(job_id,col,col) for col in stratify_column]))) #-do
+                                '&&'.join([" pymethyl-visualize transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o visualizations/{}_{}_mlp_embed.html -c {} -nn 8 ".format(job_id,col,col) for col in stratify_column]))) #-do
         df.loc[np.arange(df.shape[0])==np.where(df['--job_name'].astype(str).map(lower)=='false')[0][0],'--job_name']=job_id
     for i in range(len(commands)):
         commands[i] = '{} {} {} {}'.format('CUDA_VISIBLE_DEVICES="{}"'.format(next(gpus) if not torque else "$gpuNum"),'nohup' if nohup else '',commands[i],'&' if nohup else '')

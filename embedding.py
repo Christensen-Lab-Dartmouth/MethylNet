@@ -1,4 +1,4 @@
-from MethylationDataTypes import MethylationArray,MethylationArrays, extract_pheno_beta_df_from_pickle_dict
+from pymethylprocess.MethylationDataTypes import MethylationArray,MethylationArrays, extract_pheno_beta_df_from_pickle_dict
 import pickle
 import pandas as pd, numpy as np
 import click
