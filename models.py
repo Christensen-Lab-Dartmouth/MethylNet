@@ -407,25 +407,37 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
         y_true=np.squeeze(y_true.detach().cpu().numpy())
         print(y_predict.shape,y_true.shape)
         print(y_predict,y_true)
-        if not y_predict.shape and not y_true.shape:
-            y_predict=y_predict.reshape((1))
-            y_true=y_true.reshape((1))
+        if len(y_predict.shape) < 2:
+            y_predict=y_predict.flatten()
+        if len(y_true.shape) < 2:
+            y_true=y_true.flatten()  # FIXME
         Y_pred.append(y_predict)
         final_latent.append(np.squeeze(z.detach().cpu().numpy()))
         sample_names_final.extend([name[0] for name in sample_names])
         Y_true.append(y_true)
     if len(Y_pred) > 1:
-        Y_pred=np.vstack(Y_pred)
+        if all(list(map(lambda x: len(np.shape(x))<2,Y_pred))):
+            Y_pred = np.hstack(Y_pred)[:,np.newaxis]
+        else:
+            Y_pred=np.vstack(Y_pred)
     else:
         Y_pred = Y_pred[0]
+        if len(np.shape(Y_pred))<2:
+            Y_true=Y_true[:,np.newaxis]
     if len(final_latent) > 1:
+
         final_latent=np.vstack(final_latent)
     else:
         final_latent = final_latent[0]
     if len(Y_true) > 1:
-        Y_true=np.vstack(Y_true)
+        if all(list(map(lambda x: len(np.shape(x))<2,Y_true))):
+            Y_true = np.hstack(Y_true)[:,np.newaxis]
+        else:
+            Y_true=np.vstack(Y_true)
     else:
         Y_true = Y_true[0]
+        if len(np.shape(Y_true))<2:
+            Y_true=Y_true[:,np.newaxis]
     print(Y_pred,Y_true)
     #print(np.hstack([Y_pred,Y_true]))
     sample_names_final = np.array(sample_names_final)

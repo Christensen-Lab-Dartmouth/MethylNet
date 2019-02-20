@@ -67,7 +67,7 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
         dataset=val_methyl_dataset,
         num_workers=n_workers,
         batch_size=min(batch_size,len(val_methyl_dataset)),
-        shuffle=False)
+        shuffle=True) # False
 
     test_methyl_dataloader = DataLoader(
         dataset=test_methyl_dataset,
@@ -181,7 +181,11 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
         accuracy, precision, recall, f1 = accuracy_score(Y_true,Y_pred), precision_score(Y_true,Y_pred,average='weighted'), recall_score(Y_true,Y_pred,average='weighted'), f1_score(Y_true,Y_pred,average='weighted')
     else:
         from sklearn.metrics import mean_squared_error, r2_score, explained_variance_score, mean_absolute_error
-        accuracy, precision, recall, f1 = mean_squared_error(Y_true,Y_pred), r2_score(Y_true,Y_pred), explained_variance_score(Y_true,Y_pred), mean_absolute_error(Y_true,Y_pred)
+        accuracy, precision, recall, f1 = mean_squared_error(Y_true,Y_pred,multioutput='raw_values'), r2_score(Y_true,Y_pred,multioutput='raw_values'), explained_variance_score(Y_true,Y_pred,multioutput='raw_values'), mean_absolute_error(Y_true,Y_pred,multioutput='raw_values')
+        if len(interest_cols)>1:
+            accuracy, precision, recall, f1 = ';'.join([str(v) for v in accuracy]),';'.join([str(v) for v in precision]),';'.join([str(v) for v in recall]),';'.join([str(v) for v in f1])
+        else:
+            accuracy, precision, recall, f1=accuracy[0], precision[0], recall[0], f1[0]
     hyperparameter_row = [job_name,n_epochs, vae_mlp.best_epoch, vae_mlp.min_loss, vae_mlp.min_val_loss, accuracy, precision, recall, f1, vae_mlp.model.vae.n_input, vae_mlp.model.vae.n_latent, str(hidden_layer_topology), learning_rate_vae, learning_rate_mlp, weight_decay, scheduler, t_max, t_mult, eta_min, batch_size, dropout_p]
     hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "test_accuracy" if categorical else 'neg_mean_squared_error', "test_precision" if categorical else 'r2_score', "test_recall" if categorical else 'explained_variance', "test_f1" if categorical else 'mean_absolute_error', "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate_vae", "learning_rate_mlp", "weight_decay", "scheduler", "t_max", "t_mult", "eta_min","batch_size", "dropout_p"])
     hyperparameter_df.loc[0] = hyperparameter_row
@@ -215,6 +219,32 @@ def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_l
     if n_jobs_relaunch:
         custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p, val_loss_column)
     coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs, categorical=categorical)
+
+@prediction.command()
+@click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))
+@click.option('-o', '--output_dir', default='results/', show_default=True, help='Output directory.', type=click.Path(exists=False))
+def regression_report(results_pickle,output_dir):
+    # FIXME expand functionality
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    sns.set(style="whitegrid")
+    os.makedirs(output_dir,exist_ok=True)
+    results_dict=pickle.load(open(results_pickle,'rb'))
+    for k in results_dict:
+        df_pred=pd.DataFrame(results_dict[k]['y_pred']).melt()
+        df_pred=df_pred.rename(columns=dict(value='y_pred',variable='outcome_vars'))
+        df_true=pd.DataFrame(results_dict[k]['y_true']).melt()
+        df_true=df_true.rename(columns=dict(value='y_true',variable='true_vars'))
+        df=pd.concat([df_pred,df_true],axis=1)
+        #print(df)
+        df=df[['outcome_vars','y_pred','y_true']]
+        plt.figure()
+        sns.lmplot(x="y_pred", y="y_true", col="outcome_vars", hue="outcome_vars",data=df, col_wrap=2)
+        plt.savefig(os.path.join(output_dir,'{}_regression_results.png'.format(k)),dpi=300)
+
+
 
 @prediction.command()
 @click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))
