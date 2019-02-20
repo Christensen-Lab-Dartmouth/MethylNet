@@ -65,6 +65,8 @@ class MethylationDataSet(Dataset):
             else:
                 self.encoder=categorical_encoder
             self.outcome_col=self.encoder.transform(self.outcome_col)
+        else:
+            self.encoder = None
         self.transform = transform
         self.new_shape = self.transform.shape
         self.length = self.methylation_array.beta.shape[0]

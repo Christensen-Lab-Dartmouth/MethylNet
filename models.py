@@ -5,7 +5,7 @@ import numpy as np
 from schedulers import *
 from plotter import *
 from sklearn.preprocessing import LabelEncoder
-from visualizations import umap_embed, plotly_plot
+from pymethylprocess.visualizations import umap_embed, plotly_plot
 import copy
 
 def train_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
@@ -329,10 +329,13 @@ def train_mlp(model, loader, loss_func, optimizer_vae, optimizer_mlp, cuda=True,
 
     #model.vae.eval() also freeze for depth of tuning?
     #print(loss_func)
+    stop_iter = loader.dataset.length // loader.batch_size
     running_loss=0.
     running_decoder_loss=0.
-    for inputs, samples, y_true in loader: # change dataloder for classification/regression tasks
+    for i,(inputs, samples, y_true) in enumerate(loader): # change dataloder for classification/regression tasks
         #print(samples)
+        if inputs.size()[0] == 1 and i == stop_iter:
+            break
         inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
         y_true = Variable(y_true)
         if categorical:
@@ -361,9 +364,12 @@ def val_mlp(model, loader, loss_func, cuda=True, categorical=False, train_decode
     model.eval()
 
     #model.vae.eval() also freeze for depth of tuning?
+    stop_iter = loader.dataset.length // loader.batch_size
     running_decoder_loss=0.
     running_loss=0.
-    for inputs, samples, y_true in loader: # change dataloder for classification/regression tasks
+    for i,(inputs, samples, y_true) in enumerate(loader): # change dataloder for classification/regression tasks
+        if inputs.size()[0] == 1 and i == stop_iter:
+            break
         inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
         y_true = Variable(y_true)
         #print(inputs.size())
@@ -389,6 +395,7 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
     sample_names_final=[]
     Y_true=[]
     for inputs, sample_names, y_true in loader: # change dataloder for classification/regression tasks
+        print(inputs)
         inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
         y_true = Variable(y_true)
         #print(inputs.size())
@@ -398,13 +405,28 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
         y_predict, z = model(inputs)
         y_predict=np.squeeze(y_predict.detach().cpu().numpy())
         y_true=np.squeeze(y_true.detach().cpu().numpy())
+        print(y_predict.shape,y_true.shape)
+        print(y_predict,y_true)
+        if not y_predict.shape and not y_true.shape:
+            y_predict=y_predict.reshape((1))
+            y_true=y_true.reshape((1))
         Y_pred.append(y_predict)
         final_latent.append(np.squeeze(z.detach().cpu().numpy()))
         sample_names_final.extend([name[0] for name in sample_names])
         Y_true.append(y_true)
-    Y_pred=np.vstack(Y_pred)
-    final_latent=np.vstack(final_latent)
-    Y_true=np.vstack(Y_true)
+    if len(Y_pred) > 1:
+        Y_pred=np.vstack(Y_pred)
+    else:
+        Y_pred = Y_pred[0]
+    if len(final_latent) > 1:
+        final_latent=np.vstack(final_latent)
+    else:
+        final_latent = final_latent[0]
+    if len(Y_true) > 1:
+        Y_true=np.vstack(Y_true)
+    else:
+        Y_true = Y_true[0]
+    print(Y_pred,Y_true)
     #print(np.hstack([Y_pred,Y_true]))
     sample_names_final = np.array(sample_names_final)
     if output_latent:

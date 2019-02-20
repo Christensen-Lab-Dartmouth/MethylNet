@@ -34,6 +34,14 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
 
     train_methyl_array, val_methyl_array, test_methyl_array = MethylationArray.from_pickle(train_pkl), MethylationArray.from_pickle(val_pkl), MethylationArray.from_pickle(test_pkl)#methyl_array.split_train_test(train_p=train_percent, stratified=(True if categorical else False), disease_only=disease_only, key=interest_cols[0], subtype_delimiter=',')
 
+    train_methyl_array.remove_na_samples(interest_cols)
+    val_methyl_array.remove_na_samples(interest_cols)
+    test_methyl_array.remove_na_samples(interest_cols)
+
+    print(train_methyl_array.beta.shape)
+    print(val_methyl_array.beta.shape)
+    print(test_methyl_array.beta.shape)
+
     if len(interest_cols) == 1 and disease_only and interest_cols[0].endswith('_only')==False:
         print(interest_cols)
         interest_cols[0] += '_only'
@@ -41,7 +49,7 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
         print(test_methyl_array.pheno[interest_cols[0]].unique())
 
     train_methyl_dataset = get_methylation_dataset(train_methyl_array,interest_cols,categorical=categorical, predict=True) # train, test split? Add val set?
-    print(list(train_methyl_dataset.encoder.get_feature_names()))
+    #print(list(train_methyl_dataset.encoder.get_feature_names()))
     val_methyl_dataset = get_methylation_dataset(val_methyl_array,interest_cols,categorical=categorical, predict=True, categorical_encoder=train_methyl_dataset.encoder)
     test_methyl_dataset = get_methylation_dataset(test_methyl_array,interest_cols,categorical=categorical, predict=True, categorical_encoder=train_methyl_dataset.encoder)
 
@@ -117,9 +125,9 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
         Y_pred=test_methyl_dataset.encoder.inverse_transform(Y_pred)[:,np.newaxis]"""
     #sample_names = np.array(list(test_methyl_array.beta.index)) # FIXME
     #outcomes = np.array([outcome[0] for outcome in outcomes]) # FIXME
-    Y_pred=pd.DataFrame(Y_pred,index=test_methyl_array.beta.index,columns=['y_pred'])#dict(zip(sample_names,outcomes))
-    Y_true=pd.DataFrame(Y_true,index=test_methyl_array.beta.index,columns=['y_true'])
-    results_df = pd.concat([Y_pred,Y_true],axis=1)
+    Y_pred=pd.DataFrame(Y_pred.flatten() if (np.array(Y_pred.shape)==1).any() else Y_pred,index=test_methyl_array.beta.index,columns=(['y_pred'] if categorical else interest_cols))#dict(zip(sample_names,outcomes))
+    Y_true=pd.DataFrame(Y_true.flatten() if (np.array(Y_true.shape)==1).any() else Y_true,index=test_methyl_array.beta.index,columns=(['y_true'] if categorical else interest_cols))
+    results_df = pd.concat([Y_pred,Y_true],axis=1) if categorical else pd.concat([Y_pred.rename(columns={name:name+'_pred' for name in list(Y_pred)}),Y_true.rename(columns={name:name+'_true' for name in list(Y_pred)})],axis=1)  # FIXME
     latent_projection=pd.DataFrame(latent_projection,index=test_methyl_array.beta.index)
     test_methyl_array.beta=latent_projection
     test_methyl_array.write_pickle(output_pkl)
@@ -171,8 +179,11 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
     if categorical:
         from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
         accuracy, precision, recall, f1 = accuracy_score(Y_true,Y_pred), precision_score(Y_true,Y_pred,average='weighted'), recall_score(Y_true,Y_pred,average='weighted'), f1_score(Y_true,Y_pred,average='weighted')
+    else:
+        from sklearn.metrics import mean_squared_error, r2_score, explained_variance_score, mean_absolute_error
+        accuracy, precision, recall, f1 = mean_squared_error(Y_true,Y_pred), r2_score(Y_true,Y_pred), explained_variance_score(Y_true,Y_pred), mean_absolute_error(Y_true,Y_pred)
     hyperparameter_row = [job_name,n_epochs, vae_mlp.best_epoch, vae_mlp.min_loss, vae_mlp.min_val_loss, accuracy, precision, recall, f1, vae_mlp.model.vae.n_input, vae_mlp.model.vae.n_latent, str(hidden_layer_topology), learning_rate_vae, learning_rate_mlp, weight_decay, scheduler, t_max, t_mult, eta_min, batch_size, dropout_p]
-    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "test_accuracy", "test_precision", "test_recall", "test_f1", "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate_vae", "learning_rate_mlp", "weight_decay", "scheduler", "t_max", "t_mult", "eta_min","batch_size", "dropout_p"])
+    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "test_accuracy" if categorical else 'neg_mean_squared_error', "test_precision" if categorical else 'r2_score', "test_recall" if categorical else 'explained_variance', "test_f1" if categorical else 'mean_absolute_error', "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate_vae", "learning_rate_mlp", "weight_decay", "scheduler", "t_max", "t_mult", "eta_min","batch_size", "dropout_p"])
     hyperparameter_df.loc[0] = hyperparameter_row
     if os.path.exists(hyperparameter_log):
         print('APPEND')
@@ -187,7 +198,7 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
 @click.option('-g', '--generate_input', is_flag=True, help='Generate hyperparameter input csv.')
 @click.option('-c', '--job_chunk_size', default=4, help='If not series, chunk up and run these number of commands at once..')
 @click.option('-ic', '--interest_cols', default=['disease_only'], multiple=True, help='Column to stratify samples on.')
-@click.option('-cat', '--categorical', is_flag=True, help='Whether to run categorical analysis or not.', type=click.Path(exists=False))
+@click.option('-cat', '--categorical', is_flag=True, help='Whether to run categorical analysis or not.')
 @click.option('-r', '--reset_all', is_flag=True, help='Run all jobs again.')
 @click.option('-t', '--torque', is_flag=True, help='Submit jobs on torque.')
 @click.option('-gpu', '--gpu', default=-1, help='If torque submit, which gpu to use.', show_default=True)
