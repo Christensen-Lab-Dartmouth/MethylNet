@@ -19,7 +19,8 @@
     # Pre feature selection: There are 370719 autosomal cpgs in your methyl array and 7869 sex cpgs. Sex CpGs make up 0.02\% of 378588 total cpgs.
     # After feature selection: There are 193580 autosomal cpgs in your methyl array and 6420 sex cpgs. Sex CpGs make up 0.03\% of 200000 total cpgs.
     * python utils.py remove_sex -i combined_outputs/methyl_array.pkl
-    * nohup python preprocess.py imputation_pipeline -i ./autosomal/methyl_array.pkl -o final_preprocessed/methyl_array.pkl -n 200000 -ss -s sklearn -m Mean -k 20 -d -st 0.05 -ct 0.05 &
+    * python utils.py remove_snps -i autosomal/methyl_array.pkl
+    * nohup python preprocess.py imputation_pipeline -i ./no_snp/methyl_array.pkl -o final_preprocessed/methyl_array.pkl -n 200000 -ss -s sklearn -m Mean -k 20 -d -st 0.05 -ct 0.05 &
     * mkdir visualizations && nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap.html -c disease_only -nn 10 &
     * python utils.py counts
     * python utils.py train_test_val_split -tp .8 -vp .125 -cat
@@ -70,7 +71,8 @@
     # Before feature selection: There are 313232 autosomal cpgs in your methyl array and 6791 sex cpgs. Sex CpGs make up 0.02\% of 320023 total cpgs.
     # After feature selection: There are 193927 autosomal cpgs in your methyl array and 6073 sex cpgs. Sex CpGs make up 0.03\% of 200000 total cpgs.
     * python utils.py remove_sex -i combined_outputs/methyl_array.pkl
-    * nohup python preprocess.py imputation_pipeline -ss -i ./autosomal/methyl_array.pkl -o final_preprocessed/methyl_array.pkl -n 200000 -s sklearn -m Mean -k 20 -d -st 0.05 -ct 0.05 &
+    * python utils.py remove_snps -i autosomal/methyl_array.pkl
+    * nohup python preprocess.py imputation_pipeline -ss -i ./no_snp/methyl_array.pkl -o final_preprocessed/methyl_array.pkl -n 200000 -s sklearn -m Mean -k 20 -d -st 0.05 -ct 0.05 &
     * mkdir visualizations && nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap.html -c disease_only -nn 10 &
     * python utils.py fix_key -d
     * python utils.py counts -i ./fixed_preprocessed/methyl_array.pkl
