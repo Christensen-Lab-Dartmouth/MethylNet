@@ -662,7 +662,10 @@ def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, 
         top_outputs = None
     if os.path.exists(categorical_encoder):
         categorical_encoder=pickle.load(open(categorical_encoder,'rb'))
-        prediction_classes=list(categorical_encoder.categories_[0])
+        if categorical_encoder:
+            prediction_classes=list(categorical_encoder.categories_[0])
+        else:
+            prediction_classes = None
     else:
         prediction_classes = None
     cell_names=list(filter(None,cell_names))
@@ -681,7 +684,7 @@ def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, 
             residual_df = pred_df-true_df
             cell_names=list(residual_df)
             for col in residual_df:
-                residual_df.loc[:,col] = (residual_df[col] = residual_df[col].mean())/residual_df[col].std(ddof=0)
+                residual_df.loc[:,col] = (residual_df[col] - residual_df[col].mean())/residual_df[col].std(ddof=0)
             residual_df = (results_df <= residual_cutoff)
             residual_df = residual_df.all(axis=1)
             test_methyl_array=test_methyl_array.subset_index(np.array(list(residual_df.index)))

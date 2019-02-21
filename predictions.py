@@ -34,9 +34,10 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
 
     train_methyl_array, val_methyl_array, test_methyl_array = MethylationArray.from_pickle(train_pkl), MethylationArray.from_pickle(val_pkl), MethylationArray.from_pickle(test_pkl)#methyl_array.split_train_test(train_p=train_percent, stratified=(True if categorical else False), disease_only=disease_only, key=interest_cols[0], subtype_delimiter=',')
 
-    train_methyl_array.remove_na_samples(interest_cols)
-    val_methyl_array.remove_na_samples(interest_cols)
-    test_methyl_array.remove_na_samples(interest_cols)
+    if not categorical:
+        train_methyl_array.remove_na_samples(interest_cols)
+        val_methyl_array.remove_na_samples(interest_cols)
+        test_methyl_array.remove_na_samples(interest_cols)
 
     print(train_methyl_array.beta.shape)
     print(val_methyl_array.beta.shape)
