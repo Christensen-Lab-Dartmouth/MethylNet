@@ -68,14 +68,15 @@ class ShapleyData:
         self.top_cpgs={'by_class':{},'overall':{}}
         self.shapley_values={'by_class':{},'overall':{}}
 
-    def add_class(self, class_name, shap_df, cpgs, n_top_cpgs):
+    def add_class(self, class_name, shap_df, cpgs, n_top_cpgs, add_top_negative=False):
+        signed = -1 if not add_top_negative else 1
         self.shapley_values['by_class'][class_name]=shap_df
         shap_vals=shap_df.values
         class_importance_shaps = shap_vals.mean(0)
-        top_idx = np.argsort(class_importance_shaps*-1)[:n_top_cpgs]
+        top_idx = np.argsort(class_importance_shaps*signed)[:n_top_cpgs]
         self.top_cpgs['by_class'][class_name]={'by_individual':{},'overall':{}}
         self.top_cpgs['by_class'][class_name]['overall']=pd.DataFrame(np.hstack([cpgs[top_idx][:,np.newaxis],class_importance_shaps[top_idx][:,np.newaxis]]),columns=['cpg','shapley_value'])
-        top_idxs = np.argsort(shap_vals*-1)[:,:n_top_cpgs]
+        top_idxs = np.argsort(shap_vals*signed)[:,:n_top_cpgs]
         for i,individual in enumerate(list(shap_df.index)):
             self.top_cpgs['by_class'][class_name]['by_individual'][individual]=pd.DataFrame(shap_df.iloc[i,top_idxs[i,:]].T.reset_index(drop=False).values,columns=['cpg','shapley_value'])
 
@@ -116,6 +117,10 @@ class ShapleyDataExplorer:
             methylation_shapley_data_dict['hyper'].top_cpgs['by_class'][class_name]['overall']=hyper_df[['cpg','shapley_value']]
             methylation_shapley_data_dict['hypo'].top_cpgs['by_class'][class_name]['overall']=hypo_df[['cpg','shapley_value']]
         return methylation_shapley_data_dict
+
+    def add_bin_continuous_classes(self):
+        """Bin continuous outcome variable and extract top positive and negative CpGs for each new class."""
+        pass
 
     def return_cpg_sets(self):
         from functools import reduce
@@ -326,9 +331,9 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
             self.method = 'kernel'
             self.explainer=shap.KernelExplainer(self.prediction_function, train_methyl_array.return_raw_beta_array(), link="identity")
 
-    def return_top_shapley_features(self, test_methyl_array, n_samples, n_top_features, n_outputs, shap_sample_batch_size=None, interest_col='disease', prediction_classes=None, return_shapley_values=True, feature_selection=False, top_outputs=None, pred_class = None, cross_class=False):
+    def return_shapley_scores(self, test_methyl_array, n_samples, n_outputs, shap_sample_batch_size=None, top_outputs=None): # split up into multiple methods
         n_batch = 1
-        if shap_sample_batch_size != None and self.method != 'deep' and not feature_selection:
+        if shap_sample_batch_size != None and self.method != 'deep': #  and not feature_selection
             n_batch = int(n_samples/shap_sample_batch_size)
             n_samples = shap_sample_batch_size
         test_arr = test_methyl_array.return_raw_beta_array()
@@ -343,32 +348,47 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
             shap_values += return_shap_values(test_arr, self.explainer, self.method, n_samples, additional_opts)
         shap_values/=float(n_batch)
 
-        if prediction_classes == None:
-            n_classes = (shap_values.shape[0] if len(shap_values.shape) == 3 else 0)
-        else:
-            n_classes = len(prediction_classes)
+        self.shap_values = shap_values
+
+    def classifier_assign_scores_to_shap_data(self, test_methyl_array, n_top_features, interest_col='disease', prediction_classes=None):
+
+        cpgs=test_methyl_array.return_cpgs()
+        shapley_data = ShapleyData()
+
+        self.cpg_global_shapley_scores = np.abs(self.shap_values).mean(0).mean(0)
+        shapley_data.add_global_importance(self.cpg_global_shapley_scores,cpgs, n_top_features)
+        """if cross_class:
+            self.shap_values = np.abs(self.shap_values).mean(axis=0)"""
+        for i in range(self.shap_values.shape[0]):
+            class_name = prediction_classes[i] if prediction_classes != None else str(i)
+            shap_df = pd.DataFrame(self.shap_values[i,...],index=test_methyl_array.beta.index,columns=cpgs)
+            if shap_df.shape[0]:
+                if prediction_classes != None:
+                    shap_df = shap_df.loc[test_methyl_array.pheno[interest_col].values == class_name,:]
+                shapley_data.add_class(class_name, shap_df, cpgs, n_top_features)
+
+        self.shapley_data = shapley_data
+
+    def regressor_assign_scores_to_shap_data(self, test_methyl_array, n_top_features, cell_names=[]):
+        n_classes = (self.shap_values.shape[0] if len(self.shap_values.shape) == 3 else 0)
 
         cpgs=test_methyl_array.return_cpgs()
 
         shapley_data = ShapleyData()
 
-        if feature_selection:
-            self.cpg_global_shapley_scores = (np.abs(shap_values).mean(0).mean(0) if n_classes else np.abs(shap_values).mean(0))
-            shapley_data.add_global_importance(self.cpg_global_shapley_scores,cpgs, n_top_features)
-        else:
-            if n_classes: # classification tasks
-                if cross_class:
-                    shap_values = np.abs(shap_values).mean(axis=0)
-                for i in range(shap_values.shape[0]):
-                    class_name = prediction_classes[i] if prediction_classes != None else str(i)
-                    shap_df = pd.DataFrame((shap_values[i,...] if not cross_class else shap_values),index=test_methyl_array.beta.index,columns=cpgs)
-                    if shap_df.shape[0]:
-                        if prediction_classes != None:
-                            shap_df = shap_df.loc[test_methyl_array.pheno[interest_col].values == class_name,:]
-                        shapley_data.add_class(class_name, shap_df, cpgs, n_top_features)
-            else: # regression tasks
-                shap_df = pd.DataFrame(shap_values if not cross_class else np.abs(shap_values),index=test_methyl_array.beta.index,columns=cpgs)
-                shapley_data.add_class('regression', shap_df, n_top_features)
+        self.cpg_global_shapley_scores = (np.abs(self.shap_values).mean(0).mean(0) if n_classes else np.abs(self.shap_values).mean(0))
+        shapley_data.add_global_importance(self.cpg_global_shapley_scores,cpgs, n_top_features)
+        if n_classes:
+            for i in range(self.shap_values.shape[0]):
+                class_name = str(i) if not cell_names else cell_names[i]
+                shap_df = pd.DataFrame(self.shap_values[i,...],index=test_methyl_array.beta.index,columns=cpgs)
+                if shap_df.shape[0]:
+                    shapley_data.add_class('{}_pos'.format(class_name), shap_df, cpgs, n_top_features)
+                    shapley_data.add_class('{}_neg'.format(class_name), shap_df, cpgs, n_top_features, add_top_negative=True)
+        else: # regression tasks
+            shap_df = pd.DataFrame(self.shap_values,index=test_methyl_array.beta.index,columns=cpgs)
+            shapley_data.add_class('regression_pos' if not cell_names else '{}_pos'.format(cell_names[0]), shap_df, cpgs, n_top_features)
+            shapley_data.add_class('regression_neg' if not cell_names else '{}_neg'.format(cell_names[0]), shap_df, cpgs, n_top_features, add_top_negative=True)
         self.shapley_data = shapley_data
 
     def feature_select(self, methyl_array, n_top_features):
@@ -600,6 +620,13 @@ def plot_lola_output_(lola_csv, plot_output_dir, description_col, cell_types):
         plt.close()
         #ggplot.ggsave(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
     # add shore island breakdown
+@interpret.command()
+@click.option('-c', '--command', default='', help='Submit torque job.', show_default=True)
+def produce_shapley_data_torque(command):
+    import subprocess
+    with open('pbs_interpret.sh','r') as f1, open('pbs_submit.sh','w') as f2:
+        f2.write(f1.read().replace('COMMAND',command))
+    subprocess.call("mksub {}".format('pbs_submit.sh'),shell=True)
 
 @interpret.command() # FIXME add abs or just -1, positive contributions or any contributions
 @click.option('-i', '--train_pkl', default='./train_val_test_sets/train_methyl_array.pkl', help='Input database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
@@ -625,7 +652,9 @@ def plot_lola_output_(lola_csv, plot_output_dir, description_col, cell_types):
 @click.option('-cl', '--pred_class', default='', help='Prediction class top cpgs.', type=click.Path(exists=False), show_default=True)
 @click.option('-r', '--results_csv', default='./predictions/results.csv', help='Remove all misclassifications.', type=click.Path(exists=False), show_default=True)
 @click.option('-ind', '--individual', default='', help='One individual top cpgs.', type=click.Path(exists=False), show_default=True)
-def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, batch_size, cuda, n_samples, n_top_features, output_dir, method, shap_sample_batch_size, n_random_representative, interest_col, n_random_representative_test, categorical_encoder, cross_class, feature_selection, top_outputs, vae_interpret, pred_class, results_csv, individual):
+@click.option('-rc', '--residual_cutoff', default=0., multiple=True, help='Activate for regression interpretations. Standard deviation in residuals before removing.', show_default=True)
+@click.option('-cn', '--cell_names', default=[''], multiple=True, help='Multioutput names for multi-output regression.', show_default=True)
+def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, batch_size, cuda, n_samples, n_top_features, output_dir, method, shap_sample_batch_size, n_random_representative, interest_col, n_random_representative_test, categorical_encoder, cross_class, feature_selection, top_outputs, vae_interpret, pred_class, results_csv, individual, residual_cutoff, cell_names):
     os.makedirs(output_dir,exist_ok=True)
     if not pred_class:
         pred_class = None
@@ -636,6 +665,7 @@ def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, 
         prediction_classes=list(categorical_encoder.categories_[0])
     else:
         prediction_classes = None
+    cell_names=list(filter(None,cell_names))
     train_methyl_array, val_methyl_array, test_methyl_array=MethylationArray.from_pickle(train_pkl), MethylationArray.from_pickle(val_pkl), MethylationArray.from_pickle(test_pkl)#preprocessed_methyl_array.subset_index(train_test_idx_dict['train']), preprocessed_methyl_array.subset_index(train_test_idx_dict['test'])
     #preprocessed_methyl_array=MethylationArray(*extract_pheno_beta_df_from_pickle_dict(input_dict))
     train_methyl_array = MethylationArrays([train_methyl_array,val_methyl_array]).combine()
@@ -644,7 +674,19 @@ def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, 
     model = torch.load(model_pickle)
     if os.path.exists(results_csv):
         results_df=pd.read_csv(results_csv)
-        test_methyl_array=test_methyl_array.subset_index(np.array(list((results_df['y_pred']==results_df['y_true']).index)))
+        if residual_cutoff:
+            replace_dict={k:k.replace('_pred','') for k in list(results_df)}
+            pred_df = results_df.iloc[:,np.vectorize(lambda x: x.endswith('_pred'))(list(results_df))].rename(replace_dict)
+            true_df = results_df.iloc[:,np.vectorize(lambda x: x.endswith('_true'))(list(results_df))].rename(replace_dict)
+            residual_df = pred_df-true_df
+            cell_names=list(residual_df)
+            for col in residual_df:
+                residual_df.loc[:,col] = (residual_df[col] = residual_df[col].mean())/residual_df[col].std(ddof=0)
+            residual_df = (results_df <= residual_cutoff)
+            residual_df = residual_df.all(axis=1)
+            test_methyl_array=test_methyl_array.subset_index(np.array(list(residual_df.index)))
+        else:
+            test_methyl_array=test_methyl_array.subset_index(np.array(list((results_df['y_pred']==results_df['y_true']).index)))
     if individual:
         test_methyl_array=test_methyl_array.subset_index(np.array([individual]))
     if n_random_representative and method != 'gradient':
@@ -672,25 +714,20 @@ def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, 
     cpg_explainer.build_explainer(train_methyl_array, method, batch_size=batch_size)
     if not shap_sample_batch_size:
         shap_sample_batch_size = None
-    cpg_explainer.return_top_shapley_features(test_methyl_array, n_samples, n_top_features, n_outputs=n_test_results_outputs, shap_sample_batch_size=shap_sample_batch_size, interest_col=interest_col, prediction_classes=prediction_classes, top_outputs=top_outputs, cross_class=cross_class, feature_selection=feature_selection, pred_class=pred_class)
+    cpg_explainer.return_shapley_scores(test_methyl_array, n_samples, n_outputs=n_test_results_outputs, shap_sample_batch_size=shap_sample_batch_size, top_outputs=top_outputs)
+    if not residual_cutoff:
+        cpg_explainer.classifier_assign_scores_to_shap_data(test_methyl_array, n_top_features, interest_col=interest_col, prediction_classes=prediction_classes)
+    else:
+        cpg_explainer.regressor_assign_scores_to_shap_data(test_methyl_array, n_top_features, cell_names=cell_names)
     if feature_selection:
         print('FEATURE SELECT')
         feature_selected_methyl_array=cpg_explainer.feature_select(MethylationArrays([train_methyl_array,test_methyl_array]).combine(),n_top_features)
         feature_selected_methyl_array.write_pickle(join(output_dir, 'feature_selected_methyl_array.pkl'))
     else:
-        #top_cpgs = cpg_explainer.top_cpgs
-        #shapley_values = cpg_explainer.shapley_values
-        #output_top_cpgs=join(output_dir,'top_cpgs.p')
-        #output_shapley_values=join(output_dir,'shapley_values.p')
-        #pickle.dump(top_cpgs,open(output_top_cpgs,'wb'))
-        #pickle.dump(shapley_values,open(output_shapley_values,'wb'))
         output_all_cpgs=join(output_dir,'all_cpgs.p')
-        output_explainer=join(output_dir,'explainer.p')
         shapley_output=join(output_dir,'shapley_data.p')
         pickle.dump(train_methyl_array.return_cpgs(),open(output_all_cpgs,'wb'))
         cpg_explainer.shapley_data.to_pickle(shapley_output)
-        if 0:
-            pickle.dump(cpg_explainer.explainer,open(output_explainer,'wb'))
 
 @interpret.command()
 @click.option('-o', '--output_dir', default='./lola_db/', help='Output directory for lola dbs.', type=click.Path(exists=False), show_default=True)

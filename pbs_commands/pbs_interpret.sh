@@ -27,5 +27,4 @@ module load python/3-Anaconda
 module load cuda
 echo $gpuNum
 source activate methylnet_pro2
-CUDA_VISIBLE_DEVICES="$gpuNum" python model_interpretability.py produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 512 -r 4 -rt 5 -col disease -nf 4000 -c
-exit 0
+CUDA_VISIBLE_DEVICES="$gpuNum" COMMAND

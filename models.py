@@ -405,8 +405,8 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
         y_predict, z = model(inputs)
         y_predict=np.squeeze(y_predict.detach().cpu().numpy())
         y_true=np.squeeze(y_true.detach().cpu().numpy())
-        print(y_predict.shape,y_true.shape)
-        print(y_predict,y_true)
+        #print(y_predict.shape,y_true.shape)
+        #print(y_predict,y_true)
         if len(y_predict.shape) < 2:
             y_predict=y_predict.flatten()
         if len(y_true.shape) < 2:
@@ -541,12 +541,13 @@ class MLPFinetuneVAE:
     def predict(self, test_data):
         return test_mlp(self.model, test_data, self.categorical, self.cuda, self.output_latent)
 
-class VAE_MLP(nn.Module): # add ability to train decoder
-    def __init__(self, vae_model, n_output, categorical=False, hidden_layer_topology=[100,100,100], dropout_p=0.2):
+class VAE_MLP(nn.Module): # add ability to train decoderF
+    def __init__(self, vae_model, n_output, categorical=False, hidden_layer_topology=[100,100,100], dropout_p=0.2, add_softmax=False):
         super(VAE_MLP,self).__init__()
         self.vae = vae_model
         self.n_output = n_output
         self.categorical = categorical
+        self.add_softmax = add_softmax
         self.topology = [self.vae.n_latent]+(hidden_layer_topology if hidden_layer_topology else [])
         self.mlp_layers = []
         self.dropout_p=dropout_p
@@ -557,7 +558,7 @@ class VAE_MLP(nn.Module): # add ability to train decoder
                 self.mlp_layers.append(nn.Sequential(layer,nn.ReLU(),nn.Dropout(self.dropout_p)))
         self.output_layer = nn.Linear(self.topology[-1],self.n_output)
         torch.nn.init.xavier_uniform_(self.output_layer.weight)
-        self.mlp_layers.extend([self.output_layer])#+([nn.LogSoftmax()] if self.categorical else []))
+        self.mlp_layers.extend([self.output_layer]+([nn.Softmax()] if self.add_softmax else []))#+([nn.LogSoftmax()] if self.categorical else []))
         self.mlp = nn.Sequential(*self.mlp_layers)
         self.output_z=False
 

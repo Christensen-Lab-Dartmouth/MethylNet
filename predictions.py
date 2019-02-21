@@ -18,7 +18,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def prediction():
     pass
 
-def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum'):
+def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum', add_softmax=False):
     os.makedirs(output_dir,exist_ok=True)
 
     output_file = join(output_dir,'results.csv')
@@ -75,7 +75,7 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
         batch_size=min(batch_size,len(test_methyl_dataset)),
         shuffle=False)
 
-    model=VAE_MLP(vae_model=vae_model,categorical=categorical,hidden_layer_topology=hidden_layer_topology,n_output=train_methyl_dataset.outcome_col.shape[1],dropout_p=dropout_p)
+    model=VAE_MLP(vae_model=vae_model,categorical=categorical,hidden_layer_topology=hidden_layer_topology,n_output=train_methyl_dataset.outcome_col.shape[1],dropout_p=dropout_p, add_softmax=add_softmax)
 
     class_weights=[]
     if categorical:
@@ -167,14 +167,15 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
 @click.option('-l', '--loss_reduction', default='sum', show_default=True, help='Type of reduction on loss function.', type=click.Choice(['sum','elementwise_mean','none']))
 @click.option('-hl', '--hyperparameter_log', default='predictions/predict_hyperparameters_log.csv', show_default=True, help='CSV file containing prior runs.', type=click.Path(exists=False))
 @click.option('-j', '--job_name', default='predict_job', show_default=True, help='Embedding job name.', type=click.Path(exists=False))
-def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum', hyperparameter_log='predictions/predict_hyperparameters_log.csv', job_name='predict_job'):
+@click.option('-sft', '--add_softmax', is_flag=True, help='Add softmax for predicting probability distributions. Experimental.')
+def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum', hyperparameter_log='predictions/predict_hyperparameters_log.csv', job_name='predict_job', add_softmax=False):
     """Perform variational autoencoding on methylation dataset."""
     hlt_list=filter(None,hidden_layer_topology.split(','))
     if hlt_list:
         hidden_layer_topology=list(map(int,hlt_list))
     else:
         hidden_layer_topology=[]
-    latent_projection, Y_pred, Y_true, vae_mlp = predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,list(interest_cols),categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, val_pkl, n_workers, add_validation_set, loss_reduction)
+    latent_projection, Y_pred, Y_true, vae_mlp = predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,list(interest_cols),categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, val_pkl, n_workers, add_validation_set, loss_reduction, add_softmax)
     accuracy, precision, recall, f1 = -1,-1,-1,-1
     if categorical:
         from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
@@ -213,12 +214,13 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
 @click.option('-mc', '--model_complexity_factor', default=1., help='Degree of neural network model complexity for hyperparameter search. Search for less wide networks with a lower complexity value, bounded between 0 and infinity.', show_default=True)
 @click.option('-j', '--n_jobs', default=4, help='Number of jobs to generate.')
 @click.option('-v', '--val_loss_column', default='min_val_loss', help='Validation loss column.', type=click.Path(exists=False))
-def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column):
+@click.option('-sft', '--add_softmax', is_flag=True, help='Add softmax for predicting probability distributions.')
+def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column, add_softmax):
     from hyperparameter_scans import coarse_scan, find_top_jobs
     custom_jobs=[]
     if n_jobs_relaunch:
         custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p, val_loss_column)
-    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs, categorical=categorical)
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs, categorical=categorical,add_softmax=add_softmax)
 
 @prediction.command()
 @click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))
