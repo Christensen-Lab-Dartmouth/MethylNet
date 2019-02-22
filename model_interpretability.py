@@ -105,14 +105,14 @@ class ShapleyDataExplorer:
         methylation_shapley_data_dict = {'hyper':copy.deepcopy(self.shapley_data),'hypo':copy.deepcopy(self.shapley_data)}
         for individual in self.list_individuals(return_list=True):
             class_name,individual,top_shap_df=self.view_methylation(individual,methyl_array)
-            hyper_df = top_shap_df[top_shap_df['methylation']>0.5]
+            hyper_df = top_shap_df[top_shap_df['methylation']>=0.5]
             hypo_df = top_shap_df[top_shap_df['methylation']<0.5]
             methylation_shapley_data_dict['hyper'].top_cpgs['by_class'][class_name]['by_individual'][individual]=hyper_df[['cpg','shapley_value']]
             methylation_shapley_data_dict['hypo'].top_cpgs['by_class'][class_name]['by_individual'][individual]=hypo_df[['cpg','shapley_value']]
         for class_name,individuals in self.list_individuals().items():
             top_shap_df=self.extract_class(class_name)
             top_shap_df['methylation']=methyl_array.beta.loc[individuals,self.shapley_data.top_cpgs['by_class'][class_name]['overall']['cpg'].values].mean(axis=0).values
-            hyper_df = top_shap_df[top_shap_df['methylation']>0.5]
+            hyper_df = top_shap_df[top_shap_df['methylation']>=0.5]
             hypo_df = top_shap_df[top_shap_df['methylation']<0.5]
             methylation_shapley_data_dict['hyper'].top_cpgs['by_class'][class_name]['overall']=hyper_df[['cpg','shapley_value']]
             methylation_shapley_data_dict['hypo'].top_cpgs['by_class'][class_name]['overall']=hypo_df[['cpg','shapley_value']]
@@ -120,6 +120,9 @@ class ShapleyDataExplorer:
 
     def add_bin_continuous_classes(self):
         """Bin continuous outcome variable and extract top positive and negative CpGs for each new class."""
+        pass
+
+    def add_abs_value_classes(self):
         pass
 
     def return_cpg_sets(self):
@@ -155,18 +158,28 @@ class ShapleyDataExplorer:
         class_name=self.indiv2class[individual]
         return class_name,self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual]
 
-    def regenerate_individual_shap_values(self, n_top_cpgs):
+    def regenerate_individual_shap_values(self, n_top_cpgs, abs_val=False):
         shapley_data = copy.deepcopy(self.shapley_data)
-        for class_name in shapley_data.top_cpgs['by_class']:
+        mod_name = lambda name: (name.replace('_pos','').replace('_neg','') if abs_val else name)
+        abs_val = lambda x: (x if not abs_val else np.abs(x))
+        for class_name in list(shapley_data.top_cpgs['by_class'].keys()):
+            new_class_name = mod_name(class_name)
             cpgs=np.array(list(shapley_data.shapley_values['by_class'][class_name]))
             shap_df=shapley_data.shapley_values['by_class'][class_name]
-            shap_vals=shap_df.values
-            class_importance_shaps = shap_vals.mean(0)
-            top_idx = np.argsort(class_importance_shaps*-1)[:n_top_cpgs]
+            shap_vals=abs_val(shap_df.values)
+            class_importance_shaps = abs_val(shap_vals).mean(0)
+            top_idx = np.argsort(abs_val(class_importance_shaps)*-1)[:n_top_cpgs]
             shapley_data.top_cpgs['by_class'][class_name]['overall']=pd.DataFrame(np.hstack([cpgs[top_idx][:,np.newaxis],class_importance_shaps[top_idx][:,np.newaxis]]),columns=['cpg','shapley_value'])
-            top_idxs = np.argsort(shap_vals*-1)[:,:n_top_cpgs]
+            top_idxs = np.argsort(abs_val(shap_vals)*-1)[:,:n_top_cpgs]
             for i,individual in enumerate(shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys()):
-                shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual]=pd.DataFrame(shap_df.iloc[i,top_idxs[i,:]].T.reset_index(drop=False).values,columns=['cpg','shapley_value'])
+                new_indiv_name = mod_name(individual)
+                shapley_data.top_cpgs['by_class'][class_name]['by_individual'][new_indiv_name]=pd.DataFrame(shap_df.iloc[i,top_idxs[i,:]].T.reset_index(drop=False).values,columns=['cpg','shapley_value'])
+                if new_indiv_name != individual:
+                    del shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual]
+            shapley_data.top_cpgs['by_class'][new_class_name]=shapley_data.top_cpgs['by_class'][class_name]
+            shapley_data.shapley_values['by_class'][new_class_name]=shapley_data.shapley_values['by_class'][class_name]
+            if new_class_name != class_name:
+                del shapley_data.top_cpgs['by_class'][class_name], shapley_data.shapley_values['by_class'][class_name]
         return shapley_data
 
     def view_methylation(self, individual, methyl_arr):
@@ -840,7 +853,7 @@ def plot_lola_output(lola_csv, plot_output_dir, description_col, cell_types):
 
 @interpret.command()
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
-@click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/shapley_data_by_methylation/', help='Output directory for cpg jaccard_stats.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/shapley_data_by_methylation/', help='Output directory for hypo/hyper shap data.', type=click.Path(exists=False), show_default=True)
 @click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
 def split_hyper_hypo_methylation(shapley_data, output_dir, test_pkl):
     os.makedirs(output_dir,exist_ok=True)
@@ -865,6 +878,19 @@ def shapley_jaccard(shapley_data,class_names, output_dir, overall, include_indiv
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
     outfilename=join(output_dir,'{}_jaccard.csv'.format('_'.join(class_names)))
     shapley_data_explorer.jaccard_similarity_top_cpgs(class_names,include_individuals,overall, cooccurrence).to_csv(outfilename)
+
+@interpret.command()
+@click.option('-i', '--input_csv', default='./interpretations/shapley_explanations/top_cpgs_jaccard/all_jaccard.csv', help='Output directory for cpg jaccard_stats.', type=click.Path(exists=False), show_default=True)
+@click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
+@click.option('-c', '--col', default='disease', help='Column to sort on.', show_default=True)
+@click.option('-o', '--output_csv', default='./interpretations/shapley_explanations/top_cpgs_jaccard/all_jaccard_sorted.csv', help='Output directory for cpg jaccard_stats.', type=click.Path(exists=False), show_default=True)
+def order_results_by_col(input_csv, test_pkl, col, output_csv):
+    os.makedirs(output_csv[:output_csv.rfind('.')],exist_ok=True)
+    test_arr=MethylationArray.from_pickle(test_pkl) # temporary solution
+    test_arr_idx = np.vectorize(lambda x: '{}_{}'.format(col,x))(test_arr.pheno.sort_values(col).index.values)
+    df=pd.read_csv(input_csv,index_col=0)
+    test_arr_idx=test_arr_idx[np.isin(test_arr_idx,df.index.values)] # temporary fix
+    df[test_arr_idx].to_csv(output_csv)
 
 @interpret.command()
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
@@ -907,11 +933,12 @@ def reduce_top_cpgs(shapley_data,n_top_features,output_pkl):
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
 @click.option('-nf', '--n_top_features', default=500, show_default=True, help='Top features to select for shap outputs.')
 @click.option('-o', '--output_pkl', default='./interpretations/shapley_explanations/shapley_reduced_data.p', help='Pickle containing top CpGs, reduced number.', type=click.Path(exists=False), show_default=True)
-def regenerate_top_cpgs(shapley_data,n_top_features,output_pkl):
+@click.option('-a', '--abs_val', is_flag=True, help='Top CpGs found using absolute value.')
+def regenerate_top_cpgs(shapley_data,n_top_features,output_pkl, abs_val):
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
-    shapley_data_explorer.regenerate_individual_shap_values(n_top_cpgs=n_top_features).to_pickle(output_pkl)
+    shapley_data_explorer.regenerate_individual_shap_values(n_top_cpgs=n_top_features,abs_val=abs_val).to_pickle(output_pkl)
 
 @interpret.command()
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
