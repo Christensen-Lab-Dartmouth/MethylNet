@@ -70,8 +70,8 @@
     * python utils.py print_number_sex_cpgs -i combined_outputs/methyl_array.pkl
     # Before feature selection: There are 313232 autosomal cpgs in your methyl array and 6791 sex cpgs. Sex CpGs make up 0.02\% of 320023 total cpgs.
     # After feature selection: There are 193927 autosomal cpgs in your methyl array and 6073 sex cpgs. Sex CpGs make up 0.03\% of 200000 total cpgs.
-    * python utils.py remove_sex -i combined_outputs/methyl_array.pkl
-    * python utils.py remove_snps -i autosomal/methyl_array.pkl
+    * pymethyl-utils remove_sex -i combined_outputs/methyl_array.pkl
+    * pymethyl-utils remove_snps -i autosomal/methyl_array.pkl
     * nohup python preprocess.py imputation_pipeline -ss -i ./no_snp/methyl_array.pkl -o final_preprocessed/methyl_array.pkl -n 200000 -s sklearn -m Mean -k 20 -d -st 0.05 -ct 0.05 &
     * mkdir visualizations && nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap.html -c disease_only -nn 10 &
     * python utils.py fix_key -d
