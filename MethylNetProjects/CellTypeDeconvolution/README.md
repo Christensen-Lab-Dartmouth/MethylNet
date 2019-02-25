@@ -68,3 +68,9 @@ rsync /Users/joshualevy/Documents/GitHub/methylation/*.py /Users/joshualevy/Docu
 * python predictions.py regression_report
 * python model_interpretability.py produce_shapley_data_torque -c "python model_interpretability.py produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 100 -rc 4. -r 0 -rt 0 -cn Bcell -cn CD4T -cn CD8T -cn Mono -cn NK -cn Neu -nf 4000 -c"
 * python model_interpretability.py shapley_jaccard -c all -i -ov
+* python model_interpretability.py regenerate_top_cpgs -nf 4000 -a
+* python model_interpretability.py shapley_jaccard -c all -s ./interpretations/shapley_explanations/shapley_reduced_data.p  -o ./interpretations/shapley_explanations/top_cpgs_jaccard/ -ov
+* pymethyl-visualize plot_heatmap -m similarity -fs .7 -i ./interpretations/shapley_explanations/top_cpgs_jaccard/all_jaccard.csv -o ./interpretations/shapley_explanations/top_cpgs_jaccard/all_jaccard.png -x -y -c &
+* python visualizations_methylnet.py plot_training_curve -t embeddings/training_val_curve.p -vae -o results/embed_training_curve.png -thr 1e8
+* python model_interpretability.py interpret_biology -ov -c all -s interpretations/shapley_explanations/shapley_reduced_data.p 
+* python visualizations_methylnet.py plot_training_curve -thr 4000

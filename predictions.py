@@ -305,10 +305,11 @@ def classification_report(results_pickle,output_dir, categorical_encoder):
         y_true_labels=np.argmax(y_true,axis=1)[:,np.newaxis]
         classes=np.unique(y_true_labels)
         y_pred=to_y_probas(results_dict[k]['y_pred'])
-        y_pred_labels=np.argmax(y_pred,1)
-        out_classes = classes.astype(int) if categorical_encoder == None else categorical_encoder.inverse_transform(classes.astype(int))
-        pd.DataFrame(confusion_matrix(y_true_labels.astype(int) if categorical_encoder == None else categorical_encoder.inverse_transform(y_true_labels.astype(int)),
-                                      y_pred_labels.astype(int)  if categorical_encoder == None else categorical_encoder.inverse_transform(y_pred_labels.astype(int)),labels=out_classes),index=out_classes,columns=out_classes).to_csv(join(output_dir,'{}_confusion_mat.csv'.format(k)))
+        y_pred_labels=np.argmax(y_pred,1).reshape((-1,1))
+        #print(y_true_labels, y_pred_labels)
+        out_classes = classes.astype(int)# if categorical_encoder == None else categorical_encoder.inverse_transform(classes.astype(int).reshape((-1,1)))
+        pd.DataFrame(confusion_matrix(y_true_labels.astype(int).flatten(),
+                                      y_pred_labels.astype(int).flatten(),labels=out_classes),index=out_classes,columns=out_classes).to_csv(join(output_dir,'{}_confusion_mat.csv'.format(k)))
         Y=np.hstack((y_true_labels,y_pred))
         supports={i:sum((y_pred_labels[np.squeeze(y_true_labels==i)]==i).astype(int)) for i in classes}
         fpr = dict()

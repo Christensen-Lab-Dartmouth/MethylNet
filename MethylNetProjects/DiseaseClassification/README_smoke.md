@@ -38,3 +38,13 @@ MethylNet Commands:
 * python predictions.py launch_hyperparameter_scan -ic Disease_State -cat -t -g -n 1
 * python model_interpretability.py produce_shapley_data_torque -c "python model_interpretability.py produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 100 -col Disease_State -r 0 -rt 30 -nf 4000 -c"
 * python model_interpretability.py shapley_jaccard -c all -i -ov
+* pymethyl-visualize plot_heatmap -m similarity -fs .2 -i ./interpretations/shapley_explanations/top_cpgs_jaccard/all_jaccard.csv -o ./interpretations/shapley_explanations/top_cpgs_jaccard/all_jaccard.png -x -y -c &
+* python model_interpretability.py reduce_top_cpgs -nf 1000 && python model_interpretability.py split_hyper_hypo_methylation -s ./interpretations/shapley_explanations/shapley_reduced_data.p
+* python model_interpretability.py shapley_jaccard -c all -i -ov -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -o ./interpretations/shapley_explanations/top_cpgs_jaccard/hypo/
+* pymethyl-visualize plot_heatmap -m similarity -fs .2 -i ./interpretations/shapley_explanations/top_cpgs_jaccard/hypo/all_jaccard.csv -o ./interpretations/shapley_explanations/top_cpgs_jaccard/all_hypo_jaccard.png -x -y -c &
+* python model_interpretability.py shapley_jaccard -c all -i -ov -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p -o ./interpretations/shapley_explanations/top_cpgs_jaccard/hyper/
+* pymethyl-visualize plot_heatmap -m similarity -fs .2 -i ./interpretations/shapley_explanations/top_cpgs_jaccard/hyper/all_jaccard.csv -o ./interpretations/shapley_explanations/top_cpgs_jaccard/all_hyper_jaccard.png -x -y -c &
+* python predictions.py classification_report
+* python visualizations_methylnet.py plot_training_curve -t embeddings/training_val_curve.p -vae -o results/embed_training_curve.png
+* python visualizations_methylnet.py plot_training_curve
+* python visualizations_methylnet.py plot_roc_curve
