@@ -118,6 +118,21 @@ class ShapleyDataExplorer:
             methylation_shapley_data_dict['hypo'].top_cpgs['by_class'][class_name]['overall']=hypo_df[['cpg','shapley_value']]
         return methylation_shapley_data_dict
 
+    def return_binned_shapley_data(self, original_class_name, outcome_col, add_top_negative=False):
+        """Converts existing shap data into categorical variable"""
+        class_names = outcome_col.unique()
+        new_shapley_data = ShapleyData()
+        new_shapley_data.shapley_values['overall']=self.shapley_data.shapley_values['overall']
+        cpgs = new_shapley_data.shapley_values['overall']['cpg'].values
+        new_shapley_data.top_cpgs['overall']=self.shapley_data.top_cpgs['overall']
+        n_top_cpgs = new_shapley_data.top_cpgs['overall'].shape[0]
+        shap_df = new_shapley_data.shapley_values['by_class'][original_class_name]
+        for class_name in class_names:
+            idx = outcome_col.index
+            new_shapley_data.add_class(class_name,shap_df.loc[idx,:],cpgs,n_top_cpgs, add_top_negative)
+        return new_shapley_data
+
+
     def add_bin_continuous_classes(self):
         """Bin continuous outcome variable and extract top positive and negative CpGs for each new class."""
         pass
@@ -863,6 +878,24 @@ def split_hyper_hypo_methylation(shapley_data, output_dir, test_pkl):
     shap_data_methylation=shapley_data_explorer.return_shapley_data_by_methylation_status(test_methyl_array)
     shap_data_methylation['hypo'].to_pickle(join(output_dir,'hypo_shapley_data.p'))
     shap_data_methylation['hyper'].to_pickle(join(output_dir,'hyper_shapley_data.p'))
+
+@interpret.command()
+@click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
+@click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
+@click.option('-c', '--col', default='age', help='Column to turn into bins.', type=click.Path(exists=False),show_default=True)
+@click.option('-n', '--n_bins', default=10, help='Number of bins.',show_default=True)
+@click.option('-ot', '--output_test_pkl', default='./train_val_test_sets/test_methyl_array_shap_binned.pkl', help='Binned shap pickle for further testing.', type=click.Path(exists=False), show_default=True)
+@click.option('-os', '--output_shap_pkl', default='./interpretations/shapley_explanations/shapley_binned.p', help='Pickle containing top CpGs, binned phenotype.', type=click.Path(exists=False), show_default=True)
+def bin_regression_shaps(shapley_data, test_pkl,col,n_bins,output_test_pkl,output_shap_pkl):
+    os.makedirs(output_test_pkl[:output_test_pkl.rfind('/')],exist_ok=True)
+    os.makedirs(output_shap_pkl[:output_shap_pkl.rfind('/')],exist_ok=True)
+    shapley_data=ShapleyData.from_pickle(shapley_data)
+    shapley_data_explorer=ShapleyDataExplorer(shapley_data)
+    test_methyl_array=MethylationArray.from_pickle(test_pkl)
+    new_col_name = test_methyl_array.bin_column(col,n_bins)
+    shapley_data = return_binned_shapley_data(col, test_methyl_array.pheno[new_col_name], add_top_negative=False)
+    test_methyl_array.write_pickle(output_test_pkl)
+    shapley_data.to_pickle(output_shap_pkl)
 
 # create force plots for each sample??? use output shapley values and output explainer
 @interpret.command()
