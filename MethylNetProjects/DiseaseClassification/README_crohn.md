@@ -16,8 +16,9 @@ Preprocessing:
 * mkdir backup_clinical && mv ./geo_idats/GSE81961_clinical_info.csv backup_clinical
 * python preprocess.py meffil_encode -is geo_idats/samplesheet.csv -os geo_idats/samplesheet.csv
 * python preprocess.py preprocess_pipeline -n 35 -m  -pc -1 -bns 0.05 -pds 0.05 -bnc 0.05 -pdc 0.05 -sc -2 -sd 5 -i /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/crohn/geo_idats/ -o /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/crohn/preprocess_outputs/methyl_array.pkl # time elapsed 4:47.46 , 4 minutes
-* python preprocess.py na_report -i preprocess_outputs/methyl_array.pkl -o na_report/ # 0.17111708849559365%
-* nohup python preprocess.py imputation_pipeline -i ./preprocess_outputs/methyl_array.pkl -s fancyimpute -m KNN -k 5 -st 0.05 -ct 0.05 &
+* pymethyl-utils remove_sex -i preprocess_outputs/methyl_array.pkl
+* python preprocess.py na_report -i autosomal/methyl_array.pkl -o na_report/ # 0.17111708849559365%
+* nohup python preprocess.py imputation_pipeline -i ./autosomal/methyl_array.pkl -s fancyimpute -m KNN -k 5 -st 0.05 -ct 0.05 &
 * python preprocess.py feature_select -n 300000
 * mkdir visualizations
 * nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap.html -c disease -nn 8 &

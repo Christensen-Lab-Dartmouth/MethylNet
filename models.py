@@ -423,7 +423,7 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
     else:
         Y_pred = Y_pred[0]
         if len(np.shape(Y_pred))<2:
-            Y_true=Y_true[:,np.newaxis]
+            Y_pred=Y_pred[:,np.newaxis]
     if len(final_latent) > 1:
 
         final_latent=np.vstack(final_latent)

@@ -211,9 +211,13 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
 def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest_cols, categorical, cuda, categorical_encoder, output_dir):
     os.makedirs(output_dir,exist_ok=True)
     test_methyl_array = MethylationArray.from_pickle(test_pkl) # generate results pickle to run through classification/regression report
-    model = torch.load(model_pickle)
+    if cuda:
+        model = torch.load(model_pickle)
+    else:
+        model = torch.load(model_pickle,map_location='cpu')
+        model.vae.cuda_on=False
     if not categorical:
-        test_methyl_array.remove_na_samples(interest_cols)
+        test_methyl_array.remove_na_samples(interest_cols if len(interest_cols)>1 else interest_cols[0])
     if os.path.exists(categorical_encoder):
         categorical_encoder=pickle.load(open(categorical_encoder,'rb'))
     else:
@@ -224,7 +228,7 @@ def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest
         num_workers=n_workers,
         batch_size=min(batch_size,len(test_methyl_dataset)),
         shuffle=False)
-    vae_mlp=MLPFinetuneVAE(mlp_model=model,n_epochs=n_epochs,categorical=categorical,cuda=cuda)
+    vae_mlp=MLPFinetuneVAE(mlp_model=model,categorical=categorical,cuda=cuda)
 
     Y_pred, Y_true, latent_projection, sample_names = vae_mlp.predict(test_methyl_dataloader)
 
@@ -246,7 +250,7 @@ def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest
     results_file = join(output_dir,'results.p')
     output_file_latent = join(output_dir,'latent.csv')
     output_pkl = join(output_dir, 'vae_mlp_methyl_arr.pkl')
-    
+
     test_methyl_array.write_pickle(output_pkl)
     pickle.dump(results,open(results_file,'wb'))
     latent_projection.to_csv(output_file_latent)

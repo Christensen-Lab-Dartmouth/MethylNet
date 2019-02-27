@@ -904,12 +904,15 @@ def interpret_biology(all_cpgs_pickle,shapley_data_list,output_dir, analysis, n_
 @click.option('-c', '--classes_only', is_flag=True, help='Only take top CpGs from each class.', show_default=True)
 @click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/top_cpgs_extracted_methylarr/', help='Output directory for methylation array.', type=click.Path(exists=False), show_default=True)
 @click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
-def extract_methylation_array(shapley_data, classes_only, output_dir, test_pkl):
+@click.option('-c', '--col', default='', help='Column to color for output csvs.', show_default=True)
+def extract_methylation_array(shapley_data, classes_only, output_dir, test_pkl, col):
     os.makedirs(output_dir,exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
     output_methyl_arr = shapley_data_explorer.extract_methylation_array(MethylationArray.from_pickle(test_pkl),classes_only)
     output_methyl_arr.write_pickle(os.path.join(output_dir,'extracted_methyl_arr.pkl'))
+    if col:
+        output_methyl_arr.beta[col] = output_methyl_arr.pheno[col]
     output_methyl_arr.write_csvs(output_dir)
 
 @interpret.command()
@@ -1001,17 +1004,20 @@ def shapley_jaccard(shapley_data,class_names, output_dir, overall, include_indiv
 @click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
 @click.option('-c', '--col', default='disease', help='Column to sort on.', show_default=True)
 @click.option('-o', '--output_csv', default='./interpretations/shapley_explanations/top_cpgs_jaccard/all_jaccard_sorted.csv', help='Output directory for cpg jaccard_stats.', type=click.Path(exists=False), show_default=True)
-def order_results_by_col(input_csv, test_pkl, col, output_csv):
+@click.option('-sym', '--symmetric', is_flag=True, help='Is symmetric?', show_default=True)
+def order_results_by_col(input_csv, test_pkl, col, output_csv, symmetric):
     os.makedirs(output_csv[:output_csv.rfind('.')],exist_ok=True)
     df=pd.read_csv(input_csv,index_col=0)
     if os.path.exists(test_pkl):
         test_arr=MethylationArray.from_pickle(test_pkl) # temporary solution
-        test_arr_idx = np.vectorize(lambda x: '{}_{}'.format(col,x))(test_arr.pheno.sort_values(col).index.values)
+        test_arr_idx=test_arr.pheno.sort_values(col).index.values
+        if np.all(np.vectorize(lambda x: x.startswith(col))(df.index.values)):
+            test_arr_idx = np.vectorize(lambda x: '{}_{}'.format(col,x))(test_arr_idx)
         test_arr_idx=test_arr_idx[np.isin(test_arr_idx,df.index.values)] # temporary fix
-        df[test_arr_idx].to_csv(output_csv)
     else:
         test_arr_idx = np.sort(df.index.values)
-        df.loc[test_arr_idx,test_arr_idx].to_csv(output_csv)
+    df=df.loc[test_arr_idx,test_arr_idx] if symmetric else df[test_arr_idx]
+    df.to_csv(output_csv)
 
 
 @interpret.command()

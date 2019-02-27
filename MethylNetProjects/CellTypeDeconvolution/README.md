@@ -80,6 +80,10 @@ rsync /Users/joshualevy/Documents/GitHub/methylation/*.py /Users/joshualevy/Docu
 # plot heatmap of top cpgs vs samples, reduce count to 1000, hclustered
 #
 
+* python model_interpretability.py extract_methylation_array -s  interpretations/shapley_explanations/shapley_reduced_data.p  -c
+* nohup python model_interpretability.py interpret_biology -ov -c all -s interpretations/shapley_explanations/shapley_reduced_data.p -cgs IDOL -ex &
+* pymethyl-visualize plot_heatmap -fs .7 -i ./interpretations/shapley_explanations/top_cpgs_extracted_methylarr/beta.csv -o ./interpretations/biological_explanations/beta.png -c -t &
+
 # get library using bio_interpreter or extract_methylation_array
 # Then visualize using subset_array (extract_ already does this), to_csv and then plot_heatmap
 pymethyl-utils subset_array -i train_val_test_sets/test_methyl_array.pkl -c ./interpretations/biological_explanations/cpg_library.pkl
