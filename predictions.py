@@ -199,6 +199,60 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
     hyperparameter_df.to_csv(hyperparameter_log)
 
 @prediction.command()
+@click.option('-tp', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Test database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-m', '--model_pickle', default='./predictions/output_model.p', help='Pytorch model containing forward_predict method.', type=click.Path(exists=False), show_default=True)
+@click.option('-bs', '--batch_size', default=50, show_default=True, help='Batch size.')
+@click.option('-w', '--n_workers', default=9, show_default=True, help='Number of workers.')
+@click.option('-ic', '--interest_cols', default=['disease'], multiple=True, help='Specify columns looking to make predictions on.', show_default=True)
+@click.option('-cat', '--categorical', is_flag=True, help='Multi-class prediction.', show_default=True)
+@click.option('-c', '--cuda', is_flag=True, help='Use GPUs.')
+@click.option('-e', '--categorical_encoder', default='./predictions/one_hot_encoder.p', help='One hot encoder if categorical model. If path exists, then return top positive controbutions per samples of that class. Encoded values must be of sample class as interest_col.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_dir', default='./new_predictions/', help='Output directory for predictions.', type=click.Path(exists=False), show_default=True)
+def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest_cols, categorical, cuda, categorical_encoder, output_dir):
+    os.makedirs(output_dir,exist_ok=True)
+    test_methyl_array = MethylationArray.from_pickle(test_pkl) # generate results pickle to run through classification/regression report
+    model = torch.load(model_pickle)
+    if not categorical:
+        test_methyl_array.remove_na_samples(interest_cols)
+    if os.path.exists(categorical_encoder):
+        categorical_encoder=pickle.load(open(categorical_encoder,'rb'))
+    else:
+        categorical_encoder=None
+    test_methyl_dataset = get_methylation_dataset(test_methyl_array,interest_cols,categorical=categorical, predict=True, categorical_encoder=categorical_encoder)
+    test_methyl_dataloader = DataLoader(
+        dataset=test_methyl_dataset,
+        num_workers=n_workers,
+        batch_size=min(batch_size,len(test_methyl_dataset)),
+        shuffle=False)
+    vae_mlp=MLPFinetuneVAE(mlp_model=model,n_epochs=n_epochs,categorical=categorical,cuda=cuda)
+
+    Y_pred, Y_true, latent_projection, sample_names = vae_mlp.predict(test_methyl_dataloader)
+
+    results = dict(test={})
+    results['test']['y_pred'], results['test']['y_true'] = copy.deepcopy(Y_pred), copy.deepcopy(Y_true)
+
+    if categorical:
+        Y_true=Y_true.argmax(axis=1)[:,np.newaxis]
+        Y_pred=Y_pred.argmax(axis=1)[:,np.newaxis]
+    test_methyl_array = test_methyl_dataset.to_methyl_array()
+
+    Y_pred=pd.DataFrame(Y_pred.flatten() if (np.array(Y_pred.shape)==1).any() else Y_pred,index=test_methyl_array.beta.index,columns=(['y_pred'] if categorical else interest_cols))
+    Y_true=pd.DataFrame(Y_true.flatten() if (np.array(Y_true.shape)==1).any() else Y_true,index=test_methyl_array.beta.index,columns=(['y_true'] if categorical else interest_cols))
+    results_df = pd.concat([Y_pred,Y_true],axis=1) if categorical else pd.concat([Y_pred.rename(columns={name:name+'_pred' for name in list(Y_pred)}),Y_true.rename(columns={name:name+'_true' for name in list(Y_pred)})],axis=1)  # FIXME
+    latent_projection=pd.DataFrame(latent_projection,index=test_methyl_array.beta.index)
+    test_methyl_array.beta=latent_projection
+
+    output_file = join(output_dir,'results.csv')
+    results_file = join(output_dir,'results.p')
+    output_file_latent = join(output_dir,'latent.csv')
+    output_pkl = join(output_dir, 'vae_mlp_methyl_arr.pkl')
+    
+    test_methyl_array.write_pickle(output_pkl)
+    pickle.dump(results,open(results_file,'wb'))
+    latent_projection.to_csv(output_file_latent)
+    results_df.to_csv(output_file)
+
+@prediction.command()
 @click.option('-hcsv', '--hyperparameter_input_csv', default='predictions/predict_hyperparameters_scan_input.csv', show_default=True, help='CSV file containing hyperparameter inputs.', type=click.Path(exists=False))
 @click.option('-hl', '--hyperparameter_output_log', default='predictions/predict_hyperparameters_log.csv', show_default=True, help='CSV file containing prior runs.', type=click.Path(exists=False))
 @click.option('-g', '--generate_input', is_flag=True, help='Generate hyperparameter input csv.')

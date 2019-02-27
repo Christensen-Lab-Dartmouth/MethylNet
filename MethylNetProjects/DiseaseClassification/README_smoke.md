@@ -48,3 +48,4 @@ MethylNet Commands:
 * python visualizations_methylnet.py plot_training_curve -t embeddings/training_val_curve.p -vae -o results/embed_training_curve.png
 * python visualizations_methylnet.py plot_training_curve
 * python visualizations_methylnet.py plot_roc_curve
+* nohup time python random_forest_test.py -tr train_val_test_sets/train_methyl_array.pkl -v train_val_test_sets/val_methyl_array.pkl -tt train_val_test_sets/test_methyl_array.pkl -o Disease_State -c &

@@ -474,7 +474,7 @@ def val_decoder_(model, x, z):
 
 
 class MLPFinetuneVAE:
-    def __init__(self, mlp_model, n_epochs, loss_fn, optimizer_vae, optimizer_mlp, cuda=True, categorical=False, scheduler_opts={}, output_latent=True, train_decoder=False):
+    def __init__(self, mlp_model, n_epochs=None, loss_fn=None, optimizer_vae=None, optimizer_mlp=None, cuda=True, categorical=False, scheduler_opts={}, output_latent=True, train_decoder=False):
         self.model=mlp_model
         #print(self.model)
         if cuda:
@@ -485,8 +485,12 @@ class MLPFinetuneVAE:
         self.optimizer_vae = optimizer_vae
         self.optimizer_mlp = optimizer_mlp
         self.cuda = cuda
-        self.scheduler_vae = Scheduler(self.optimizer_vae,scheduler_opts) if scheduler_opts else Scheduler(self.optimizer_vae)
-        self.scheduler_mlp = Scheduler(self.optimizer_mlp,scheduler_opts) if scheduler_opts else Scheduler(self.optimizer_mlp)
+        if self.optimizer_vae!=None and self.optimizer_mlp!=None:
+            self.scheduler_vae = Scheduler(self.optimizer_vae,scheduler_opts) if scheduler_opts else Scheduler(self.optimizer_vae)
+            self.scheduler_mlp = Scheduler(self.optimizer_mlp,scheduler_opts) if scheduler_opts else Scheduler(self.optimizer_mlp)
+        else:
+            self.scheduler_vae = None
+            self.scheduler_vae = None
         self.loss_plt_fname='loss.png'
         self.embed_interval=200
         self.validation_set = False
@@ -532,7 +536,6 @@ class MLPFinetuneVAE:
             self.min_val_loss = -1
         self.best_epoch = best_epoch
         self.model = best_model
-
         return self
 
     def add_validation_set(self, validation_data):

@@ -14,7 +14,7 @@ tissue:ch1  Tissue
 
 Preprocessing:
 
-* nohup python preprocess.py download_geo -g GSE87571 &
+* nohup pymethyl-preprocess download_geo -g GSE87571 &
 * wget https://raw.githubusercontent.com/Christensen-Lab-Dartmouth/data-processing/master/data_sets/johansson_lifespan_aging/results/%20johansson%20_cell_type_estimates.csv?token=ASyRZ1DQBCRXZ3hGTQkMXyTDJgvPaKMeks5cbBGHwA%3D%3D
 * mv *== cell_type_estimates.csv # =*
 * nano include_col.txt
@@ -72,5 +72,28 @@ rsync /Users/joshualevy/Documents/GitHub/methylation/*.py /Users/joshualevy/Docu
 * python model_interpretability.py shapley_jaccard -c all -s ./interpretations/shapley_explanations/shapley_reduced_data.p  -o ./interpretations/shapley_explanations/top_cpgs_jaccard/ -ov
 * pymethyl-visualize plot_heatmap -m similarity -fs .7 -i ./interpretations/shapley_explanations/top_cpgs_jaccard/all_jaccard.csv -o ./interpretations/shapley_explanations/top_cpgs_jaccard/all_jaccard.png -x -y -c &
 * python visualizations_methylnet.py plot_training_curve -t embeddings/training_val_curve.p -vae -o results/embed_training_curve.png -thr 1e8
-* python model_interpretability.py interpret_biology -ov -c all -s interpretations/shapley_explanations/shapley_reduced_data.p 
+* python model_interpretability.py interpret_biology -ov -c all -s interpretations/shapley_explanations/shapley_reduced_data.p
 * python visualizations_methylnet.py plot_training_curve -thr 4000
+* python model_interpretability.py interpret_biology -ov -c all -s interpretations/shapley_explanations/shapley_reduced_data.p -cgs IDOL -ex &
+* pymethyl-visualize plot_heatmap -m similarity -fs .7 -i ./interpretations/biological_explanations/IDOL_overlaps.csv -o ./interpretations/biological_explanations/IDOL_overlaps.png -x -y -a &
+
+# plot heatmap of top cpgs vs samples, reduce count to 1000, hclustered
+#
+
+# get library using bio_interpreter or extract_methylation_array
+# Then visualize using subset_array (extract_ already does this), to_csv and then plot_heatmap
+pymethyl-utils subset_array -i train_val_test_sets/test_methyl_array.pkl -c ./interpretations/biological_explanations/cpg_library.pkl
+pymethyl-utils pkl_to_csv -i subset/methyl_array.pkl -o subset/
+pymethyl-utils set_part_array_zeros -i train_val_test_sets/test_methyl_array.pkl -c ./interpretations/biological_explanations/cpg_library.pkl
+CUDA_VISIBLE_DEVICES="0" python predictions.py make_new_predictions -tp removal/methyl_array.pkl -c -ic Age
+python predictions.py regression_report -r new_predictions/results.p -o new_results/
+# or run predictions with library omitted
+# set_part_array_zeros then make_new_predictions, then classification/regression report
+
+# test external set:
+# download
+# preprocess
+# pymethyl-utils create_external_validation_set
+# make_new_predictions then classification/regression report
+
+# to-do search for missing cpgs, do same for other studies

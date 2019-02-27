@@ -140,7 +140,6 @@ class ShapleyDataExplorer:
                     new_shapley_data.add_class(class_name,shap_df.loc[idx,:],cpgs,n_top_cpgs, add_top_negative)
         return new_shapley_data
 
-
     def add_bin_continuous_classes(self):
         """Bin continuous outcome variable and extract top positive and negative CpGs for each new class."""
         pass
@@ -181,19 +180,20 @@ class ShapleyDataExplorer:
         class_name=self.indiv2class[individual]
         return class_name,self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual]
 
-    def regenerate_individual_shap_values(self, n_top_cpgs, abs_val=False):
+    def regenerate_individual_shap_values(self, n_top_cpgs, abs_val=False, neg_val=False):
         shapley_data = copy.deepcopy(self.shapley_data)
         mod_name = lambda name: (name.replace('_pos','').replace('_neg','') if abs_val else name)
         abs_val = lambda x: (x if not abs_val else np.abs(x))
+        neg_val = (1 if neg_val else -1)
         for class_name in list(shapley_data.top_cpgs['by_class'].keys()):
             new_class_name = mod_name(class_name)
             cpgs=np.array(list(shapley_data.shapley_values['by_class'][class_name]))
             shap_df=shapley_data.shapley_values['by_class'][class_name]
             shap_vals=abs_val(shap_df.values)
             class_importance_shaps = abs_val(shap_vals).mean(0)
-            top_idx = np.argsort(abs_val(class_importance_shaps)*-1)[:n_top_cpgs]
+            top_idx = np.argsort(abs_val(class_importance_shaps)*neg_val)[:n_top_cpgs]
             shapley_data.top_cpgs['by_class'][class_name]['overall']=pd.DataFrame(np.hstack([cpgs[top_idx][:,np.newaxis],class_importance_shaps[top_idx][:,np.newaxis]]),columns=['cpg','shapley_value'])
-            top_idxs = np.argsort(abs_val(shap_vals)*-1)[:,:n_top_cpgs]
+            top_idxs = np.argsort(abs_val(shap_vals)*neg_val)[:,:n_top_cpgs]
             for i,individual in enumerate(shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys()):
                 new_indiv_name = mod_name(individual)
                 shapley_data.top_cpgs['by_class'][class_name]['by_individual'][new_indiv_name]=pd.DataFrame(shap_df.iloc[i,top_idxs[i,:]].T.reset_index(drop=False).values,columns=['cpg','shapley_value'])
@@ -213,11 +213,11 @@ class ShapleyDataExplorer:
     def extract_methylation_array(self, methyl_arr, classes_only=True):
         from functools import reduce
         total_cpgs=[]
-        for class_name in shapley_data.top_cpgs['by_class']:
-            cpgs=np.array(list(shapley_data.shapley_values['by_class'][class_name]['overall'][:,0]))
+        for class_name in self.shapley_data.top_cpgs['by_class']:
+            cpgs=np.array(list(self.shapley_data.top_cpgs['by_class'][class_name]['overall'].values[:,0]))
             if not classes_only:
-                cpgs = reduce(np.union1d,[cpgs]+[shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual][:,0]
-                                          for individual in shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys()])
+                cpgs = reduce(np.union1d,[cpgs]+[self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual].values[:,0]
+                                          for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys()])
             total_cpgs.append(cpgs)
         all_cpgs = reduce(np.union1d,total_cpgs)
         methyl_arr.beta=methyl_arr.beta.loc[:,all_cpgs]
@@ -271,15 +271,12 @@ class ShapleyDataExplorer:
             top_cpgs['intersection']['shapley_value']=-1
         return top_cpgs
 
+    def return_global_importance_cpgs(self):
+        return self.shapley_data.top_cpgs['overall']
+
     def jaccard_similarity_top_cpgs(self,class_names,individuals=False,overall=False, cooccurrence=False):
         from itertools import combinations
         from functools import reduce
-        def jaccard_similarity(list1, list2):
-            s1 = set(list1)
-            s2 = set(list2)
-            return len(s1.intersection(s2)) / len(s1.union(s2))
-        def cooccurrence_fn(list1,list2):
-            return len(set(list1).intersection(set(list2)))
         x={}
         if class_names[0]=='all':
             class_names=list(self.shapley_data.top_cpgs['by_class'].keys())
@@ -298,6 +295,14 @@ class ShapleyDataExplorer:
             for i in indivs:
                 similarity_matrix.loc[i,i]=len(x[i])
         return similarity_matrix
+
+def jaccard_similarity(list1, list2):
+    s1 = set(list1)
+    s2 = set(list2)
+    return len(s1.intersection(s2)) / len(s1.union(s2))
+
+def cooccurrence_fn(list1,list2):
+    return len(set(list1).intersection(set(list2)))
 
 class PlotCircos:
     def __init__(self):
@@ -458,6 +463,7 @@ class BioInterpreter:
         self.limma=importr('limma')
         self.lola=importr('LOLA')
         self.flow=importr('FlowSorted.Blood.EPIC')
+        self.cgager=importr('cgageR')
 
         importr('simpleCache')
         """if self.prediction_classes == None:
@@ -524,18 +530,47 @@ class BioInterpreter:
             output_dfs['prediction_{}'.format(k)]=pd.DataFrame(top_cpgs,index_col=None,columns=['CpG','Shapley Value'])
         return output_dfs
 
-    def return_overlap_score(self, set_cpgs='IDOL', platform='450k'):
+    def return_overlap_score(self, set_cpgs='IDOL', platform='450k', all_cpgs=[], output_csv='output_bio_intersect.csv', extract_library=False):
         import rpy2.robjects as robjects
         from rpy2.robjects import pandas2ri
         pandas2ri.activate()
         if set_cpgs == 'IDOL':
-            cpg_reference_set=set(r.robjects('IDOLOptimizedCpGs') if platform=='epic' else robjects.r('IDOLOptimizedCpGs450klegacy'))
-        else:
+            cpg_reference_set=set(robjects.r('IDOLOptimizedCpGs') if platform=='epic' else robjects.r('IDOLOptimizedCpGs450klegacy'))
+        elif set_cpgs == 'clock':
             cpg_reference_set=set(open('data/age_cpgs.txt').read().splitlines()) # clock
+        elif set_cpgs == 'epitoc':
+            cpg_reference_set=set(robjects.r('EpiTOCcpgs'))
+        elif set_cpgs == 'horvath':
+            cpg_reference_set=set(robjects.r('as.vector(HorvathLongCGlist$MR_var)'))
+        elif set_cpgs == 'hannum':
+            cpg_reference_set=set(robjects.r('as.vector(hannumModel$marker)'))
+        else:
+            cpg_reference_set=set(robjects.r('as.vector(HorvathLongCGlist$MR_var)'))
+        if all_cpgs:
+            cpg_reference_set = cpg_reference_set.intersection(all_cpgs)
+        intersected_cpg_sets = {}
         for k in self.top_cpgs:
             query_cpgs=set(self.top_cpgs[k].values[:,0])
-            overlap_score = round(float(len(query_cpgs.intersection(cpg_reference_set))) / len(cpg_reference_set) * 100,2)
+            intersected_cpgs=query_cpgs.intersection(cpg_reference_set)
+            intersected_cpg_sets[k]=intersected_cpgs
+            overlap_score = round(float(len(intersected_cpgs)) / len(cpg_reference_set) * 100,2)
             print("{} top cpgs overlap with {}% of {} cpgs".format(k,overlap_score,set_cpgs))
+
+        keys=list(intersected_cpg_sets.keys())
+        if len(keys)>1:
+            from itertools import combinations
+            from functools import reduce
+            similarity_matrix=pd.DataFrame(np.eye(len(keys)),index=keys,columns=keys)
+            for i,j in combinations(keys,r=2):
+                similarity_matrix.loc[i,j]=len(intersected_cpg_sets[i].intersection(intersected_cpg_sets[j]))
+                similarity_matrix.loc[j,i]=similarity_matrix.loc[i,j]
+            for k in keys:
+                similarity_matrix.loc[k,k]=len(intersected_cpg_sets[k])
+                print("{} shared cpgs: {}/{}".format(k,len(set(reduce(lambda x,y:x.union(y),[intersected_cpg_sets[k].intersection(intersected_cpgs) for k2,intersected_cpgs in intersected_cpg_sets.items() if k2 != k]))),similarity_matrix.loc[k,k]))
+            similarity_matrix.loc[np.sort(keys),np.sort(keys)].to_csv(output_csv)
+            if extract_library:
+                return reduce(np.union1d,[list(intersected_cpg_sets[k]) for k in keys])
+        return None
 
     def run_lola(self, all_cpgs=[], lola_db='', cores=8, collections=[],depletion=False):
         import rpy2.robjects as robjects
@@ -809,8 +844,10 @@ def grab_lola_db_cache(output_dir):
 @click.option('-gsp', '--gsea_pickle', default='./data/GSEA_GeneSets/gsea_collections.p', help='Gene set enrichment analysis to choose from.', type=click.Path(exists=False), show_default=True)
 @click.option('-d', '--depletion', is_flag=True, help='Run depletion LOLA analysis instead of enrichment.', show_default=True)
 @click.option('-ov', '--overlap_test', is_flag=True, help='Run overlap test with IDOL library instead of all other tests.', show_default=True)
-@click.option('-cgs', '--cpg_set', default='IDOL', help='Test for clock or IDOL enrichment.', type=click.Choice(['IDOL','clock']), show_default=True)
-def interpret_biology(all_cpgs_pickle,shapley_data_list,output_dir, analysis, n_workers, lola_db, individuals, classes, max_gap, class_intersect, length_output, set_subtraction, intersection, collections, gsea_analyses, gsea_pickle, depletion, overlap_test, cpg_set):
+@click.option('-cgs', '--cpg_set', default='IDOL', help='Test for clock or IDOL enrichment.', type=click.Choice(['IDOL','clock','epitoc','horvath','hannum']), show_default=True)
+@click.option('-g', '--top_global', is_flag=True, help='Look at global top cpgs, overwrites classes and individuals.', show_default=True)
+@click.option('-ex', '--extract_library', is_flag=True, help='Extract a library of cpgs to subset future array for inspection or prediction tests.', show_default=True)
+def interpret_biology(all_cpgs_pickle,shapley_data_list,output_dir, analysis, n_workers, lola_db, individuals, classes, max_gap, class_intersect, length_output, set_subtraction, intersection, collections, gsea_analyses, gsea_pickle, depletion, overlap_test, cpg_set, top_global, extract_library):
     """Add categorical encoder as custom input, then can use to change names of output csvs to match disease if encoder exists."""
     os.makedirs(output_dir,exist_ok=True)
     if os.path.exists(all_cpgs_pickle):
@@ -827,32 +864,37 @@ def interpret_biology(all_cpgs_pickle,shapley_data_list,output_dir, analysis, n_
     for i,shapley_data in enumerate(shapley_data_list):
         shapley_data=ShapleyData.from_pickle(shapley_data)
         shapley_data_explorer=ShapleyDataExplorer(shapley_data)
-        if head_classes and head_classes[0]=='all':
-            classes = shapley_data_explorer.list_classes()
+        if not top_global:
+            if head_classes and head_classes[0]=='all':
+                classes = shapley_data_explorer.list_classes()
+            else:
+                classes = copy.deepcopy(head_classes)
+            if head_individuals and head_individuals[0]=='all':
+                individuals = shapley_data_explorer.list_individuals(return_list=True)
+            else:
+                individuals = copy.deepcopy(head_individuals)
+            cpg_exclusion_sets,cpg_sets=None,None
+            if set_subtraction:
+                _,cpg_exclusion_sets=shapley_data_explorer.return_cpg_sets()
+            elif intersection:
+                cpg_sets,_=shapley_data_explorer.return_cpg_sets()
+            top_cpgs=shapley_data_explorer.return_top_cpgs(classes=classes,individuals=individuals,cpg_exclusion_sets=cpg_exclusion_sets,cpg_sets=cpg_sets)
         else:
-            classes = copy.deepcopy(head_classes)
-        if head_individuals and head_individuals[0]=='all':
-            individuals = shapley_data_explorer.list_individuals(return_list=True)
-        else:
-            individuals = copy.deepcopy(head_individuals)
-        cpg_exclusion_sets,cpg_sets=None,None
-        if set_subtraction:
-            _,cpg_exclusion_sets=shapley_data_explorer.return_cpg_sets()
-        elif intersection:
-            cpg_sets,_=shapley_data_explorer.return_cpg_sets()
-        top_cpgs=shapley_data_explorer.return_top_cpgs(classes=classes,individuals=individuals,cpg_exclusion_sets=cpg_exclusion_sets,cpg_sets=cpg_sets)
+            top_cpgs = {'global':shapley_data_explorer.return_global_importance_cpgs()}
         bio_interpreter = BioInterpreter(top_cpgs)
         if overlap_test:
-            bio_interpreter.return_overlap_score(set_cpgs=cpg_set)
+            output_library_cpgs=bio_interpreter.return_overlap_score(set_cpgs=cpg_set,all_cpgs=all_cpgs,output_csv=join(output_dir,'{}_overlaps.csv'.format(cpg_set)),extract_library=extract_library)
+            if output_library_cpgs is not None:
+                pickle.dump(output_library_cpgs,open(join(output_dir,'cpg_library.pkl'),'wb'))
         else:
             if analysis in ['GO','KEGG','GENE']:
-                analysis_outputs=bio_interpreter.gometh(analysis, allcpgs=[], length_output=length_output)
+                analysis_outputs=bio_interpreter.gometh(analysis, allcpgs=all_cpgs, length_output=length_output)
             elif analysis == 'LOLA':
-                analysis_outputs=bio_interpreter.run_lola(all_cpgs=[], lola_db=lola_db, cores=n_workers, collections=collections, depletion=depletion)
+                analysis_outputs=bio_interpreter.run_lola(all_cpgs=all_cpgs, lola_db=lola_db, cores=n_workers, collections=collections, depletion=depletion)
             elif analysis == 'NEAR_CPGS':
-                analysis_outputs=bio_interpreter.get_nearby_cpg_shapleys(all_cpgs=[],max_gap=max_gap, class_intersect=class_intersect)
+                analysis_outputs=bio_interpreter.get_nearby_cpg_shapleys(all_cpgs=all_cpgs,max_gap=max_gap, class_intersect=class_intersect)
             elif gsea_analyses:
-                analysis_outputs=bio_interpreter.gometh('', allcpgs=[], length_output=length_output, gsea_analyses=gsea_analyses, gsea_pickle=gsea_pickle)
+                analysis_outputs=bio_interpreter.gometh('', allcpgs=all_cpgs, length_output=length_output, gsea_analyses=gsea_analyses, gsea_pickle=gsea_pickle)
             for k in analysis_outputs:
                 output_csv=join(output_dir,'{}_{}_{}.csv'.format(shapley_data_list[i].split('/')[-1],k,analysis if not gsea_analyses else '_'.join(gsea_analyses)).replace('/','-'))
                 analysis_outputs[k].to_csv(output_csv)
@@ -867,7 +909,7 @@ def extract_methylation_array(shapley_data, classes_only, output_dir, test_pkl):
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
     output_methyl_arr = shapley_data_explorer.extract_methylation_array(MethylationArray.from_pickle(test_pkl),classes_only)
-    output_methyl_arr.write_pickle(os.join(output_dir,'extracted_methyl_arr.pkl'))
+    output_methyl_arr.write_pickle(os.path.join(output_dir,'extracted_methyl_arr.pkl'))
     output_methyl_arr.write_csvs(output_dir)
 
 @interpret.command()
@@ -1014,11 +1056,12 @@ def reduce_top_cpgs(shapley_data,n_top_features,output_pkl):
 @click.option('-nf', '--n_top_features', default=500, show_default=True, help='Top features to select for shap outputs.')
 @click.option('-o', '--output_pkl', default='./interpretations/shapley_explanations/shapley_reduced_data.p', help='Pickle containing top CpGs, reduced number.', type=click.Path(exists=False), show_default=True)
 @click.option('-a', '--abs_val', is_flag=True, help='Top CpGs found using absolute value.')
-def regenerate_top_cpgs(shapley_data,n_top_features,output_pkl, abs_val):
+@click.option('-n', '--neg_val', is_flag=True, help='Return top CpGs that are making negative contributions.')
+def regenerate_top_cpgs(shapley_data,n_top_features,output_pkl, abs_val, neg_val):
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
-    shapley_data_explorer.regenerate_individual_shap_values(n_top_cpgs=n_top_features,abs_val=abs_val).to_pickle(output_pkl)
+    shapley_data_explorer.regenerate_individual_shap_values(n_top_cpgs=n_top_features,abs_val=abs_val, neg_val=neg_val).to_pickle(output_pkl)
 
 @interpret.command()
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
