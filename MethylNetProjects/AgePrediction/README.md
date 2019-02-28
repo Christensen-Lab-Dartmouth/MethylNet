@@ -73,18 +73,26 @@ MethylNet Commands:
 
 # get library using bio_interpreter or extract_methylation_array
 # Then visualize using subset_array (extract_ already does this), to_csv and then plot_heatmap
-* python model_interpretability.py extract_methylation_array -col Age_binned -s  interpretations/shapley_explanations/shapley_binned.p  -c
-* nohup python model_interpretability.py interpret_biology -ov -c all -s interpretations/shapley_explanations/shapley_binned.p -cgs horvath -ex &
-* pymethyl-visualize plot_heatmap -fs .7 -i ./interpretations/shapley_explanations/top_cpgs_extracted_methylarr/beta.csv -o ./interpretations/biological_explanations/beta.png -c &
+* python model_interpretability.py extract_methylation_array -t train_val_test_sets/test_methyl_array_shap_binned.pkl -c Age_binned -s  interpretations/shapley_explanations/shapley_binned.p
+
+* pymethyl-visualize plot_heatmap -fs .7 -i ./interpretations/shapley_explanations/top_cpgs_extracted_methylarr/beta.csv -o ./interpretations/biological_explanations/beta.png -c -col Age_binned &
+
+* N_CPG=1000 # 100, 2000, 4000 # -g -n $N_CPG
+* python model_interpretability.py extract_methylation_array -t train_val_test_sets/test_methyl_array_shap_binned.pkl -c Age_binned -s  interpretations/shapley_explanations/shapley_binned.p -co -n 4000 && pymethyl-utils write_cpgs -i interpretations/shapley_explanations/top_cpgs_extracted_methylarr/extracted_methyl_arr.pkl -c removal_cpgs/cpgs_library.pkl && pymethyl-utils set_part_array_background -i train_val_test_sets/test_methyl_array_shap_binned.pkl -c removal_cpgs/cpgs_library.pkl -o removal_cpgs/methyl_array.pkl && python predictions.py make_new_predictions -tp removal_cpgs/methyl_array.pkl -ic Age && python predictions.py regression_report -r new_predictions/results.p -o new_results/
+# maybe extract cpgs for one class at a time and notice changes
 
 
-pymethyl-utils subset_array -i train_val_test_sets/test_methyl_array.pkl -c ./interpretations/biological_explanations/cpg_library.pkl
-pymethyl-utils pkl_to_csv -i subset/methyl_array.pkl -o subset/ -col Age_binned
-pymethyl-visualize plot_heatmap -fs .7 -i ./subset/beta.csv -o ./subset/beta.png -c -x &
-pymethyl-utils set_part_array_zeros -i train_val_test_sets/test_methyl_array.pkl -c ./interpretations/biological_explanations/cpg_library.pkl # only set top 1k overall or intersected horvath
+* nohup python model_interpretability.py interpret_biology -ov -c all -s interpretations/shapley_explanations/shapley_binned.p -cgs horvath -ex & # hannum
+
+pymethyl-utils subset_array -i train_val_test_sets/test_methyl_array_shap_binned.pkl -c ./interpretations/biological_explanations/cpg_library.pkl
+pymethyl-utils pkl_to_csv -i subset/methyl_array.pkl -o subset/ -c Age_binned
+pymethyl-visualize plot_heatmap -fs .7 -i ./subset/beta.csv -o ./subset/beta.png -c -x -col Age_binned &
+xpymethyl-utils set_part_array_background -i train_val_test_sets/test_methyl_array.pkl -c ./interpretations/biological_explanations/cpg_library.pkl # only set top 1k overall or intersected horvath
 # set them to background mean instead!!!!!
-CUDA_VISIBLE_DEVICES="0" python predictions.py make_new_predictions -tp removal/methyl_array.pkl -c -ic Age
-python predictions.py regression_report -r new_predictions/results.p -o new_results/
+xpython predictions.py make_new_predictions -tp removal/methyl_array.pkl -ic Age
+xpython predictions.py regression_report -r new_predictions/results.p -o new_results/
+
+python model_interpretability.py interpret_biology -ov -c all -s interpretations/shapley_explanations/shapley_binned.p -cgs hannum -ex
 # or run predictions with library omitted
 # set_part_array_zeros then make_new_predictions, then classification/regression report
 
@@ -95,3 +103,27 @@ python predictions.py regression_report -r new_predictions/results.p -o new_resu
 # make_new_predictions then classification/regression report
 
 # to-do search for missing cpgs, do same for other studies
+# check overlap with different blood types
+(13.92,22.0] top cpgs overlap with 0.0% of hannum cpgs
+(22.0,30.0] top cpgs overlap with 0.0% of hannum cpgs
+(30.0,38.0] top cpgs overlap with 1.45% of hannum cpgs
+(38.0,46.0] top cpgs overlap with 4.35% of hannum cpgs
+(46.0,54.0] top cpgs overlap with 39.13% of hannum cpgs
+(62.0,70.0] top cpgs overlap with 78.26% of hannum cpgs
+(70.0,78.0] top cpgs overlap with 79.71% of hannum cpgs
+(78.0,86.0] top cpgs overlap with 82.61% of hannum cpgs
+(86.0,94.0] top cpgs overlap with 65.22% of hannum cpgs
+This cohort was around this age distribution...
+
+Maybe look at horvath and epitoc age distribution for cohort.
+
+(54.0,62.0] shared cpgs: 41/41.0
+(70.0,78.0] shared cpgs: 55/55.0
+(62.0,70.0] shared cpgs: 54/54.0
+(22.0,30.0] shared cpgs: 0/0.0
+(78.0,86.0] shared cpgs: 57/57.0
+(38.0,46.0] shared cpgs: 3/3.0
+(13.92,22.0] shared cpgs: 0/0.0
+(30.0,38.0] shared cpgs: 1/1.0
+(46.0,54.0] shared cpgs: 27/27.0
+(86.0,94.0] shared cpgs: 45/45.0

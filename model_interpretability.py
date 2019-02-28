@@ -136,7 +136,6 @@ class ShapleyDataExplorer:
                     print(class_name)
                     print(outcome_col[outcome_col==class_name])
                     idx = outcome_col[outcome_col==class_name].index.values
-
                     new_shapley_data.add_class(class_name,shap_df.loc[idx,:],cpgs,n_top_cpgs, add_top_negative)
         return new_shapley_data
 
@@ -210,16 +209,27 @@ class ShapleyDataExplorer:
         top_shap_df['methylation']=methyl_arr.beta.loc[individual,top_shap_df['cpg'].values].values
         return class_name,individual,top_shap_df
 
-    def extract_methylation_array(self, methyl_arr, classes_only=True):
+    def extract_methylation_array(self, methyl_arr, classes_only=True, global_vals=False, n_extract=1000, class_name=''):
         from functools import reduce
         total_cpgs=[]
-        for class_name in self.shapley_data.top_cpgs['by_class']:
-            cpgs=np.array(list(self.shapley_data.top_cpgs['by_class'][class_name]['overall'].values[:,0]))
-            if not classes_only:
-                cpgs = reduce(np.union1d,[cpgs]+[self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual].values[:,0]
-                                          for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys()])
-            total_cpgs.append(cpgs)
-        all_cpgs = reduce(np.union1d,total_cpgs)
+        if global_vals:
+            all_cpgs=self.shapley_data.top_cpgs['overall']['cpg'].values
+            if n_extract < len(all_cpgs):
+                all_cpgs=all_cpgs[:n_extract]
+        else:
+            if class_name:
+                class_names = [class_name]
+            else:
+                class_names = list(self.shapley_data.top_cpgs['by_class'].keys())
+            for class_name in class_names:
+                cpgs=np.array(list(self.shapley_data.top_cpgs['by_class'][class_name]['overall'].values[:,0]))
+                if n_extract < len(cpgs):
+                    cpgs=cpgs[:n_extract]
+                if not classes_only:
+                    cpgs = reduce(np.union1d,[cpgs]+[self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual].values[:,0]
+                                              for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys()])
+                total_cpgs.append(cpgs)
+            all_cpgs = reduce(np.union1d,total_cpgs)
         methyl_arr.beta=methyl_arr.beta.loc[:,all_cpgs]
         return methyl_arr
 
@@ -901,15 +911,17 @@ def interpret_biology(all_cpgs_pickle,shapley_data_list,output_dir, analysis, n_
 
 @interpret.command()
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
-@click.option('-c', '--classes_only', is_flag=True, help='Only take top CpGs from each class.', show_default=True)
+@click.option('-co', '--classes_only', is_flag=True, help='Only take top CpGs from each class.', show_default=True)
 @click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/top_cpgs_extracted_methylarr/', help='Output directory for methylation array.', type=click.Path(exists=False), show_default=True)
 @click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
 @click.option('-c', '--col', default='', help='Column to color for output csvs.', show_default=True)
-def extract_methylation_array(shapley_data, classes_only, output_dir, test_pkl, col):
+@click.option('-g', '--global_vals', is_flag=True, help='Only take top CpGs globally.', show_default=True)
+@click.option('-n', '--n_extract', default=1000, help='Number cpgs to extract.', show_default=True)
+def extract_methylation_array(shapley_data, classes_only, output_dir, test_pkl, col, global_vals, n_extract):
     os.makedirs(output_dir,exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
-    output_methyl_arr = shapley_data_explorer.extract_methylation_array(MethylationArray.from_pickle(test_pkl),classes_only)
+    output_methyl_arr = shapley_data_explorer.extract_methylation_array(MethylationArray.from_pickle(test_pkl),classes_only,global_vals=global_vals,n_extract=n_extract)
     output_methyl_arr.write_pickle(os.path.join(output_dir,'extracted_methyl_arr.pkl'))
     if col:
         output_methyl_arr.beta[col] = output_methyl_arr.pheno[col]

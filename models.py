@@ -477,6 +477,7 @@ class MLPFinetuneVAE:
     def __init__(self, mlp_model, n_epochs=None, loss_fn=None, optimizer_vae=None, optimizer_mlp=None, cuda=True, categorical=False, scheduler_opts={}, output_latent=True, train_decoder=False):
         self.model=mlp_model
         #print(self.model)
+        self.model.vae.cuda_on = cuda
         if cuda:
             self.model = self.model.cuda()
             #self.model.vae = self.model.vae.cuda()
