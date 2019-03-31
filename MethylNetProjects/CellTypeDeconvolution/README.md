@@ -101,3 +101,6 @@ python predictions.py regression_report -r new_predictions/results.p -o new_resu
 # make_new_predictions then classification/regression report
 
 # to-do search for missing cpgs, do same for other studies
+
+
+pymethyl-utils ref_free_cell_deconv -c Bcell -c CD4T -c CD8T -c Mono -c NK -c Neu
