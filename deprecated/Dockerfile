@@ -1,3 +1,5 @@
-FROM joshualevy44/methylnet:base # cloud.canister.io:5000/
+FROM joshualevy44/pymethylprocess
 
-COPY *.py /scripts/
+RUN pip install methylnet
+
+# FIX to ADD CUDA for GPU support

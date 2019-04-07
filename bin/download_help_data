@@ -1,0 +1,22 @@
+#!/bin/bash
+
+mkdir data
+mkdir data/GSEA_GeneSets
+
+cd data/GSEA_GeneSets
+
+wget https://github.com/Christensen-Lab-Dartmouth/MethylNet/blob/master/data/GSEA_GeneSets/gsea_collections.p?raw=true
+
+cd ..
+
+wget https://raw.githubusercontent.com/Christensen-Lab-Dartmouth/MethylNet/master/data/age_cpgs.txt?token=ASyRZ0BFwuFKywjMFTQ1hSQ6RKA8LrFhks5csA2QwA%3D%3D
+
+cd ..
+
+mkdir pbs_commands
+
+cd pbs_commands
+
+wget https://raw.githubusercontent.com/Christensen-Lab-Dartmouth/MethylNet/master/pbs_commands/run_torque.sh
+
+cd ..
