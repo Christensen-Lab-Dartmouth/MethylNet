@@ -1,0 +1,7 @@
+#!/bin/bash
+
+conda create -y -n methylnet python=3.6.7
+
+source activate methylnet
+
+conda install pytorch torchvision cudatoolkit=9.0 -c pytorch

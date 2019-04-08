@@ -1,55 +1,119 @@
 Dataset: GSE87571
 
-Directory: /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/blood/
+Dataset: GSE87571
 
-include_col.txt (tab delimited):
-age:ch1 Age
-gender:ch1  Sex
-tissue:ch1  Tissue
+**Install Instructions**
+See README.md
 
-* cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/blood && module load python/3-Anaconda && source activate methylnet_pro2
+**Preprocessing**
+Run commands from: https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess/blob/master/example_scripts/GSE87571.md
 
-Preprocessing:
+**Reference-Based Estimation of Cell Type Proportions**
 
-* nohup python preprocess.py download_geo -g GSE87571 &
-* wget https://raw.githubusercontent.com/Christensen-Lab-Dartmouth/data-processing/master/data_sets/johansson_lifespan_aging/results/%20johansson%20_cell_type_estimates.csv?token=ASyRZ1DQBCRXZ3hGTQkMXyTDJgvPaKMeks5cbBGHwA%3D%3D
-* mv *== cell_type_estimates.csv # =*
-* nano include_col.txt
-* python preprocess.py create_sample_sheet -is ./geo_idats/GSE87571_clinical_info.csv -s geo -i geo_idats/ -os geo_idats/samplesheet.csv -d "disease state:ch1" -c include_col.txt
-* mkdir backup_clinical && mv ./geo_idats/GSE87571_clinical_info.csv backup_clinical
-* python -c "import pandas as pd,numpy as np; df=pd.read_csv('cell_type_estimates.csv',index_col=0);df['Basename']=np.vectorize(lambda x: 'geo_idats/'+x)(list(df.index));df.reset_index(drop=True).to_csv('cell_type_estimates_adjusted.csv')"
-* python preprocess.py merge_sample_sheets -nd -s1 geo_idats/samplesheet.csv -s2 cell_type_estimates_adjusted.csv -os geo_idats/samplesheet_merged.csv
-* mv ./geo_idats/samplesheet.csv backup_clinical
-* nohup pymethyl-preprocess preprocess_pipeline -i geo_idats/ -p minfi -noob -qc &
-* nohup python preprocess.py preprocess_pipeline -i geo_idats/ -p minfi -noob -u & # add moving jpg files
-* mkdir qc_report && mv *.jpg qc_report #=*
-* python utils.py print_number_sex_cpgs -i preprocess_outputs/methyl_array.pkl #
-* pymethyl-utils remove_sex -i preprocess_outputs/methyl_array.pkl
-* python preprocess.py na_report -i autosomal/methyl_array.pkl -o na_report/ # NA Rate is on average: 0.706484934739793%
-* nohup pymethyl-preprocess imputation_pipeline -i ./autosomal/methyl_array.pkl -s fancyimpute -m KNN -k 15 -st 0.05 -ct 0.05 &
-* pymethyl-preprocess feature_select -n 300000
-* mkdir visualizations
-* nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap.html -c Age -nn 8 &
-* nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap_sex.html -c Sex -nn 8 &
-* nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap_CD4T.html -c CD4T -nn 8 &
-* nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap_CD8T.html -c CD8T -nn 8 &
-* nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap_NK.html -c NK -nn 8 &
-* nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap_Bcell.html -c Bcell -nn 8 &
-* nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap_gMDSC.html -c gMDSC -nn 8 &
+```
+pymethyl-utils ref_estimate_cell_counts -ro geo_idats/ -a IDOL
+```
+Formatting output:
+```
+python
+>>> df=pd.read_csv('added_cell_counts/cell_type_estimates.csv')
+  df.pivot('Var1','Var2','Freq').to_csv('added_cell_counts/cell_types_adjusted.csv')
+>>> exit()
+scp added_cell_counts/cell_types_adjusted.csv .
+```
+Overwrite pheno data in train, test, val Methylation Arrays with cell-type proportions:
+```
+pymethyl-utils overwrite_pheno_data -i old_train_val_test_sets/train_methyl_array.pkl -o train_val_test_sets/train_methyl_array.pkl --input_formatted_sample_sheet cell_types_adjusted.csv
+pymethyl-utils overwrite_pheno_data -i old_train_val_test_sets/val_methyl_array.pkl -o train_val_test_sets/val_methyl_array.pkl --input_formatted_sample_sheet cell_types_adjusted.csv
+pymethyl-utils overwrite_pheno_data -i old_train_val_test_sets/test_methyl_array.pkl -o train_val_test_sets/test_methyl_array.pkl --input_formatted_sample_sheet cell_types_adjusted.csv
+```
+Visualize Results:
+```
+pymethyl-visualize plot_cell_type_results -i cell_types_adjusted.csv -o cell_types_adjusted.png
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap.html -c Age -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_sex.html -c Sex -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_CD4T.html -c CD4T -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_CD8T.html -c CD8T -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_NK.html -c NK -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_Bcell.html -c Bcell -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_gMDSC.html -c gMDSC -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_Neu.html -c Neu -nn 8 &
+```
 
-* pymethyl-utils train_test_val_split -tp .8 -vp .125
+**Embedding using VAE**
+Run 200 job hyperparameter scan for learning embeddings on torque (remove -t option to run local, same for prediction jobs below):  
+```
+methylnet-embed launch_hyperparameter_scan -sc Age -t -mc 0.84 -b 1. -g -j 200
+```
+Rerun top performing run to get final embeddings:
+```
+methylnet-embed launch_hyperparameter_scan -sc Age -t -g -n 1 -b 1.
+```
+Visualize VAE-Embedding:
+```
+pymethyl-visualize transform_plot -i embeddings/vae_methyl_arr.pkl -nn 8 -c Age
+```
+
+**Predictions using Transfer Learning**
+Run 200 job hyperparameter scan for learning predictions on torque:
+```
+methylnet-predict launch_hyperparameter_scan -ic Age -t -mc 0.84 -g -j 200
+```
+Rerun top performing run to get final predictions:
+```
+methylnet-predict launch_hyperparameter_scan -ic Age -t -g -n 1
+```
+Visualize embeddings after training prediction model:
+```
+pymethyl-visualize transform_plot -i predictions/vae_mlp_methyl_arr.pkl -nn 8 -c Age
+```
+
+**Plot Embedding and Prediction Results**
+```
+pymethyl-visualize plot_cell_type_results -i predictions/results.csv -o cell_types_pred_vs_true.png
+```
+
+**MethylNet Interpretations**
+If using torque:  
+```
+methylnet-torque run_torque_job -c "methylnet-interpret produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 100 -rc 4. -r 0 -rt 0 -cn Age -nf 4000 -c" -gpu -a "source activate methylnet" -q gpuq -t 4 -n 1
+```
+Else (running with GPU 0):  
+```
+CUDA_VISIBLE_DEVICES=0 methylnet-interpret produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 100 -rc 4. -r 0 -rt 0 -cn Age -nf 4000 -c
+```
+
+Extract spreadsheet of top overall CpGs:
+```
+
+```
+
+Plot bar chart of top CpGs:
+```
+
+```
+
+Find genomic context of these CpGs:
+```
+
+```
+
+Run enrichment test with LOLA:
+```
+
+```
+
+Plot results:
+```
+
+```
+
+
 
 
 MethylNet Commands:
 
-* mkdir embeddings
-* python embedding.py launch_hyperparameter_scan -sc Age -t -mc 0.84 -b 1. -g -j 20
-* python embedding.py launch_hyperparameter_scan -sc Age -t -g -n 1 -b 1.
-* pymethyl-visualize transform_plot -i embeddings/vae_methyl_arr.pkl -nn 8 -c Age
-* python predictions.py launch_hyperparameter_scan -ic Age -t -mc 0.84 -g -j 200
-* python predictions.py launch_hyperparameter_scan -ic Age -t -g -n 1
-* pymethyl-visualize transform_plot -i predictions/vae_mlp_methyl_arr.pkl -nn 8 -c Age
-* python model_interpretability.py produce_shapley_data_torque -c "python model_interpretability.py produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 100 -rc 4. -r 0 -rt 0 -cn Age -nf 4000 -c"
+
 * python model_interpretability.py regenerate_top_cpgs -nf 4000 -a
 * python predictions.py regression_report
 * python model_interpretability.py split_hyper_hypo_methylation -s ./interpretations/shapley_explanations/shapley_reduced_data.p

@@ -1,0 +1,257 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>methylnet.schedulers &mdash; MethylNet 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> MethylNet
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MethylNet</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>methylnet.schedulers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for methylnet.schedulers</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="k">import</span> <span class="n">ExponentialLR</span><span class="p">,</span><span class="n">LambdaLR</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+
+<div class="viewcode-block" id="CosineAnnealingWithRestartsLR"><a class="viewcode-back" href="../../index.html#methylnet.schedulers.CosineAnnealingWithRestartsLR">[docs]</a><span class="k">class</span> <span class="nc">CosineAnnealingWithRestartsLR</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">_LRScheduler</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Set the learning rate of each parameter group using a cosine annealing</span>
+<span class="sd">    schedule, where :math:`\eta_{max}` is set to the initial lr and</span>
+<span class="sd">    :math:`T_{cur}` is the number of epochs since the last restart in SGDR:</span>
+<span class="sd">     .. math::</span>
+<span class="sd">         \eta_t = \eta_{min} + \frac{1}{2}(\eta_{max} - \eta_{min})(1 +</span>
+<span class="sd">        \cos(\frac{T_{cur}}{T_{max}}\pi))</span>
+<span class="sd">     When last_epoch=-1, sets initial lr as lr.</span>
+<span class="sd">     It has been proposed in</span>
+<span class="sd">    `SGDR: Stochastic Gradient Descent with Warm Restarts`_. This implements</span>
+<span class="sd">    the cosine annealing part of SGDR, the restarts and number of iterations multiplier.</span>
+<span class="sd">     Args:</span>
+<span class="sd">        optimizer (Optimizer): Wrapped optimizer.</span>
+<span class="sd">        T_max (int): Maximum number of iterations.</span>
+<span class="sd">        T_mult (float): Multiply T_max by this number after each restart. Default: 1.</span>
+<span class="sd">        eta_min (float): Minimum learning rate. Default: 0.</span>
+<span class="sd">        last_epoch (int): The index of last epoch. Default: -1.</span>
+<span class="sd">     .. _SGDR\: Stochastic Gradient Descent with Warm Restarts:</span>
+<span class="sd">        https://arxiv.org/abs/1608.03983</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">T_max</span><span class="p">,</span> <span class="n">eta_min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">last_epoch</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">T_mult</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">alpha_decay</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T_max</span> <span class="o">=</span> <span class="n">T_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T_mult</span> <span class="o">=</span> <span class="n">T_mult</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restart_every</span> <span class="o">=</span> <span class="n">T_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eta_min</span> <span class="o">=</span> <span class="n">eta_min</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restarts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restarted_at</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha_decay</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">last_epoch</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">restart</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restarts</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restart_every</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">restart_every</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">T_mult</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restarted_at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_epoch</span>
+
+    <span class="k">def</span> <span class="nf">cosine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_lr</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta_min</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">restarts</span> <span class="o">*</span> <span class="p">(</span><span class="n">base_lr</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta_min</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_n</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">restart_every</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">step_n</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_epoch</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">restarted_at</span>
+
+    <span class="k">def</span> <span class="nf">get_lr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_n</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">restart_every</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">restart</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cosine</span><span class="p">(</span><span class="n">base_lr</span><span class="p">)</span> <span class="k">for</span> <span class="n">base_lr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_lrs</span><span class="p">]</span></div>
+
+<span class="k">class</span> <span class="nc">Scheduler</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">opts</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s1">&#39;null&#39;</span><span class="p">,</span><span class="n">lr_scheduler_decay</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="n">T_max</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">eta_min</span><span class="o">=</span><span class="mf">5e-8</span><span class="p">,</span><span class="n">T_mult</span><span class="o">=</span><span class="mi">2</span><span class="p">)):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schedulers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;exp&#39;</span><span class="p">:(</span><span class="k">lambda</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">ExponentialLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">opts</span><span class="p">[</span><span class="s2">&quot;lr_scheduler_decay&quot;</span><span class="p">])),</span>
+                            <span class="s1">&#39;null&#39;</span><span class="p">:(</span><span class="k">lambda</span> <span class="n">optimizer</span><span class="p">:</span> <span class="kc">None</span><span class="p">),</span>
+                            <span class="s1">&#39;warm_restarts&#39;</span><span class="p">:(</span><span class="k">lambda</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">CosineAnnealingWithRestartsLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">T_max</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s1">&#39;T_max&#39;</span><span class="p">],</span> <span class="n">eta_min</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s1">&#39;eta_min&#39;</span><span class="p">],</span> <span class="n">last_epoch</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">T_mult</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s1">&#39;T_mult&#39;</span><span class="p">]))}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_step_fn</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;exp&#39;</span><span class="p">:(</span><span class="k">lambda</span> <span class="n">scheduler</span><span class="p">:</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()),</span>
+                                  <span class="s1">&#39;warm_restarts&#39;</span><span class="p">:(</span><span class="k">lambda</span> <span class="n">scheduler</span><span class="p">:</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()),</span>
+                                  <span class="s1">&#39;null&#39;</span><span class="p">:(</span><span class="k">lambda</span> <span class="n">scheduler</span><span class="p">:</span> <span class="kc">None</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_lr</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;lr&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_choice</span> <span class="o">=</span> <span class="n">opts</span><span class="p">[</span><span class="s1">&#39;scheduler&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedulers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_choice</span><span class="p">](</span><span class="n">optimizer</span><span class="p">)</span> <span class="k">if</span> <span class="n">optimizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_step_fn</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_choice</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_lr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">lr</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_lr</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_choice</span> <span class="o">==</span> <span class="s1">&#39;null&#39;</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;lr&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">lr</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Joshua Levy
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,16 +1,101 @@
 Dataset: GSE87571
 
-OutcomeData: https://github.com/Christensen-Lab-Dartmouth/data-processing/blob/master/data_sets/johansson_lifespan_aging/results/%20johansson%20_cell_type_estimates.csv
+**Install Instructions**
+See README.md
 
-Directory: /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/cell-type/
+**Preprocessing**
+Run commands from: https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess/blob/master/example_scripts/GSE87571.md
 
-include_col.txt (tab delimited):
-age:ch1 Age
-gender:ch1  Sex
-tissue:ch1  Tissue
+**Reference-Based Estimation of Cell Type Proportions**
 
-* cd /dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/cell-type && module load python/3-Anaconda && source activate methylnet_pro2
-* rsync /Users/joshualevy/Documents/GitHub/methylation/*.py f003k8w@discovery7.hpcc.dartmouth.edu:/dartfs-hpc/rc/lab/C/ChristensenB/users/jlevy/projects/cell-type/ #*
+```
+pymethyl-utils ref_estimate_cell_counts -ro geo_idats/ -a IDOL
+```
+Formatting output:
+```
+python
+>>> df=pd.read_csv('added_cell_counts/cell_type_estimates.csv')
+  df.pivot('Var1','Var2','Freq').to_csv('added_cell_counts/cell_types_adjusted.csv')
+>>> exit()
+scp added_cell_counts/cell_types_adjusted.csv .
+```
+Overwrite pheno data in train, test, val Methylation Arrays with cell-type proportions:
+```
+pymethyl-utils overwrite_pheno_data -i old_train_val_test_sets/train_methyl_array.pkl -o train_val_test_sets/train_methyl_array.pkl --input_formatted_sample_sheet cell_types_adjusted.csv
+pymethyl-utils overwrite_pheno_data -i old_train_val_test_sets/val_methyl_array.pkl -o train_val_test_sets/val_methyl_array.pkl --input_formatted_sample_sheet cell_types_adjusted.csv
+pymethyl-utils overwrite_pheno_data -i old_train_val_test_sets/test_methyl_array.pkl -o train_val_test_sets/test_methyl_array.pkl --input_formatted_sample_sheet cell_types_adjusted.csv
+```
+Visualize Results:
+```
+pymethyl-visualize plot_cell_type_results -i cell_types_adjusted.csv -o cell_types_adjusted.png
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap.html -c Age -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_sex.html -c Sex -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_CD4T.html -c CD4T -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_CD8T.html -c CD8T -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_NK.html -c NK -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_Bcell.html -c Bcell -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_gMDSC.html -c gMDSC -nn 8 &
+nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_Neu.html -c Neu -nn 8 &
+```
+
+**Embedding using VAE**
+Run 200 job hyperparameter scan for learning embeddings on torque (remove -t option to run local, same for prediction jobs below):  
+```
+methylnet-embed launch_hyperparameter_scan -sc Age -t -mc 0.84 -b 1. -g -j 200
+```
+Rerun top performing run to get final embeddings:
+```
+methylnet-embed launch_hyperparameter_scan -sc Age -t -g -n 1 -b 1.
+```
+
+**Predictions using Transfer Learning**
+Run 200 job hyperparameter scan for learning predictions on torque:
+```
+```
+Rerun top performing run to get final predictions:
+```
+```
+
+**Plot Embedding and Prediction Results**
+```
+pymethyl-visualize plot_cell_type_results -i predictions/results.csv -o cell_types_pred_vs_true.png
+```
+
+**MethylNet Interpretations**
+If using torque:  
+```
+
+```
+Else (running with GPU 0):  
+```
+CUDA_VISIBLE_DEVICES=0 methylnet-interpret produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 100 -col Disease_State -r 0 -rt 30 -nf 4000 -c
+```
+
+Extract spreadsheet of top overall CpGs:
+```
+
+```
+
+Plot bar chart of top CpGs:
+```
+
+```
+
+Find genomic context of these CpGs:
+```
+
+```
+
+Run enrichment test with LOLA:
+```
+
+```
+
+Plot results:
+```
+
+```
+
 
 Preprocessing:
 
@@ -32,25 +117,9 @@ Preprocessing:
 * nohup python preprocess.py imputation_pipeline -i ./autosomal/methyl_array.pkl -s fancyimpute -m KNN -k 15 -st 0.05 -ct 0.05 &
 * python preprocess.py feature_select -n 300000
 * mkdir visualizations
-* nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap.html -c Age -nn 8 &
-* nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap_sex.html -c Sex -nn 8 &
-* nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap_CD4T.html -c CD4T -nn 8 &
-* nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap_CD8T.html -c CD8T -nn 8 &
-* nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap_NK.html -c NK -nn 8 &
-* nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap_Bcell.html -c Bcell -nn 8 &
-* nohup python visualizations.py transform_plot -o visualizations/pre_vae_umap_gMDSC.html -c gMDSC -nn 8 &
+
 
 * python utils.py train_test_val_split -tp .8 -vp .125
-* nohup pymethyl-utils ref_estimate_cell_counts -ro geo_idats/ -a IDOL  &
-* df=pd.read_csv('added_cell_counts/cell_type_estimates.csv')
-  df.pivot('Var1','Var2','Freq').to_csv('added_cell_counts/cell_types_adjusted.csv')
-* scp ../blood/added_cell_counts/cell_types_adjusted.csv .
-* mkdir old_train_val_test_sets/ && mv train_val_test_sets/* old_train_val_test_sets
-* pymethyl-utils overwrite_pheno_data -i old_train_val_test_sets/train_methyl_array.pkl -o train_val_test_sets/train_methyl_array.pkl --input_formatted_sample_sheet cell_types_adjusted.csv
-* pymethyl-utils overwrite_pheno_data -i old_train_val_test_sets/val_methyl_array.pkl -o train_val_test_sets/val_methyl_array.pkl --input_formatted_sample_sheet cell_types_adjusted.csv
-* pymethyl-utils overwrite_pheno_data -i old_train_val_test_sets/test_methyl_array.pkl -o train_val_test_sets/test_methyl_array.pkl --input_formatted_sample_sheet cell_types_adjusted.csv
-* pymethyl-visualize plot_cell_type_results -i predictions/results.csv -o cell_types_adjusted.png
-* pymethyl-visualize plot_cell_type_results -i cell_types_adjusted.csv -o cell_types_adjusted.png
 
 
 

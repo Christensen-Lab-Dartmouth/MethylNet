@@ -27,6 +27,7 @@ NOTE: Images will be updated to reflect latest set of MethylNet commands.
 * See install instructions for PyMethylProcess at https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess  
 * conda install pytorch torchvision -c pytorch  
 * pip install methylnet  
+* download_help_data
 * Alternative docker install coming out soon.  
 
 **Running MethylNet:**

@@ -1,0 +1,646 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to MethylNet’s documentation! &mdash; MethylNet 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> MethylNet
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Welcome to MethylNet’s documentation!</a><ul>
+<li><a class="reference internal" href="#methylnet-embed">methylnet-embed</a><ul>
+<li><a class="reference internal" href="#methylnet-embed-launch-hyperparameter-scan">launch_hyperparameter_scan</a></li>
+<li><a class="reference internal" href="#methylnet-embed-perform-embedding">perform_embedding</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#example-usage">Example Usage</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">MethylNet</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Welcome to MethylNet’s documentation!</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="welcome-to-methylnet-s-documentation">
+<h1>Welcome to MethylNet’s documentation!<a class="headerlink" href="#welcome-to-methylnet-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://github.com/Christensen-Lab-Dartmouth/MethylNet">https://github.com/Christensen-Lab-Dartmouth/MethylNet</a></p>
+<p>See README.md in Github repository for install directions and for example scripts for running the pipeline (not all datasets may be available on GEO at this time).</p>
+<p>There is both an API and CLI available for use. Examples for CLI usage can be found in ./example_scripts.</p>
+<div class="toctree-wrapper compound">
+</div>
+<a class="reference internal image-reference" href="_images/10.jpeg"><img alt="Download" class="align-center" src="_images/10.jpeg" style="width: 480.0px; height: 360.0px;" /></a>
+<a class="reference internal image-reference" href="_images/11.jpeg"><img alt="Download" class="align-center" src="_images/11.jpeg" style="width: 480.0px; height: 360.0px;" /></a>
+<a class="reference internal image-reference" href="_images/12.jpeg"><img alt="Download" class="align-center" src="_images/12.jpeg" style="width: 480.0px; height: 360.0px;" /></a>
+<a class="reference internal image-reference" href="_images/13.jpeg"><img alt="Download" class="align-center" src="_images/13.jpeg" style="width: 480.0px; height: 360.0px;" /></a>
+<span class="target" id="module-methylnet.datasets"></span><dl class="class">
+<dt id="methylnet.datasets.MethylationDataSet">
+<em class="property">class </em><code class="descclassname">methylnet.datasets.</code><code class="descname">MethylationDataSet</code><span class="sig-paren">(</span><em>methylation_array</em>, <em>transform</em>, <em>outcome_col=''</em>, <em>categorical=False</em>, <em>categorical_encoder=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/datasets.html#MethylationDataSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.datasets.MethylationDataSet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="methylnet.datasets.MethylationPredictionDataSet">
+<em class="property">class </em><code class="descclassname">methylnet.datasets.</code><code class="descname">MethylationPredictionDataSet</code><span class="sig-paren">(</span><em>methylation_array</em>, <em>transform</em>, <em>outcome_col=''</em>, <em>categorical=False</em>, <em>categorical_encoder=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/datasets.html#MethylationPredictionDataSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.datasets.MethylationPredictionDataSet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="methylnet.datasets.RawBetaArrayDataSet">
+<em class="property">class </em><code class="descclassname">methylnet.datasets.</code><code class="descname">RawBetaArrayDataSet</code><span class="sig-paren">(</span><em>beta_array</em>, <em>transform</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/datasets.html#RawBetaArrayDataSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.datasets.RawBetaArrayDataSet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="methylnet.datasets.cat">
+<code class="descclassname">methylnet.datasets.</code><code class="descname">cat</code><span class="sig-paren">(</span><em>tensors</em>, <em>dim=0</em>, <em>out=None</em><span class="sig-paren">)</span> &#x2192; Tensor<a class="headerlink" href="#methylnet.datasets.cat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenates the given sequence of <code class="xref py py-attr docutils literal notranslate"><span class="pre">seq</span></code> tensors in the given dimension.
+All tensors must either have the same shape (except in the concatenating
+dimension) or be empty.</p>
+<p><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.cat()</span></code> can be seen as an inverse operation for <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.split()</span></code>
+and <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.chunk()</span></code>.</p>
+<p><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.cat()</span></code> can be best understood via examples.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first docutils">
+<dt>tensors (sequence of Tensors): any python sequence of tensors of the same type.</dt>
+<dd>Non-empty tensors provided must have the same shape, except in the
+cat dimension.</dd>
+</dl>
+<p class="last">dim (int, optional): the dimension over which the tensors are concatenated
+out (Tensor, optional): the output tensor</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
+<span class="go">tensor([[ 0.6580, -1.0969, -0.4614],</span>
+<span class="go">        [-0.1034, -0.5790,  0.1497]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">tensor([[ 0.6580, -1.0969, -0.4614],</span>
+<span class="go">        [-0.1034, -0.5790,  0.1497],</span>
+<span class="go">        [ 0.6580, -1.0969, -0.4614],</span>
+<span class="go">        [-0.1034, -0.5790,  0.1497],</span>
+<span class="go">        [ 0.6580, -1.0969, -0.4614],</span>
+<span class="go">        [-0.1034, -0.5790,  0.1497]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">tensor([[ 0.6580, -1.0969, -0.4614,  0.6580, -1.0969, -0.4614,  0.6580,</span>
+<span class="go">         -1.0969, -0.4614],</span>
+<span class="go">        [-0.1034, -0.5790,  0.1497, -0.1034, -0.5790,  0.1497, -0.1034,</span>
+<span class="go">         -0.5790,  0.1497]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="methylnet.datasets.stack">
+<code class="descclassname">methylnet.datasets.</code><code class="descname">stack</code><span class="sig-paren">(</span><em>seq</em>, <em>dim=0</em>, <em>out=None</em><span class="sig-paren">)</span> &#x2192; Tensor<a class="headerlink" href="#methylnet.datasets.stack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenates sequence of tensors along a new dimension.</p>
+<p>All tensors need to be of the same size.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><p class="first">seq (sequence of Tensors): sequence of tensors to concatenate
+dim (int): dimension to insert. Has to be between 0 and the number</p>
+<blockquote>
+<div>of dimensions of concatenated tensors (inclusive)</div></blockquote>
+<p class="last">out (Tensor, optional): the output tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-methylnet.hyperparameter_scans"></span><span class="target" id="module-methylnet.schedulers"></span><dl class="class">
+<dt id="methylnet.schedulers.CosineAnnealingWithRestartsLR">
+<em class="property">class </em><code class="descclassname">methylnet.schedulers.</code><code class="descname">CosineAnnealingWithRestartsLR</code><span class="sig-paren">(</span><em>optimizer</em>, <em>T_max</em>, <em>eta_min=0</em>, <em>last_epoch=-1</em>, <em>T_mult=1.0</em>, <em>alpha_decay=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/schedulers.html#CosineAnnealingWithRestartsLR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.schedulers.CosineAnnealingWithRestartsLR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the learning rate of each parameter group using a cosine annealing
+schedule, where <span class="math notranslate nohighlight">\(\eta_{max}\)</span> is set to the initial lr and
+<span class="math notranslate nohighlight">\(T_{cur}\)</span> is the number of epochs since the last restart in SGDR:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\eta_t = \eta_{min} + \frac{1}{2}(\eta_{max} - \eta_{min})(1 +
+\cos(\frac{T_{cur}}{T_{max}}\pi))\]</div>
+<p>When last_epoch=-1, sets initial lr as lr.
+It has been proposed in</p>
+</div></blockquote>
+<p><a class="reference external" href="https://arxiv.org/abs/1608.03983">SGDR: Stochastic Gradient Descent with Warm Restarts</a>. This implements
+the cosine annealing part of SGDR, the restarts and number of iterations multiplier.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Args:</dt>
+<dd>optimizer (Optimizer): Wrapped optimizer.
+T_max (int): Maximum number of iterations.
+T_mult (float): Multiply T_max by this number after each restart. Default: 1.
+eta_min (float): Minimum learning rate. Default: 0.
+last_epoch (int): The index of last epoch. Default: -1.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<div class="section" id="methylnet-embed">
+<h2>methylnet-embed<a class="headerlink" href="#methylnet-embed" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>methylnet-embed <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-version">
+<code class="descname">--version</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-embed-version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the version and exit.</p>
+</dd></dl>
+
+<div class="section" id="methylnet-embed-launch-hyperparameter-scan">
+<h3>launch_hyperparameter_scan<a class="headerlink" href="#methylnet-embed-launch-hyperparameter-scan" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>methylnet-embed launch_hyperparameter_scan <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-hcsv">
+<code class="descname">-hcsv</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--hyperparameter_input_csv</code><code class="descclassname"> &lt;hyperparameter_input_csv&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-hcsv" title="Permalink to this definition">¶</a></dt>
+<dd><p>CSV file containing hyperparameter inputs.  [default: embeddings/embed_hyperparameters_scan_input.csv]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-hl">
+<code class="descname">-hl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--hyperparameter_output_log</code><code class="descclassname"> &lt;hyperparameter_output_log&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-hl" title="Permalink to this definition">¶</a></dt>
+<dd><p>CSV file containing prior runs.  [default: embeddings/embed_hyperparameters_log.csv]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-g">
+<code class="descname">-g</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--generate_input</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-g" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate hyperparameter input csv.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-c">
+<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--job_chunk_size</code><code class="descclassname"> &lt;job_chunk_size&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>If not series, chunk up and run these number of commands at once..</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-sc">
+<code class="descname">-sc</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--stratify_column</code><code class="descclassname"> &lt;stratify_column&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-sc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Column to stratify samples on.  [default: disease]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-r">
+<code class="descname">-r</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--reset_all</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-r" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run all jobs again.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-t">
+<code class="descname">-t</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--torque</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Submit jobs on torque.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-gpu">
+<code class="descname">-gpu</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--gpu</code><code class="descclassname"> &lt;gpu&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-gpu" title="Permalink to this definition">¶</a></dt>
+<dd><p>If torque submit, which gpu to use.  [default: -1]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-gn">
+<code class="descname">-gn</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--gpu_node</code><code class="descclassname"> &lt;gpu_node&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-gn" title="Permalink to this definition">¶</a></dt>
+<dd><p>If torque submit, which gpu node to use.  [default: -1]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-nh">
+<code class="descname">-nh</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--nohup</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-nh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Nohup launch jobs.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-mc">
+<code class="descname">-mc</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--model_complexity_factor</code><code class="descclassname"> &lt;model_complexity_factor&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-mc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Degree of neural network model complexity for hyperparameter search. Search for less wide and less deep networks with a lower complexity value, bounded between 0 and infinity.  [default: 1.0]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-b">
+<code class="descname">-b</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--set_beta</code><code class="descclassname"> &lt;set_beta&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-b" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set beta value, bounded between 0 and infinity. Set to -1   [default: 1.0]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-j">
+<code class="descname">-j</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--n_jobs</code><code class="descclassname"> &lt;n_jobs&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-j" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of jobs to generate.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-n">
+<code class="descname">-n</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--n_jobs_relaunch</code><code class="descclassname"> &lt;n_jobs_relaunch&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Relaunch n top jobs from previous run.  [default: 0]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-crossover-p">
+<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--crossover_p</code><code class="descclassname"> &lt;crossover_p&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-crossover-p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate of crossover between hyperparameters.  [default: 0.0]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-v">
+<code class="descname">-v</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--val_loss_column</code><code class="descclassname"> &lt;val_loss_column&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-v" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validation loss column.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="methylnet-embed-perform-embedding">
+<h3>perform_embedding<a class="headerlink" href="#methylnet-embed-perform-embedding" title="Permalink to this headline">¶</a></h3>
+<p>Perform variational autoencoding on methylation dataset.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>methylnet-embed perform_embedding <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-i">
+<code class="descname">-i</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--train_pkl</code><code class="descclassname"> &lt;train_pkl&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Input database for beta and phenotype data.  [default: ./train_val_test_sets/train_methyl_array.pkl]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-o">
+<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--output_dir</code><code class="descclassname"> &lt;output_dir&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-o" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output directory for embeddings.  [default: ./embeddings/]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-c">
+<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--cuda</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use GPUs.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-n">
+<code class="descname">-n</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--n_latent</code><code class="descclassname"> &lt;n_latent&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of latent dimensions.  [default: 64]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-lr">
+<code class="descname">-lr</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--learning_rate</code><code class="descclassname"> &lt;learning_rate&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-lr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Learning rate.  [default: 0.001]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-wd">
+<code class="descname">-wd</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--weight_decay</code><code class="descclassname"> &lt;weight_decay&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-wd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Weight decay of adam optimizer.  [default: 0.0001]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-e">
+<code class="descname">-e</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--n_epochs</code><code class="descclassname"> &lt;n_epochs&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-e" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of epochs to train over.  [default: 50]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-hlt">
+<code class="descname">-hlt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--hidden_layer_encoder_topology</code><code class="descclassname"> &lt;hidden_layer_encoder_topology&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-hlt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Topology of hidden layers, comma delimited, leave empty for one layer encoder, eg. 100,100 is example of 5-hidden layer topology.  [default: ]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-kl">
+<code class="descname">-kl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--kl_warm_up</code><code class="descclassname"> &lt;kl_warm_up&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-kl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of epochs before introducing kl_loss.  [default: 0]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-b">
+<code class="descname">-b</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--beta</code><code class="descclassname"> &lt;beta&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-b" title="Permalink to this definition">¶</a></dt>
+<dd><p>Weighting of kl divergence.  [default: 1.0]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-s">
+<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--scheduler</code><code class="descclassname"> &lt;scheduler&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type of learning rate scheduler.  [default: null]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-d">
+<code class="descname">-d</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--decay</code><code class="descclassname"> &lt;decay&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Learning rate scheduler decay for exp selection.  [default: 0.5]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-t">
+<code class="descname">-t</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--t_max</code><code class="descclassname"> &lt;t_max&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of epochs before cosine learning rate restart.  [default: 10]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-eta">
+<code class="descname">-eta</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--eta_min</code><code class="descclassname"> &lt;eta_min&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-eta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimum cosine LR.  [default: 1e-06]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-m">
+<code class="descname">-m</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--t_mult</code><code class="descclassname"> &lt;t_mult&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiply current restart period times this number given number of restarts.  [default: 2.0]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-bce">
+<code class="descname">-bce</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--bce_loss</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-bce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use bce loss instead of MSE.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-bs">
+<code class="descname">-bs</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--batch_size</code><code class="descclassname"> &lt;batch_size&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-bs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Batch size.  [default: 50]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-vp">
+<code class="descname">-vp</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--val_pkl</code><code class="descclassname"> &lt;val_pkl&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-vp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validation Set Methylation Array Location.  [default: ./train_val_test_sets/val_methyl_array.pkl]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-w">
+<code class="descname">-w</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--n_workers</code><code class="descclassname"> &lt;n_workers&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-w" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of workers.  [default: 9]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-conv">
+<code class="descname">-conv</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--convolutional</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-conv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use convolutional VAE.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-hs">
+<code class="descname">-hs</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--height_kernel_sizes</code><code class="descclassname"> &lt;height_kernel_sizes&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-hs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Heights of convolutional kernels.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-ws">
+<code class="descname">-ws</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--width_kernel_sizes</code><code class="descclassname"> &lt;width_kernel_sizes&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-ws" title="Permalink to this definition">¶</a></dt>
+<dd><p>Widths of convolutional kernels.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-v">
+<code class="descname">-v</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--add_validation_set</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-v" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate validation set.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-l">
+<code class="descname">-l</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--loss_reduction</code><code class="descclassname"> &lt;loss_reduction&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-l" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type of reduction on loss function.  [default: sum]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-hl">
+<code class="descname">-hl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--hyperparameter_log</code><code class="descclassname"> &lt;hyperparameter_log&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-hl" title="Permalink to this definition">¶</a></dt>
+<dd><p>CSV file containing prior runs.  [default: embeddings/embed_hyperparameters_log.csv]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-sc">
+<code class="descname">-sc</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--stratify_column</code><code class="descclassname"> &lt;stratify_column&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-sc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Column to stratify samples on.  [default: disease]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-perform-embedding-j">
+<code class="descname">-j</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--job_name</code><code class="descclassname"> &lt;job_name&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-perform-embedding-j" title="Permalink to this definition">¶</a></dt>
+<dd><p>Embedding job name.  [default: embed_job]</p>
+</dd></dl>
+
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">prog:</th><td class="field-body">methylnet-visualize</td>
+</tr>
+<tr class="field-even field"><th class="field-name">show-nested:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">prog:</th><td class="field-body"><p class="first">methylnet-torque</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">show-nested:</th><td class="field-body"><dl class="first docutils">
+<dt>ipts’:[‘methylnet-embed=methylnet.embedding:embed’,</dt>
+<dd><p class="first last">‘methylnet-predict=methylnet.predictions:predict’,
+‘methylnet-interpret=methylnet.model_interpretability:interpret’,
+‘methylnet-visualize=methylnet.visualizations:visualize’,
+‘methylnet-torque=methylnet.torque_job_runner:torque’]</p>
+</dd>
+</dl>
+<p class="last">},</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="example-usage">
+<h1>Example Usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h1>
+<a class="reference internal image-reference" href="_images/1.jpeg"><img alt="Download" class="align-center" src="_images/1.jpeg" style="width: 480.0px; height: 360.0px;" /></a>
+<a class="reference internal image-reference" href="_images/2.jpeg"><img alt="Download" class="align-center" src="_images/2.jpeg" style="width: 480.0px; height: 360.0px;" /></a>
+<a class="reference internal image-reference" href="_images/3.jpeg"><img alt="Download" class="align-center" src="_images/3.jpeg" style="width: 480.0px; height: 360.0px;" /></a>
+<a class="reference internal image-reference" href="_images/4.jpeg"><img alt="Download" class="align-center" src="_images/4.jpeg" style="width: 480.0px; height: 360.0px;" /></a>
+<a class="reference internal image-reference" href="_images/5.jpeg"><img alt="Download" class="align-center" src="_images/5.jpeg" style="width: 480.0px; height: 360.0px;" /></a>
+<a class="reference internal image-reference" href="_images/6.jpeg"><img alt="Download" class="align-center" src="_images/6.jpeg" style="width: 480.0px; height: 360.0px;" /></a>
+<a class="reference internal image-reference" href="_images/7.jpeg"><img alt="Download" class="align-center" src="_images/7.jpeg" style="width: 480.0px; height: 360.0px;" /></a>
+<a class="reference internal image-reference" href="_images/8.jpeg"><img alt="Download" class="align-center" src="_images/8.jpeg" style="width: 480.0px; height: 360.0px;" /></a>
+<a class="reference internal image-reference" href="_images/9.jpeg"><img alt="Download" class="align-center" src="_images/9.jpeg" style="width: 480.0px; height: 360.0px;" /></a>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Joshua Levy
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
