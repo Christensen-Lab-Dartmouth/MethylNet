@@ -1,3 +1,9 @@
+"""
+torque_job_runner.py
+=======================
+Wraps and runs your commands through torque.
+"""
+
 import click, os
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
@@ -8,6 +14,29 @@ def torque():
     pass
 
 def assemble_replace_dict(command, use_gpu, additions, queue, time, ngpu):
+    """Short summary.
+
+    Parameters
+    ----------
+    command : type
+        Description of parameter `command`.
+    use_gpu : type
+        Description of parameter `use_gpu`.
+    additions : type
+        Description of parameter `additions`.
+    queue : type
+        Description of parameter `queue`.
+    time : type
+        Description of parameter `time`.
+    ngpu : type
+        Description of parameter `ngpu`.
+
+    Returns
+    -------
+    type
+        Description of returned object.
+
+    """
     replace_dict = {'COMMAND':"{} {}".format('CUDA_VISIBLE_DEVICES="$gpuNum"' if use_gpu else '',command),
                 'USE_GPU_COMMANDS':"""gpuNum=`cat $PBS_GPUFILE | sed -e 's/.*-gpu//g'`
                 unset CUDA_VISIBLE_DEVICES
@@ -18,6 +47,21 @@ def assemble_replace_dict(command, use_gpu, additions, queue, time, ngpu):
     return replace_dict
 
 def run_torque_job_(replace_dict, additional_options=""):
+    """Short summary.
+
+    Parameters
+    ----------
+    replace_dict : type
+        Description of parameter `replace_dict`.
+    additional_options : type
+        Description of parameter `additional_options`.
+
+    Returns
+    -------
+    type
+        Description of returned object.
+
+    """
     txt="""#!/bin/bash -l
         #PBS -N run_torque
         #PBS -q QUEUE
@@ -37,6 +81,31 @@ def run_torque_job_(replace_dict, additional_options=""):
     return job
 
 def assemble_run_torque(command, use_gpu, additions, queue, time, ngpu, additional_options=""):
+    """Short summary.
+
+    Parameters
+    ----------
+    command : type
+        Description of parameter `command`.
+    use_gpu : type
+        Description of parameter `use_gpu`.
+    additions : type
+        Description of parameter `additions`.
+    queue : type
+        Description of parameter `queue`.
+    time : type
+        Description of parameter `time`.
+    ngpu : type
+        Description of parameter `ngpu`.
+    additional_options : type
+        Description of parameter `additional_options`.
+
+    Returns
+    -------
+    type
+        Description of returned object.
+
+    """
     job = run_torque_job_(assemble_replace_dict(command, use_gpu, additions, queue, time, ngpu),additional_options)
     return job
 

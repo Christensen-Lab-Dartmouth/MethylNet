@@ -1,3 +1,9 @@
+"""
+plotter.py
+=======================
+Plotting mechanisms for training that are now defuct.
+"""
+
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation

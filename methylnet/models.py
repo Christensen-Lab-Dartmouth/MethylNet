@@ -1,3 +1,8 @@
+"""
+models.py
+=======================
+Contains core PyTorch Models for running VAE and VAE-MLP."""
+
 from torch import nn
 import torch
 from torch.autograd import Variable

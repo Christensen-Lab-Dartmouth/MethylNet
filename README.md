@@ -21,14 +21,18 @@ MethylNet is a command line tool and python library that provides classes to han
 
 NOTE: Images will be updated to reflect latest set of MethylNet commands.
 
-**Install (Conda highly recommended, though Docker can be used, as well as nvidia-docker and Singularity for GPU usage, Docker image to come):**
+**Install (Conda highly recommended, though Docker can be used):**
 * conda create -n methylnet python=3.6  
 * source activate methylnet  
 * See install instructions for PyMethylProcess at https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess  
 * conda install pytorch torchvision -c pytorch  
 * pip install methylnet  
-* download_help_data
+* download_help_data  
 * Alternative docker install coming out soon.  
+                * If looking to use only CPUs, only core docker or singularity needed, and see singulairty website for information on how to pull Docker images  
+                * See https://singularity.lbl.gov/faq#does-singularity-support-containers-that-require-gpus for information on getting Singularity to work with GPUs  
+                * nvidia-docker is also the Docker equivalent to run GPU jobs  
+* GPU usage is also possible through the base install (without Docker), provided that your machine has GPU access.  
 
 **Running MethylNet:**
 1. source activate methylnet  

@@ -1,3 +1,9 @@
+"""
+hyperparameter_scans.py
+=======================
+Run randomized grid search to find ideal model hyperparameters, with possible deployments to batch system for scalability.
+"""
+
 import os, pandas as pd, numpy as np, subprocess
 import time
 from methylnet.torque_job_runner import assemble_run_torque

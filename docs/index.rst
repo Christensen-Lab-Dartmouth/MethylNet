@@ -45,6 +45,9 @@ There is both an API and CLI available for use. Examples for CLI usage can be fo
 .. automodule:: methylnet.hyperparameter_scans
    :members:
 
+.. automodule:: methylnet.torque_job_runner
+   :members:
+
 .. automodule:: methylnet.interpretation_classes
    :members:
 

@@ -18,6 +18,7 @@ def visualize():
 @click.option('-vae', '--vae_train', is_flag=True, help='Plot VAE Training curves.')
 @click.option('-thr', '--threshold', default=1e10, help='Loss values get rid of greater than this.')
 def plot_training_curve(training_curve_file, outputfilename, vae_train, threshold):
+    """Plot training curves as output from either the VAE training or VAE MLP."""
     import os
     os.makedirs(outputfilename[:outputfilename.rfind('/')],exist_ok=True)
     import matplotlib

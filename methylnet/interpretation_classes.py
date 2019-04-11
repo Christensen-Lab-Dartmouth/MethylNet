@@ -1,3 +1,9 @@
+"""
+interpretation_classes.py
+=======================
+Contains core classes and functions to extracting explanations for the predictions at single samples, and then interrogates important CpGs for biological plausibility.
+"""
+
 import shap, numpy as np, pandas as pd
 import torch
 from methylnet.datasets import RawBetaArrayDataSet, Transformer
@@ -593,3 +599,110 @@ class BioInterpreter:
             print(output_dfs['prediction_{}'.format(k)].head())
         return output_dfs
         #https://academic.oup.com/bioinformatics/article/32/4/587/1743969
+
+def return_shap_values(test_arr, explainer, method, n_samples, additional_opts):
+    if method == 'kernel' or method == 'gradient': # ranked_outputs=ranked_outputs, add if feature_selection
+        svals=(explainer.shap_values(test_arr, nsamples=n_samples, **additional_opts)[0] if (method == 'gradient' and additional_opts['ranked_outputs'] != None) else explainer.shap_values(test_arr, nsamples=n_samples))
+        return np.stack(svals,axis=0) if type(svals) == type([]) else svals
+    else:
+        return (explainer.shap_values(test_arr, **additional_opts)[0] if additional_opts['ranked_outputs'] !=None else explainer.shap_values(test_arr))
+
+def to_tensor(arr):
+    return Transformer().generate()(arr)
+
+def return_predict_function(model, cuda):
+    def predict(loader): # model can be VAE_MLP, TybaltTitusVAE, or CVAE
+        model.eval()
+        outputs=[]
+        for input in loader:
+            input=Variable(input)
+            if cuda:
+                input = input.cuda()
+            outputs.append(np.squeeze(model.forward_predict(input).detach().cpu().numpy()))
+        outputs=np.vstack(outputs)
+        return outputs
+    return predict
+
+# https://github.com/slundberg/shap/blob/master/shap/common.py
+# Provided model function fails when applied to the provided data set.
+
+def return_dataloader_construct(n_workers,batch_size):
+    def construct_data_loader(raw_beta_array):
+        raw_beta_dataset=RawBetaArrayDataSet(raw_beta_array,Transformer())
+        raw_beta_dataloader=DataLoader(dataset=raw_beta_dataset,
+            num_workers=n_workers,
+            batch_size=batch_size,
+            shuffle=False)
+        return raw_beta_dataloader
+    return construct_data_loader
+
+def main_prediction_function(n_workers,batch_size, model, cuda):
+    dataloader_constructor=return_dataloader_construct(n_workers,batch_size)
+    predict_function=return_predict_function(model, cuda)
+    def main_predict(raw_beta_array):
+        return predict_function(dataloader_constructor(raw_beta_array))
+    return main_predict
+
+def plot_lola_output_(lola_csv, plot_output_dir, description_col, cell_types):
+    os.makedirs(plot_output_dir,exist_ok=True)
+    import matplotlib
+    matplotlib.use('Agg')
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    # from rpy2.robjects.packages import importr
+    # import rpy2.robjects as robjects
+    # from rpy2.robjects import pandas2ri
+    # pandas2ri.activate()
+    # ggplot=importr("ggplot2")
+    # importr("ggpubr")
+    # forcats=importr('forcats')
+    #
+    # create_bar_chart=robjects.r("""function(df,fill.col=NULL){
+    #                     ggboxplot(df, x = "description", y = "oddsRatio", fill = fill.col,#,
+    #                       color = "white",           # Set bar border colors to white
+    #                       palette = "jco",            # jco journal color palett. see ?ggpar
+    #
+    #                       orientation = "horiz")}           # Sort the value in dscending order
+    #                       #sort.by.groups = F, #TRUE,      # Sort inside each group
+    #                       # sort.val = "desc",
+    #                       #)
+    #                 #}""")
+
+    def create_bar_chart(df, description='description', cell_type=None):
+        sns.set(style="whitegrid")
+        f, ax = plt.subplots(figsize=(10,7))
+        sns.despine(bottom=True, left=True)
+        sns.stripplot(x="oddsRatio", y=description, hue=cell_type,
+              data=df, dodge=True, jitter=True,
+              alpha=.25, zorder=1)
+        sns.pointplot(x="oddsRatio", y=description, hue=cell_type,
+              data=df, dodge=.532, join=False, palette="dark",
+              markers="d", scale=.75, ci=None)
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles[3:], labels[3:], title="Cell Types",
+                  handletextpad=0, columnspacing=1,
+                  loc="lower right", ncol=3, frameon=True)
+        ax.set_xlim(left=0)
+        return f,ax
+
+    lola_results=pd.read_csv(lola_csv)#[['collection','description','oddsRatio','cellType']]
+
+    # filter cell types here
+    collections_df=lola_results.groupby('collection')
+    for name,df in collections_df:
+        top_results_df=df.iloc[:min(25,df.shape[0]),:].reset_index(drop=True)
+
+        #top_results_df=pandas2ri.py2ri(top_results_df)#pandas2ri.py2ri(top_results_df)
+        #robjects.r("print")(top_results_df)
+        #top_results_df=robjects.r("function(df){data.frame(df,stringsAsFactors=FALSE)}")(robjects.r("function(df){lapply(df,as.character)}")(top_results_df)) # FIX
+        #print(top_results_df)
+        """RESET FACTORS ^^^"""
+        #diagnose_df=pandas2ri.ri2py(top_results_df)
+        top_results_df=top_results_df.fillna('NULL')
+        plt.figure()
+        f,ax=create_bar_chart(top_results_df,description_col,'cellType')
+        plt.tight_layout()
+        plt.savefig(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
+        plt.close()
+        #ggplot.ggsave(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
+    # add shore island breakdown

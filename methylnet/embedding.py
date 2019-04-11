@@ -163,6 +163,7 @@ def perform_embedding(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_de
 @click.option('-c', '--crossover_p', default=0., help='Rate of crossover between hyperparameters.', show_default=True)
 @click.option('-v', '--val_loss_column', default='min_val_loss-batchsize_adj', help='Validation loss column.', type=click.Path(exists=False))
 def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, model_complexity_factor, set_beta,n_jobs, n_jobs_relaunch, crossover_p, val_loss_column):
+    """Launch randomized grid search of neural network hyperparameters."""
     from hyperparameter_scans import coarse_scan, find_top_jobs
     custom_jobs=[]
     if n_jobs_relaunch:

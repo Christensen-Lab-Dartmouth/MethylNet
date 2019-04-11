@@ -209,6 +209,7 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
 @click.option('-e', '--categorical_encoder', default='./predictions/one_hot_encoder.p', help='One hot encoder if categorical model. If path exists, then return top positive controbutions per samples of that class. Encoded values must be of sample class as interest_col.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./new_predictions/', help='Output directory for predictions.', type=click.Path(exists=False), show_default=True)
 def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest_cols, categorical, cuda, categorical_encoder, output_dir):
+    """Run prediction model again to further assess outcome."""
     os.makedirs(output_dir,exist_ok=True)
     test_methyl_array = MethylationArray.from_pickle(test_pkl) # generate results pickle to run through classification/regression report
     if cuda:
@@ -275,6 +276,7 @@ def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest
 @click.option('-v', '--val_loss_column', default='min_val_loss', help='Validation loss column.', type=click.Path(exists=False))
 @click.option('-sft', '--add_softmax', is_flag=True, help='Add softmax for predicting probability distributions.')
 def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column, add_softmax):
+    """Run randomized hyperparameter scan of neural network hyperparameters."""
     from hyperparameter_scans import coarse_scan, find_top_jobs
     custom_jobs=[]
     if n_jobs_relaunch:
@@ -285,6 +287,8 @@ def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_l
 @click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))
 @click.option('-o', '--output_dir', default='results/', show_default=True, help='Output directory.', type=click.Path(exists=False))
 def regression_report(results_pickle,output_dir):
+    """Generate regression report that gives concise results from regression tasks."""
+
     # FIXME expand functionality
     import matplotlib
     matplotlib.use('Agg')
@@ -312,6 +316,7 @@ def regression_report(results_pickle,output_dir):
 @click.option('-o', '--output_dir', default='results/', show_default=True, help='Output directory.', type=click.Path(exists=False))
 @click.option('-e', '--categorical_encoder', default='./predictions/one_hot_encoder.p', help='One hot encoder if categorical model. If path exists, then return top positive controbutions per samples of that class. Encoded values must be of sample class as interest_col.', type=click.Path(exists=False), show_default=True)
 def classification_report(results_pickle,output_dir, categorical_encoder):
+    """Generate classification report that gives results from classification tasks."""
     from mlxtend.evaluate import bootstrap
     from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, roc_curve, roc_auc_score, confusion_matrix
     os.makedirs(output_dir,exist_ok=True)

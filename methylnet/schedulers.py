@@ -1,3 +1,8 @@
+"""
+schedulers.py
+=======================
+Learning rate schedulers that help enable better and more generalizable models."""
+
 import torch
 from torch.optim.lr_scheduler import ExponentialLR,LambdaLR
 import math
