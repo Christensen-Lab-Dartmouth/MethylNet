@@ -9,7 +9,7 @@ Run commands from: https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess/
 **Embedding using VAE**
 Run 200 job hyperparameter scan for learning embeddings on torque (remove -t option to run local, same for prediction jobs below):  
 ```
-methylnet-embed launch_hyperparameter_scan -sc disease -t -mc 0.84 -b 1. -g -j 200
+methylnet-embed launch_hyperparameter_scan -sc disease -t -mc 0.84 -b 1. -g -j 200 -a "module load python/3-Anaconda && source activate methylnet_pro2"
 ```
 FINISH BELOW
 Rerun top performing run to get final embeddings:

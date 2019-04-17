@@ -38,7 +38,7 @@ def assemble_replace_dict(command, use_gpu, additions, queue, time, ngpu):
 
     """
     replace_dict = {'COMMAND':"{} {}".format('CUDA_VISIBLE_DEVICES="$gpuNum"' if use_gpu else '',command),
-                'GPU_COMMANDS':"""gpuNum=`cat $PBS_GPUFILE | sed -e 's/.*-gpu//g'`
+                'GPU_SETUP':"""gpuNum=`cat $PBS_GPUFILE | sed -e 's/.*-gpu//g'`
 unset CUDA_VISIBLE_DEVICES
 export CUDA_DEVICE=$gpuNum""" if use_gpu else '',
                 'NGPU':'#PBS -l gpus={}'.format(ngpu) if ngpu else '',
@@ -70,7 +70,7 @@ USE_GPU
 #PBS -l walltime=TIME:00:00
 #PBS -j oe
 cd $PBS_O_WORKDIR
-GPU_COMMANDS
+GPU_SETUP
 ADDITIONS
 COMMAND"""
     for k,v in replace_dict.items():

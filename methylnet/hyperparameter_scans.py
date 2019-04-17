@@ -78,7 +78,7 @@ def generate_topology(topology_grid, probability_decay_factor=0.9):
         return ''
     return ''
 
-def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[], model_complexity_factor=0.9, set_beta=-1., n_jobs=4, categorical=True, add_softmax=False):
+def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[], model_complexity_factor=0.9, set_beta=-1., n_jobs=4, categorical=True, add_softmax=False, additional_command = ""):
     """Perform randomized hyperparameter grid search
 
     Parameters
@@ -182,7 +182,7 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
         commands[i] = '{} {} {} {}'.format('CUDA_VISIBLE_DEVICES="{}"'.format(next(gpus)) if not torque else "",'nohup' if nohup else '',commands[i],'&' if nohup else '') # $gpuNum
     if torque:
         for command in commands:
-            job = assemble_run_torque(command, use_gpu=True, additions='', queue='gpuq', time=2, ngpu=1, additional_options='' if gpu_node == -1 else ' -l hostlist=g0{}'.format(gpu_node))
+            job = assemble_run_torque(command, use_gpu=True, additions=additional_command, queue='gpuq', time=4, ngpu=1, additional_options='' if gpu_node == -1 else ' -l hostlist=g0{}'.format(gpu_node))
     else:
         if len(commands) == 1:
             subprocess.call(commands[0],shell=True)
