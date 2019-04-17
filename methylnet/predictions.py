@@ -277,7 +277,7 @@ def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest
 @click.option('-sft', '--add_softmax', is_flag=True, help='Add softmax for predicting probability distributions.')
 def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column, add_softmax):
     """Run randomized hyperparameter scan of neural network hyperparameters."""
-    from hyperparameter_scans import coarse_scan, find_top_jobs
+    from methylnet.hyperparameter_scans import coarse_scan, find_top_jobs
     custom_jobs=[]
     if n_jobs_relaunch:
         custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p, val_loss_column)

@@ -9,6 +9,28 @@ import time
 from methylnet.torque_job_runner import assemble_run_torque
 
 def find_top_jobs(hyperparameter_input_csv,hyperparameter_output_log, n_top_jobs, crossover_p=0, val_loss_column='min_val_loss'):
+    """Finds top performing jobs from hyper parameter scan to rerun and cross-over parameters.
+
+    Parameters
+    ----------
+    hyperparameter_input_csv : str
+        CSV file containing hyperparameter inputs.
+    hyperparameter_output_log : str
+        CSV file containing prior runs.
+    n_top_jobs : int
+        Number of top jobs to select
+    crossover_p : float
+        Rate of cross over of reused hyperparameters
+    val_loss_column : str
+        Loss column used to select top jobs
+
+    Returns
+    -------
+    list
+        List of list of new parameters for jobs to run.
+
+    """
+
     custom_jobs = pd.read_csv(hyperparameter_input_csv)
     hyperparam_output = pd.read_csv(hyperparameter_output_log)[['job_name',val_loss_column]]
     best_outputs = hyperparam_output.sort_values(val_loss_column,ascending=True).iloc[:n_top_jobs,:]
@@ -26,6 +48,22 @@ def find_top_jobs(hyperparameter_input_csv,hyperparameter_output_log, n_top_jobs
     return [custom_jobs]
 
 def generate_topology(topology_grid, probability_decay_factor=0.9):
+    """Generates list denoting neural network topology, list of hidden layer sizes.
+
+    Parameters
+    ----------
+    topology_grid : list
+        List of different hidden layer sizes (number neurons) to choose from.
+    probability_decay_factor : float
+        Degree of neural network model complexity for hyperparameter search. Search for less wide networks with a lower complexity value, bounded between 0 and infinity.
+
+    Returns
+    -------
+    list
+        List of hidden layer sizes.
+
+    """
+
     probability_decay_factor=float(max(probability_decay_factor,0.))
     p = probability_decay_factor**np.arange(len(topology_grid))
     p /= sum(p)
@@ -41,6 +79,46 @@ def generate_topology(topology_grid, probability_decay_factor=0.9):
     return ''
 
 def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[], model_complexity_factor=0.9, set_beta=-1., n_jobs=4, categorical=True, add_softmax=False):
+    """Perform randomized hyperparameter grid search
+
+    Parameters
+    ----------
+    hyperparameter_input_csv : type
+        CSV file containing hyperparameter inputs.
+    hyperparameter_output_log : type
+        CSV file containing prior runs.
+    generate_input : type
+        Generate hyperparameter input csv.
+    job_chunk_size : type
+        Number of jobs to be launched at same time.
+    stratify_column : type
+        Performing classification?
+    reset_all : type
+        Rerun all jobs previously scanned.
+    torque : type
+        Run jobs using torque.
+    gpu : type
+        What GPU to use, set to -1 to be agnostic to GPU selection.
+    gpu_node : type
+        What GPU to use, set to -1 to be agnostic to GPU selection, for torque submission.
+    nohup : type
+        Launch jobs using nohup.
+    mlp : type
+        If running prediction job (classification/regression) after VAE.
+    custom_jobs : type
+        Supply custom job parameters to be run.
+    model_complexity_factor : type
+        Degree of neural network model complexity for hyperparameter search. Search for less wide networks with a lower complexity value, bounded between 0 and infinity.
+    set_beta : type
+        Don't hyperparameter scan over beta (KL divergence weight), and set it to value.
+    n_jobs : type
+        Number of jobs to generate.
+    categorical : type
+        Classification task?
+    add_softmax : type
+        Add softmax layer at end of neural network.
+
+    """
     from itertools import cycle
     from pathos.multiprocessing import ProcessingPool as Pool
     os.makedirs(hyperparameter_input_csv[:hyperparameter_input_csv.rfind('/')],exist_ok=True)
@@ -95,9 +173,9 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
     for i in range(df_final.shape[0]):
         job_id = str(np.random.randint(0,100000000))
         if not mlp:
-            commands.append('sh -c "time python embedding.py perform_embedding -bce -c -v -j {} -hl {} -sc {} {} && pymethyl-visualize transform_plot -i embeddings/vae_methyl_arr.pkl -o visualizations/{}_vae_embed.html -c {} -nn 10 "'.format(job_id,hyperparameter_output_log,stratify_column,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),job_id,stratify_column))
+            commands.append('sh -c "time methylnet-embed perform_embedding -bce -c -v -j {} -hl {} -sc {} {} && pymethyl-visualize transform_plot -i embeddings/vae_methyl_arr.pkl -o visualizations/{}_vae_embed.html -c {} -nn 10 "'.format(job_id,hyperparameter_output_log,stratify_column,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),job_id,stratify_column))
         else:
-            commands.append('sh -c "time python predictions.py make_prediction {} {} {} -c -v {} -j {} -hl {} {} && {}"'.format('-sft' if add_softmax else '','-cat' if categorical else '',''.join([' -ic {}'.format(col) for col in stratify_column]),'-do' if stratify_column[0]=='disease_only' else '',job_id,hyperparameter_output_log,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),
+            commands.append('sh -c "time methylnet-predict make_prediction {} {} {} -c -v {} -j {} -hl {} {} && {}"'.format('-sft' if add_softmax else '','-cat' if categorical else '',''.join([' -ic {}'.format(col) for col in stratify_column]),'-do' if stratify_column[0]=='disease_only' else '',job_id,hyperparameter_output_log,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),
                                 '&&'.join([" pymethyl-visualize transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o visualizations/{}_{}_mlp_embed.html -c {} -nn 8 ".format(job_id,col,col) for col in stratify_column]))) #-do
         df.loc[np.arange(df.shape[0])==np.where(df['--job_name'].astype(str).map(lower)=='false')[0][0],'--job_name']=job_id
     for i in range(len(commands)):

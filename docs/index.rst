@@ -76,12 +76,6 @@ There is both an API and CLI available for use. Examples for CLI usage can be fo
 :prog: methylnet-torque
 :show-nested:
 
-  ipts':['methylnet-embed=methylnet.embedding:embed',
-                           'methylnet-predict=methylnet.predictions:predict',
-                           'methylnet-interpret=methylnet.model_interpretability:interpret',
-                           'methylnet-visualize=methylnet.visualizations:visualize',
-                           'methylnet-torque=methylnet.torque_job_runner:torque']
-  },
 Example Usage
 =============
 

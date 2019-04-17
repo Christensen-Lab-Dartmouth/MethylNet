@@ -38,6 +38,16 @@ Read Lola and great papers
 
 
 class ShapleyData:
+    """Store SHAP results that stores feature importances of CpGs on varying degrees granularity.
+
+    Attributes
+    ----------
+    top_cpgs : type
+        Quick accessible CpGs that have the n highest SHAP scores.
+    shapley_values : type
+        Storing all SHAPley values for CpGs for varying degrees granularity. For classification problems, this only includes SHAP scores particular to the actual class.
+
+    """
     def __init__(self):
         """
         top_cpgs:
@@ -67,6 +77,22 @@ class ShapleyData:
         self.shapley_values={'by_class':{},'overall':{}}
 
     def add_class(self, class_name, shap_df, cpgs, n_top_cpgs, add_top_negative=False):
+        """Store SHAP scores for particular class to Shapley_Data class. Save feature importances on granular level, explanations for individual and aggregate predictions.
+
+        Parameters
+        ----------
+        class_name : type
+            Particular class name to be stored in dictionary structure.
+        shap_df : type
+            SHAP data to pull from.
+        cpgs : type
+            All CpGs.
+        n_top_cpgs : type
+            Number of top CpGs for saving n top CpGs.
+        add_top_negative : type
+            Only consider top negative scores.
+
+        """
         signed = -1 if not add_top_negative else 1
         self.shapley_values['by_class'][class_name]=shap_df
         shap_vals=shap_df.values
@@ -79,19 +105,62 @@ class ShapleyData:
             self.top_cpgs['by_class'][class_name]['by_individual'][individual]=pd.DataFrame(shap_df.iloc[i,top_idxs[i,:]].T.reset_index(drop=False).values,columns=['cpg','shapley_value'])
 
     def add_global_importance(self, global_importance_shaps, cpgs, n_top_cpgs):
+        """Add overall feature importances, globally across all samples.
+
+        Parameters
+        ----------
+        global_importance_shaps : type
+            Overall SHAP values to be saved, aggregated across all samples.
+        cpgs : type
+            All CpGs.
+        n_top_cpgs : type
+            Number of top CpGs to rank and save as well.
+
+        """
+
         self.shapley_values['overall']=pd.DataFrame(global_importance_shaps[:,np.newaxis],columns=['shapley_values'],index=cpgs)
         top_ft_idx=np.argsort(global_importance_shaps*-1)[:n_top_cpgs]
         self.top_cpgs['overall']=pd.DataFrame(np.hstack([cpgs[top_ft_idx][:,np.newaxis],global_importance_shaps[top_ft_idx][:,np.newaxis]]),columns=['cpg','shapley_value'])
 
     def to_pickle(self,output_pkl):
+        """Export Shapley data to pickle.
+
+        Parameters
+        ----------
+        output_pkl : type
+            Output file to save SHAPley data.
+
+        """
         os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
         pickle.dump(self, open(output_pkl,'wb'))
 
     @classmethod
     def from_pickle(self,input_pkl):
+        """Load SHAPley data from pickle.
+
+        Parameters
+        ----------
+        input_pkl : type
+            Input pickle.
+
+        """
         return pickle.load(open(input_pkl,'rb'))
 
 class ShapleyDataExplorer:
+    """Datatype used to explore saved ShapleyData.
+
+    Parameters
+    ----------
+    shapley_data : type
+        ShapleyData instance to be explored.
+
+    Attributes
+    ----------
+    indiv2class : type
+        Maps individuals to their classes used for quick look-up.
+    shapley_data
+
+    """
     def __init__(self, shapley_data):
         self.shapley_data=shapley_data
         self.indiv2class={}
@@ -100,6 +169,19 @@ class ShapleyDataExplorer:
                 self.indiv2class[individual]=class_name
 
     def return_shapley_data_by_methylation_status(self, methyl_array):
+        """Return dictionary containing two SHAPley datasets, each split by low/high levels of methylation. Todo: Define this using median methylation value vs 0.5.
+
+        Parameters
+        ----------
+        methyl_array : type
+            MethylationArray instance.
+
+        Returns
+        -------
+        dictionary
+            Contains shapley data by methylation status.
+
+        """
         methylation_shapley_data_dict = {'hyper':copy.deepcopy(self.shapley_data),'hypo':copy.deepcopy(self.shapley_data)}
         for individual in self.list_individuals(return_list=True):
             class_name,individual,top_shap_df=self.view_methylation(individual,methyl_array)
@@ -117,7 +199,23 @@ class ShapleyDataExplorer:
         return methylation_shapley_data_dict
 
     def return_binned_shapley_data(self, original_class_name, outcome_col, add_top_negative=False):
-        """Converts existing shap data into categorical variable"""
+        """Converts existing shap data based on continuous variable predictions into categorical variable.
+
+        Parameters
+        ----------
+        original_class_name : type
+            Description of parameter `original_class_name`.
+        outcome_col : type
+            Description of parameter `outcome_col`.
+        add_top_negative : type
+            Description of parameter `add_top_negative`.
+
+        Returns
+        -------
+        type
+            Description of returned object.
+
+        """
         class_names = outcome_col.unique()
         new_shapley_data = ShapleyData()
         new_shapley_data.shapley_values['overall']=self.shapley_data.shapley_values['overall']

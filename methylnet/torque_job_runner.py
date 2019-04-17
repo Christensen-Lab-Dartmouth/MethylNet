@@ -38,9 +38,9 @@ def assemble_replace_dict(command, use_gpu, additions, queue, time, ngpu):
 
     """
     replace_dict = {'COMMAND':"{} {}".format('CUDA_VISIBLE_DEVICES="$gpuNum"' if use_gpu else '',command),
-                'USE_GPU_COMMANDS':"""gpuNum=`cat $PBS_GPUFILE | sed -e 's/.*-gpu//g'`
-                unset CUDA_VISIBLE_DEVICES
-                export CUDA_DEVICE=$gpuNum""" if use_gpu else '',
+                'GPU_COMMANDS':"""gpuNum=`cat $PBS_GPUFILE | sed -e 's/.*-gpu//g'`
+unset CUDA_VISIBLE_DEVICES
+export CUDA_DEVICE=$gpuNum""" if use_gpu else '',
                 'NGPU':'#PBS -l gpus={}'.format(ngpu) if ngpu else '',
                 'USE_GPU':"#PBS -l feature=gpu" if use_gpu else '',
                 'TIME':str(time),'QUEUE':queue,'ADDITIONS':additions}
@@ -63,16 +63,16 @@ def run_torque_job_(replace_dict, additional_options=""):
 
     """
     txt="""#!/bin/bash -l
-        #PBS -N run_torque
-        #PBS -q QUEUE
-        NGPU
-        USE_GPU
-        #PBS -l walltime=TIME:00:00
-        #PBS -j oe
-        cd $PBS_O_WORKDIR
-        USE_GPU_COMMANDS
-        ADDITIONS
-        COMMAND"""
+#PBS -N run_torque
+#PBS -q QUEUE
+NGPU
+USE_GPU
+#PBS -l walltime=TIME:00:00
+#PBS -j oe
+cd $PBS_O_WORKDIR
+GPU_COMMANDS
+ADDITIONS
+COMMAND"""
     for k,v in replace_dict.items():
         txt = txt.replace(k,v)
     with open('torque_job.sh','w') as f:
