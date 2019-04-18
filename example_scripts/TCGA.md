@@ -14,13 +14,13 @@ methylnet-embed launch_hyperparameter_scan -sc disease -t -mc 0.84 -b 1. -g -j 2
 FINISH BELOW
 Rerun top performing run to get final embeddings:
 ```
-methylnet-embed launch_hyperparameter_scan -sc Disease_State -t -g -n 1 -b 1.
+methylnet-embed launch_hyperparameter_scan -sc disease -t -g -n 1 -b 1. -a "module load python/3-Anaconda && source activate methylnet_pro2"
 ```
 
 **Predictions using Transfer Learning**
 Run 200 job hyperparameter scan for learning predictions on torque:
 ```
-methylnet-predict launch_hyperparameter_scan -ic Disease_State -cat -t -g -mc 0.84 -j 80
+methylnet-predict launch_hyperparameter_scan -ic disease -cat -t -g -mc 0.65 -j 200 -a "module load python/3-Anaconda && source activate methylnet_pro2"
 ```
 Rerun top performing run to get final predictions:
 ```

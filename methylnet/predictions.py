@@ -1,5 +1,5 @@
 from pymethylprocess.MethylationDataTypes import MethylationArray, extract_pheno_beta_df_from_pickle_dict
-from methylnet.models import TybaltTitusVAE, CVAE, VAE_MLP, MLPFinetuneVAE
+from methylnet.models import TybaltTitusVAE, VAE_MLP, MLPFinetuneVAE
 from methylnet.datasets import get_methylation_dataset
 import torch
 from torch.utils.data import DataLoader
@@ -275,13 +275,14 @@ def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest
 @click.option('-j', '--n_jobs', default=4, help='Number of jobs to generate.')
 @click.option('-v', '--val_loss_column', default='min_val_loss', help='Validation loss column.', type=click.Path(exists=False))
 @click.option('-sft', '--add_softmax', is_flag=True, help='Add softmax for predicting probability distributions.')
-def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column, add_softmax):
+@click.option('-a', '--additional_command', default='', help='Additional command to input for torque run.', type=click.Path(exists=False))
+def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column, add_softmax, additional_command):
     """Run randomized hyperparameter scan of neural network hyperparameters."""
     from methylnet.hyperparameter_scans import coarse_scan, find_top_jobs
     custom_jobs=[]
     if n_jobs_relaunch:
         custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p, val_loss_column)
-    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs, categorical=categorical,add_softmax=add_softmax)
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs, categorical=categorical,add_softmax=add_softmax, additional_command=additional_command)
 
 @prediction.command()
 @click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))
