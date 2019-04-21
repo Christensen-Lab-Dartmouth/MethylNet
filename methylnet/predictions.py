@@ -18,7 +18,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def prediction():
     pass
 
-def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum', add_softmax=False):
+def train_predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum', add_softmax=False):
     os.makedirs(output_dir,exist_ok=True)
 
     output_file = join(output_dir,'results.csv')
@@ -57,17 +57,19 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
 
     if not batch_size:
         batch_size=len(train_methyl_dataset)
+    train_batch_size = min(batch_size,len(train_methyl_dataset))
+    val_batch_size = min(batch_size,len(val_methyl_dataset))
 
     train_methyl_dataloader = DataLoader(
         dataset=train_methyl_dataset,
         num_workers=n_workers,
-        batch_size=batch_size,
+        batch_size=train_batch_size,
         shuffle=True)
 
     val_methyl_dataloader = DataLoader(
         dataset=val_methyl_dataset,
         num_workers=n_workers,
-        batch_size=min(batch_size,len(val_methyl_dataset)),
+        batch_size=val_batch_size,
         shuffle=True) # False
 
     test_methyl_dataloader = DataLoader(
@@ -75,6 +77,9 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
         num_workers=n_workers,
         batch_size=min(batch_size,len(test_methyl_dataset)),
         shuffle=False)
+
+    scaling_factors = dict(val=float(len(val_methyl_dataset))/((len(val_methyl_dataset)//val_batch_size)*val_batch_size),
+                           train_batch_size=train_batch_size,val_batch_size=val_batch_size)
 
     model=VAE_MLP(vae_model=vae_model,categorical=categorical,hidden_layer_topology=hidden_layer_topology,n_output=train_methyl_dataset.outcome_col.shape[1],dropout_p=dropout_p, add_softmax=add_softmax)
 
@@ -137,7 +142,7 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
     latent_projection.to_csv(output_file_latent)
     torch.save(vae_mlp.model,output_model)
     results_df.to_csv(output_file)#pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
-    return latent_projection, Y_pred, Y_true, vae_mlp
+    return latent_projection, Y_pred, Y_true, vae_mlp, scaling_factors
 
 # ADD OUTPUT METRICS AND TRAINING PLOT CURVE
 
@@ -176,7 +181,7 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
         hidden_layer_topology=list(map(int,hlt_list))
     else:
         hidden_layer_topology=[]
-    latent_projection, Y_pred, Y_true, vae_mlp = predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,list(interest_cols),categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, val_pkl, n_workers, add_validation_set, loss_reduction, add_softmax)
+    latent_projection, Y_pred, Y_true, vae_mlp, scaling_factors = train_predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,list(interest_cols),categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, val_pkl, n_workers, add_validation_set, loss_reduction, add_softmax)
     accuracy, precision, recall, f1 = -1,-1,-1,-1
     if categorical:
         from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
@@ -188,8 +193,8 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
             accuracy, precision, recall, f1 = ';'.join([str(v) for v in accuracy]),';'.join([str(v) for v in precision]),';'.join([str(v) for v in recall]),';'.join([str(v) for v in f1])
         else:
             accuracy, precision, recall, f1=accuracy[0], precision[0], recall[0], f1[0]
-    hyperparameter_row = [job_name,n_epochs, vae_mlp.best_epoch, vae_mlp.min_loss, vae_mlp.min_val_loss, accuracy, precision, recall, f1, vae_mlp.model.vae.n_input, vae_mlp.model.vae.n_latent, str(hidden_layer_topology), learning_rate_vae, learning_rate_mlp, weight_decay, scheduler, t_max, t_mult, eta_min, batch_size, dropout_p]
-    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "test_accuracy" if categorical else 'neg_mean_squared_error', "test_precision" if categorical else 'r2_score', "test_recall" if categorical else 'explained_variance', "test_f1" if categorical else 'mean_absolute_error', "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate_vae", "learning_rate_mlp", "weight_decay", "scheduler", "t_max", "t_mult", "eta_min","batch_size", "dropout_p"])
+    hyperparameter_row = [job_name,n_epochs, vae_mlp.best_epoch, vae_mlp.min_loss, vae_mlp.min_val_loss, vae_mlp.min_val_loss*scaling_factors['val'], accuracy, precision, recall, f1, vae_mlp.model.vae.n_input, vae_mlp.model.vae.n_latent, str(hidden_layer_topology), learning_rate_vae, learning_rate_mlp, weight_decay, scheduler, t_max, t_mult, eta_min, scaling_factors['train_batch_size'], scaling_factors['val_batch_size'], dropout_p]
+    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "min_val_loss-batchsize_adj","test_accuracy" if categorical else 'neg_mean_squared_error', "test_precision" if categorical else 'r2_score', "test_recall" if categorical else 'explained_variance', "test_f1" if categorical else 'mean_absolute_error', "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate_vae", "learning_rate_mlp", "weight_decay", "scheduler", "t_max", "t_mult", "eta_min","train_batch_size", "val_batch_size", "dropout_p"])
     hyperparameter_df.loc[0] = hyperparameter_row
     if os.path.exists(hyperparameter_log):
         print('APPEND')
@@ -273,7 +278,7 @@ def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest
 @click.option('-c', '--crossover_p', default=0., help='Rate of crossover between hyperparameters.', show_default=True)
 @click.option('-mc', '--model_complexity_factor', default=1., help='Degree of neural network model complexity for hyperparameter search. Search for less wide networks with a lower complexity value, bounded between 0 and infinity.', show_default=True)
 @click.option('-j', '--n_jobs', default=4, help='Number of jobs to generate.')
-@click.option('-v', '--val_loss_column', default='min_val_loss', help='Validation loss column.', type=click.Path(exists=False))
+@click.option('-v', '--val_loss_column', default="min_val_loss-batchsize_adj", help='Validation loss column.', type=click.Path(exists=False))
 @click.option('-sft', '--add_softmax', is_flag=True, help='Add softmax for predicting probability distributions.')
 @click.option('-a', '--additional_command', default='', help='Additional command to input for torque run.', type=click.Path(exists=False))
 def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column, add_softmax, additional_command):

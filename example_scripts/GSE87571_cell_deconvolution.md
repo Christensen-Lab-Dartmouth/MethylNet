@@ -193,7 +193,7 @@ Maybe look at horvath and epitoc age distribution for cohort.
 (86.0,94.0] shared cpgs: 45/45.0
 
 
-nohup pymethyl-utils est_age -a epitoc -a horvath -a hannum -ac Age  &
+nohup pymethyl-utils est_age -a epitoc -a horvath -a hannum -ac Age  -i for_curtis/test_set/test_methyl_array.pkl &
 pymethyl-utils concat_csv -i1 age_estimation/output_age_estimations.csv -i2 predictions/results.csv -o age_estimation/age_results.csv -a 1
 
 pymethyl-utils rate_regression -i age_estimation/age_results.csv -c1 Age_pred -c2 Age_true
@@ -206,20 +206,20 @@ R2: 0.95581130721779
 pymethyl-utils rate_regression -i age_estimation/age_results.csv -c1 Horvath.Est -c2 Age_true
 y_true: Age_true
 y_pred: Horvath.Est
-Mean Squared Error: 33.310758037960525
-Mean Absolute Error: 4.411414892854086
-R2: 0.9255996824345102
+Mean Squared Error: 25.651267161336165
+Mean Absolute Error: 3.9355589259860864
+R2: 0.9427073253455904
 
 pymethyl-utils rate_regression -i age_estimation/age_results.csv -c1 EpiTOC.Est -c2 Age_true
 y_true: Age_true
 y_pred: EpiTOC.Est
-Mean Squared Error: 2618.6396767114074
-Mean Absolute Error: 46.602052498991526
-R2: -4.848789850861311
+Mean Squared Error: 2620.2794418532535
+Mean Absolute Error: 46.61791379966323
+R2: -4.852452302707862
 
 pymethyl-utils rate_regression -i age_estimation/age_results.csv -c1 Hannum.Est -c2 Age_true
 y_true: Age_true
 y_pred: Hannum.Est
-Mean Squared Error: 45.395446876712896
-Mean Absolute Error: 5.651159485416533
-R2: 0.8986082616371
+Mean Squared Error: 45.0107995750762
+Mean Absolute Error: 5.624081549443861
+R2: 0.8994673799243472

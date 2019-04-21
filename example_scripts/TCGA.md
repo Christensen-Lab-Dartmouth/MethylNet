@@ -24,7 +24,7 @@ methylnet-predict launch_hyperparameter_scan -ic disease -cat -t -g -mc 0.65 -j 
 ```
 Rerun top performing run to get final predictions:
 ```
-methylnet-predict launch_hyperparameter_scan -ic Disease_State -cat -t -g -n 1
+methylnet-predict launch_hyperparameter_scan -ic disease -cat -t -g -n 1 -a "module load python/3-Anaconda && source activate methylnet_pro2"
 ```
 
 **Plot Embedding and Prediction Results**
@@ -38,11 +38,11 @@ methylnet-visualize plot_roc_curve
 **MethylNet Interpretations**
 If using torque:  
 ```
-methylnet-torque run_torque_job -c "methylnet-interpret produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 100 -col Disease_State -r 0 -rt 30 -nf 4000 -c" -gpu -a "source activate methylnet" -q gpuq -t 4 -n 1
+methylnet-torque run_torque_job -c "methylnet-interpret produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 100 -col disease -r 0 -rt 30 -nf 1000 -c" -gpu -a "module load python/3-Anaconda && source activate methylnet_pro2" -q gpuq -t 24 -n 1
 ```
 Else (running with GPU 0):  
 ```
-CUDA_VISIBLE_DEVICES=0 methylnet-interpret produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 100 -col Disease_State -r 0 -rt 30 -nf 4000 -c
+CUDA_VISIBLE_DEVICES=0 methylnet-interpret produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 100 -col disease -r 0 -rt 30 -nf 4000 -c
 ```
 
 Extract spreadsheet of top overall CpGs:

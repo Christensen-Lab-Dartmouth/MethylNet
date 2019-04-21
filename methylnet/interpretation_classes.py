@@ -204,16 +204,16 @@ class ShapleyDataExplorer:
         Parameters
         ----------
         original_class_name : type
-            Description of parameter `original_class_name`.
+            Regression results were split into ClassName_pos and ClassName_neg, what is the ClassName?
         outcome_col : type
-            Description of parameter `outcome_col`.
+            Feed in from pheno sheet one the column to bin samples on.
         add_top_negative : type
-            Description of parameter `add_top_negative`.
+            Looking to include negative SHAPs?
 
         Returns
         -------
-        type
-            Description of returned object.
+        ShapleyData
+            With new class labels, built from regression results.
 
         """
         class_names = outcome_col.unique()
@@ -240,9 +240,21 @@ class ShapleyDataExplorer:
         pass
 
     def add_abs_value_classes(self):
+        """WIP."""
         pass
 
     def return_cpg_sets(self):
+        """Return top sets of CpGs from classes and individuals, and the complementary set. Returns dictionary of sets of CpGs and the union of all the other sets minus the current set.
+
+
+        Returns
+        -------
+        cpg_sets
+            Dictionary of individuals and classes; CpGs contained in set for particular individual/class
+        cpg_exclusion_sets
+            Dictionary of individuals and classes; CpGs not contained in set for particular individual/class
+        """
+
         from functools import reduce
         def return_cpg_set(shap_df):
             return set(shap_df['cpg'].values.tolist())
@@ -260,6 +272,20 @@ class ShapleyDataExplorer:
         return cpg_sets, cpg_exclusion_sets
 
     def extract_class(self, class_name, class_intersect=False):
+        """Extract the top cpgs from a class
+
+        Parameters
+        ----------
+        class_name : type
+            Class to extract from?
+        class_intersect : type
+            Bool to extract from aggregation of SHAP values from individuals of current class, should have been done already.
+
+        Returns
+        -------
+        DataFrame
+            Cpgs and SHAP Values
+        """
         if class_intersect:
             shap_dfs=[]
             for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys():
@@ -272,10 +298,39 @@ class ShapleyDataExplorer:
             return self.shapley_data.top_cpgs['by_class'][class_name]['overall']
 
     def extract_individual(self, individual):
+        """Extract the top cpgs from an individual
+
+        Parameters
+        ----------
+        individual : type
+            Individual to extract from?
+
+        Returns
+        -------
+        Tuple
+            Class name of individual, DataFrame of Cpgs and SHAP Values
+        """
         class_name=self.indiv2class[individual]
         return class_name,self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual]
 
     def regenerate_individual_shap_values(self, n_top_cpgs, abs_val=False, neg_val=False):
+        """Use original SHAP scores to make nested dictionary of top CpGs based on shapley score, can do this for ABS SHAP or Negative SHAP scores as well.
+
+        Parameters
+        ----------
+        n_top_cpgs : type
+            Description of parameter `n_top_cpgs`.
+        abs_val : type
+            Description of parameter `abs_val`.
+        neg_val : type
+            Description of parameter `neg_val`.
+
+        Returns
+        -------
+        type
+            Description of returned object.
+
+        """
         shapley_data = copy.deepcopy(self.shapley_data)
         mod_name = lambda name: (name.replace('_pos','').replace('_neg','') if abs_val else name)
         abs_val = lambda x: (x if not abs_val else np.abs(x))
@@ -301,11 +356,50 @@ class ShapleyDataExplorer:
         return shapley_data
 
     def view_methylation(self, individual, methyl_arr):
+        """Use MethylationArray to output top SHAP values for individual with methylation data appended to output data frame.
+
+        Parameters
+        ----------
+        individual : type
+            Individual to query from ShapleyData
+        methyl_arr : type
+            Input MethylationArray
+
+        Returns
+        -------
+        class_name
+        individual
+        top_shap_df
+            Top Shapley DataFrame with top cpgs for individual, methylation data appended.
+
+        """
+
         class_name,top_shap_df=self.extract_individual(individual)
         top_shap_df['methylation']=methyl_arr.beta.loc[individual,top_shap_df['cpg'].values].values
         return class_name,individual,top_shap_df
 
     def extract_methylation_array(self, methyl_arr, classes_only=True, global_vals=False, n_extract=1000, class_name=''):
+        """Subset MethylationArray Beta values by some top SHAP CpGs from classes or overall.
+
+        Parameters
+        ----------
+        methyl_arr : type
+            MethylationArray.
+        classes_only : type
+            Setting this to False will include the overall top CpGs per class and the top CpGs for individuals in that class.
+        global_vals : type
+            Use top CpGs overall, across the entire dataset.
+        n_extract : type
+            Number of top CpGs to subset.
+        class_name : type
+            Which class to subset top CpGs from? Blank to use union of all top CpGs.
+
+        Returns
+        -------
+        MethylationArray
+            Stores methylation beta and pheno data, reduced here by queried CpGs.
+
+        """
         from functools import reduce
         total_cpgs=[]
         if global_vals:
@@ -330,6 +424,19 @@ class ShapleyDataExplorer:
         return methyl_arr
 
     def limit_number_top_cpgs(self, n_top_cpgs):
+        """Reduce the number of top CpGs.
+
+        Parameters
+        ----------
+        n_top_cpgs : type
+            Number top CpGs to retain.
+
+        Returns
+        -------
+        ShapleyData
+            Returns shapley data with fewer top CpGs.
+
+        """
         shapley_data = copy.deepcopy(self.shapley_data)
         if isinstance(shapley_data.top_cpgs['overall'],pd.DataFrame):
             shapley_data.top_cpgs['overall']=shapley_data.top_cpgs['overall'].iloc[:n_top_cpgs]
@@ -340,6 +447,19 @@ class ShapleyDataExplorer:
         return shapley_data
 
     def list_individuals(self, return_list=False):
+        """List the individuals in the ShapleyData object.
+
+        Parameters
+        ----------
+        return_list : type
+            Return list of individual names rather than a dictionary of class:individual key-value pairs.
+
+        Returns
+        -------
+        List or Dictionary
+            Class: Individual dictionary or individuals are elements of list
+
+        """
         if not return_list:
             individuals={class_name:list(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys()) for class_name in self.shapley_data.top_cpgs['by_class']}
             return individuals
@@ -348,10 +468,39 @@ class ShapleyDataExplorer:
             return list(reduce(lambda x,y:x+y, [list(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys()) for class_name in self.shapley_data.top_cpgs['by_class']]))
 
     def list_classes(self):
+        """List classes in ShapleyData object.
+
+        Returns
+        -------
+        List
+            List of classes
+
+        """
         classes = list(self.shapley_data.top_cpgs['by_class'].keys())
         return classes
 
     def return_top_cpgs(self, classes=[], individuals=[], class_intersect=False, cpg_exclusion_sets=None, cpg_sets=None):
+        """Given list of classes and individuals, export a dictionary containing data frames of top CpGs and their SHAP scores.
+
+        Parameters
+        ----------
+        classes : type
+            Higher level classes to extract CpGs from, list of classes to extract top CpGs from.
+        individuals : type
+            Individual samples to extract top CpGs from.
+        class_intersect : type
+            Whether the top CpGs should be chosen by aggregating the remaining individual scores.
+        cpg_exclusion_sets : type
+            Dict of sets of CpGs, where these ones contain CpGs not particular to particular class.
+        cpg_sets : type
+            Contains top CpGs found for each class.
+
+        Returns
+        -------
+        Dict
+            Top CpGs accessed and returned for further processing.
+
+        """
         top_cpgs={}
         if classes:
             for class_name in classes:
@@ -378,9 +527,35 @@ class ShapleyDataExplorer:
         return top_cpgs
 
     def return_global_importance_cpgs(self):
+        """Return overall globally important CpGs.
+
+        Returns
+        -------
+        list
+
+        """
         return self.shapley_data.top_cpgs['overall']
 
     def jaccard_similarity_top_cpgs(self,class_names,individuals=False,overall=False, cooccurrence=False):
+        """Calculate Jaccard Similarity matrix between classes and individuals within those classes based on how they share sets of CpGs.
+
+        Parameters
+        ----------
+        class_names : type
+            Classes to include.
+        individuals : type
+            Individuals to include.
+        overall : type
+            Whether to use overall class top CpGs versus aggregate.
+        cooccurrence : type
+            Output cooccurence instead of jaccard.
+
+        Returns
+        -------
+        pd.DataFrame
+            Similarity matrix.
+
+        """
         from itertools import combinations
         from functools import reduce
         x={}
@@ -403,14 +578,52 @@ class ShapleyDataExplorer:
         return similarity_matrix
 
 def jaccard_similarity(list1, list2):
+    """Jaccard score between two lists.
+
+    Parameters
+    ----------
+    list1
+    list2
+
+    Returns
+    -------
+    float
+        Jaccard similarity between elements in list.
+
+    """
     s1 = set(list1)
     s2 = set(list2)
     return len(s1.intersection(s2)) / len(s1.union(s2))
 
 def cooccurrence_fn(list1,list2):
+    """Cooccurence of elements between two lists.
+
+    Parameters
+    ----------
+    list1
+    list2
+
+    Returns
+    -------
+    float
+        Cooccurence between elements in list.
+
+    """
     return len(set(list1).intersection(set(list2)))
 
 class PlotCircos:
+    """Plot Circos Diagram using ggbio (regular circos software may be better)
+
+    Attributes
+    ----------
+    generate_base_plot : type
+        Function to generate base plot
+    add_plot_data : type
+        Function to add more plot data
+    generate_final_plot : type
+        Function to plot data using Circos
+
+    """
     def __init__(self):
         from rpy2.robjects.packages import importr
         import rpy2.robjects as robjects
@@ -438,6 +651,16 @@ class PlotCircos:
                                                return(p)}""")
 
     def plot_cpgs(self, top_cpgs, output_dir='./'):
+        """Plot top CpGs location in genome.
+
+        Parameters
+        ----------
+        top_cpgs : type
+            Input dataframe of top CpG name and SHAP scores. Future: Plot SHAP scores in locations?
+        output_dir : type
+            Where to output plots.
+
+        """
         import rpy2.robjects as robjects
         from rpy2.robjects import pandas2ri
         from collections import defaultdict
@@ -459,13 +682,43 @@ class PlotCircos:
         self.generate_final_plot(p,locations)
         self.ggbio.ggsave(join(output_dir,'{}.png'.format('_'.join([k for k in self.top_cpgs]))))
 
-class CpGExplainer: # consider shap.kmeans or grab representative sample of each outcome in training set for background ~ 39 * 2 samples, 39 cancers, should speed things up, small training set when building explainer https://github.com/slundberg/shap/issues/372
+class CpGExplainer:
+    """Produces SHAPley explanation scores for individual predictions, approximating a complex model with a basic linear one, one coefficient per CpG per individual.
+
+    Parameters
+    ----------
+    prediction_function : type
+        Model or function that makes predictions on the data, can be sklearn .predict method or pytorch forward pass, etc...
+    cuda : type
+        Run on GPUs?
+
+    Attributes
+    ----------
+    explainer : type
+        Type of SHAPley explanation method; kernel (uses LIME model agnostic explainer), deep (uses DeepLift) or Gradient (integrated gradients and backprop for explanations)?
+    prediction_function
+    cuda
+
+    """
+
+    # consider shap.kmeans or grab representative sample of each outcome in training set for background ~ 39 * 2 samples, 39 cancers, should speed things up, small training set when building explainer https://github.com/slundberg/shap/issues/372
     def __init__(self,prediction_function=None, cuda=False):
         self.prediction_function=prediction_function
         self.cuda = cuda
         self.explainer=None
 
     def build_explainer(self, train_methyl_array, method='kernel', batch_size=100): # can interpret latent dimensions
+        """Builds SHAP explainer using background samples.
+
+        Parameters
+        ----------
+        train_methyl_array : type
+            Train Methylation Array from which to populate background samples to make estimated explanations.
+        method : type
+            SHAP explanation method?
+        batch_size : type
+            Break up prediction explanation creation into smaller batch sizes for lower memory consumption.
+        """
         self.method = method
         if self.method =='kernel':
             self.explainer=shap.KernelExplainer(self.prediction_function, train_methyl_array.return_raw_beta_array(), link="identity")
@@ -479,6 +732,30 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
             self.explainer=shap.KernelExplainer(self.prediction_function, train_methyl_array.return_raw_beta_array(), link="identity")
 
     def return_shapley_scores(self, test_methyl_array, n_samples, n_outputs, shap_sample_batch_size=None, top_outputs=None): # split up into multiple methods
+        """Generate explanations for individual predictions, in the form of SHAPley scores for supplied test data.
+        One SHAP score per individual prediction per CpG, and more if multiclass/output.
+        For multiclass/multivariate outcomes, scores are generated for each outcome class.
+
+        Parameters
+        ----------
+        test_methyl_array : type
+            Testing MethylationArray.
+        n_samples : type
+            Number of SHAP score samples to produce. More SHAP samples provides convergence to correct score.
+        n_outputs : type
+            Number of outcome classes.
+        shap_sample_batch_size : type
+            If not None, break up SHAP score sampling into batches of this size to be averaged.
+        top_outputs : type
+            For deep explainer, limit number of output classes due to memory consumption.
+
+
+        Returns
+        -------
+        type
+            Description of returned object.
+
+        """
         n_batch = 1
         if shap_sample_batch_size != None and self.method != 'deep': #  and not feature_selection
             n_batch = int(n_samples/shap_sample_batch_size)
@@ -498,6 +775,20 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
         self.shap_values = shap_values
 
     def classifier_assign_scores_to_shap_data(self, test_methyl_array, n_top_features, interest_col='disease', prediction_classes=None):
+        """Assigns the SHAP scores to a SHAPley data object, populating nested dictionaries (containing class-individual information) with SHAPley information and "top CpGs".
+
+        Parameters
+        ----------
+        test_methyl_array : type
+            Testing MethylationArray.
+        n_top_features : type
+            Number of top SHAP scores to use for a subdict called "top CpGs"
+        interest_col : type
+            Column in pheno sheet from which class names reside.
+        prediction_classes : type
+            User supplied prediction classes.
+
+        """
 
         cpgs=test_methyl_array.return_cpgs()
         shapley_data = ShapleyData()
@@ -517,6 +808,18 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
         self.shapley_data = shapley_data
 
     def regressor_assign_scores_to_shap_data(self, test_methyl_array, n_top_features, cell_names=[]):
+        """Assigns the SHAP scores to a SHAPley data object, populating nested dictionaries (containing multioutput and single output regression-individual information) with SHAPley information and "top CpGs".
+
+        Parameters
+        ----------
+        test_methyl_array : type
+            Testing MethylationArray.
+        n_top_features : type
+            Number of top SHAP scores to use for a subdict called "top CpGs"
+        cell_names : type
+            If multi-output regression, create separate regression classes to access for all individuals.
+
+        """
         n_classes = (self.shap_values.shape[0] if len(self.shap_values.shape) == 3 else 0)
 
         cpgs=test_methyl_array.return_cpgs()
@@ -539,6 +842,21 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
         self.shapley_data = shapley_data
 
     def feature_select(self, methyl_array, n_top_features):
+        """Perform feature selection based on the best overall SHAP scores across all samples.
+
+        Parameters
+        ----------
+        methyl_array : type
+            MethylationArray to run feature selection on.
+        n_top_features : type
+            Number of CpGs to select.
+
+        Returns
+        -------
+        MethylationArray
+            Subsetted by top overall CpGs, overall positive contributions to prediction. May need to update.
+
+        """
         cpgs = methyl_array.return_cpgs()
         print(cpgs)
         cpgs=cpgs[np.argsort(self.cpg_global_shapley_scores*-1)[:n_top_features]]
@@ -546,6 +864,7 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
         return methyl_array.subset_cpgs(cpgs)
 
     def return_shapley_predictions(self, test_methyl_array, sample_name, interest_col, encoder=None):
+        """Method in development or may be deprecated."""
         prediction_class = test_methyl_array['pheno'].loc[sample_name,interest_col]
         prediction_class_labelled = None
         if encoder != None:
@@ -554,12 +873,26 @@ class CpGExplainer: # consider shap.kmeans or grab representative sample of each
 
     @classmethod
     def from_explainer(explainer, method, cuda):
+        """Load custom SHAPley explainer"""
         cpg_explainer = CpGExplainer(cuda=cuda)
         cpg_explainer.explainer = explainer
         return cpg_explainer
 
 
 class BioInterpreter:
+    """Interrogate CpGs found to be important from SHAP through enrichment and overlap tests.
+
+    Parameters
+    ----------
+    dict_top_cpgs : type
+        Dictionary of topCpGs output from ShapleyExplorer object
+
+    Attributes
+    ----------
+    top_cpgs : type
+        Dictionary of top cpgs to be interrogated.
+
+    """
     def __init__(self, dict_top_cpgs):
         self.top_cpgs = dict_top_cpgs
         from rpy2.robjects.packages import importr
@@ -578,6 +911,27 @@ class BioInterpreter:
             self.prediction_classes=list(map(lambda x: x.replace(' ',''),prediction_classes))"""
 
     def gometh(self, collection='GO', allcpgs=[], length_output=20, gsea_analyses=[], gsea_pickle=''):# consider turn into generator go or kegg # add rgreat, lola, roadmap-chromatin hmm, atac-seq, chip-seq, gometh, Hi-C, bedtools, Owen's analysis
+        """Run GO, KEGG, GSEA analyses or return nearby genes.
+
+        Parameters
+        ----------
+        collection : type
+            GO, KEGG, GSEA, GENE overlaps?
+        allcpgs : type
+            All CpGs defines CpG universe, empty if use all CpGs, smaller group of CpGs may yield more significant results.
+        length_output : type
+            How many lines should the output be, maximum number of results to print.
+        gsea_analyses : type
+            GSEA analyses/collections to target.
+        gsea_pickle : type
+            Location of gsea pickle containing gene sets, may need to run download_help_data to acquire.
+
+        Returns
+        -------
+        Dict
+            Dictionary containing results from each test run on all of the keys in top_cpgs.
+
+        """
         import rpy2.robjects as robjects
         from rpy2.robjects import pandas2ri
         #robjects.packages.importr('org.Hs.eg.db')
@@ -616,6 +970,21 @@ class BioInterpreter:
         return output_dfs
 
     def get_nearby_cpg_shapleys(self, all_cpgs, max_gap):
+        """Query for CpGs that are within a max_gap of the topCpGs in the genome, helps find cpgs that could be highly correlated and thus also important.
+
+        Parameters
+        ----------
+        all_cpgs : type
+            List of all cpgs in methylationarray.
+        max_gap : type
+            Max radius to search for nearby CpGs.
+
+        Returns
+        -------
+        Dict
+            Results for each class/indiv's top CpGs, in the form of nearby CpGs to each of these CpGs sets.
+
+        """
         import rpy2.robjects as robjects
         from rpy2.robjects import pandas2ri
         from collections import defaultdict
@@ -637,6 +1006,27 @@ class BioInterpreter:
         return output_dfs
 
     def return_overlap_score(self, set_cpgs='IDOL', platform='450k', all_cpgs=[], output_csv='output_bio_intersect.csv', extract_library=False):
+        """Perform overlap test, overlapping top CpGs with IDOL CpGs, age related cpgs, etc.
+
+        Parameters
+        ----------
+        set_cpgs : type
+            Set of reference cpgs.
+        platform : type
+            450K or 850K
+        all_cpgs : type
+            All CpGs to build a universe.
+        output_csv : type
+            Output CSV for results of overlaps between classes, how much doo they share these CpGs overlapped.
+        extract_library : type
+            Can extract a list of the CpGs that ended up beinng overlapped with.
+
+        Returns
+        -------
+        List
+            Optional output of overlapped library of CpGs.
+
+        """
         import rpy2.robjects as robjects
         from rpy2.robjects import pandas2ri
         pandas2ri.activate()
@@ -679,6 +1069,27 @@ class BioInterpreter:
         return None
 
     def run_lola(self, all_cpgs=[], lola_db='', cores=8, collections=[],depletion=False):
+        """Run LOLA enrichment test.
+
+        Parameters
+        ----------
+        all_cpgs : type
+            CpG universe for LOLA.
+        lola_db : type
+            Location of LOLA database, can be downloaded using methylnet-interpret. Set to extended or core, and collections correspond to these.
+        cores : type
+            Number of cores to use.
+        collections : type
+            LOLA collections to run, leave empty to run all.
+        depletion : type
+            Set true to look for depleted regions over enriched.
+
+        Returns
+        -------
+        type
+            Description of returned object.
+
+        """
         import rpy2.robjects as robjects
         from rpy2.robjects import pandas2ri
         order_by_max_rnk=robjects.r("function (dt) {dt[order(meanRnk, decreasing=FALSE),]}")
@@ -699,6 +1110,27 @@ class BioInterpreter:
         #https://academic.oup.com/bioinformatics/article/32/4/587/1743969
 
 def return_shap_values(test_arr, explainer, method, n_samples, additional_opts):
+    """Return SHAP values, sampled a number of times, used in CpGExplainer class.
+
+    Parameters
+    ----------
+    test_arr : type
+        Testing MethylationArray.
+    explainer : type
+        SHAP explainer object.
+    method : type
+        Method of explaining.
+    n_samples : type
+        Number of samples to estimate SHAP scores.
+    additional_opts : type
+        Additional options to be passed into non-kernel/gradient methods.
+
+    Returns
+    -------
+    np.array/list
+        Shapley scores.
+
+    """
     if method == 'kernel' or method == 'gradient': # ranked_outputs=ranked_outputs, add if feature_selection
         svals=(explainer.shap_values(test_arr, nsamples=n_samples, **additional_opts)[0] if (method == 'gradient' and additional_opts['ranked_outputs'] != None) else explainer.shap_values(test_arr, nsamples=n_samples))
         return np.stack(svals,axis=0) if type(svals) == type([]) else svals
@@ -706,9 +1138,26 @@ def return_shap_values(test_arr, explainer, method, n_samples, additional_opts):
         return (explainer.shap_values(test_arr, **additional_opts)[0] if additional_opts['ranked_outputs'] !=None else explainer.shap_values(test_arr))
 
 def to_tensor(arr):
+    """Turn np.array into tensor."""
     return Transformer().generate()(arr)
 
 def return_predict_function(model, cuda):
+    """Decorator to build the supplied prediction function, important for kernel explanations.
+
+    Parameters
+    ----------
+    model : type
+        Prediction function with predict method.
+    cuda : type
+        Run using cuda.
+
+    Returns
+    -------
+    function
+        Predict function.
+
+    """
+
     def predict(loader): # model can be VAE_MLP, TybaltTitusVAE, or CVAE
         model.eval()
         outputs=[]
@@ -725,6 +1174,21 @@ def return_predict_function(model, cuda):
 # Provided model function fails when applied to the provided data set.
 
 def return_dataloader_construct(n_workers,batch_size):
+    """Decorator to build dataloader compatible with KernelExplainer for SHAP.
+
+    Parameters
+    ----------
+    n_workers : type
+        Number CPU.
+    batch_size : type
+        Batch size to load data into pytorch.
+
+    Returns
+    -------
+    DataLoader
+        Pytorch dataloader.
+
+    """
     def construct_data_loader(raw_beta_array):
         raw_beta_dataset=RawBetaArrayDataSet(raw_beta_array,Transformer())
         raw_beta_dataloader=DataLoader(dataset=raw_beta_dataset,
@@ -735,6 +1199,25 @@ def return_dataloader_construct(n_workers,batch_size):
     return construct_data_loader
 
 def main_prediction_function(n_workers,batch_size, model, cuda):
+    """Combine dataloader and prediction function into final prediction function that takes in tensor data, for Kernel Explanations.
+
+    Parameters
+    ----------
+    n_workers : type
+        Number of workers.
+    batch_size : type
+        Batch size for input data.
+    model : type
+        Model/predidction function.
+    cuda : type
+        Running on GPUs?
+
+    Returns
+    -------
+    function
+        Final prediction function.
+
+    """
     dataloader_constructor=return_dataloader_construct(n_workers,batch_size)
     predict_function=return_predict_function(model, cuda)
     def main_predict(raw_beta_array):
@@ -742,6 +1225,20 @@ def main_prediction_function(n_workers,batch_size, model, cuda):
     return main_predict
 
 def plot_lola_output_(lola_csv, plot_output_dir, description_col, cell_types):
+    """Plots any LOLA output in the form of a forest plot.
+
+    Parameters
+    ----------
+    lola_csv : type
+        CSV containing lola results.
+    plot_output_dir : type
+        Plot output directory.
+    description_col : type
+        Column that will label the points on the plot.
+    cell_types : type
+        Column containing cell-types, colors plots and are rows to be compared.
+
+    """
     os.makedirs(plot_output_dir,exist_ok=True)
     import matplotlib
     matplotlib.use('Agg')
