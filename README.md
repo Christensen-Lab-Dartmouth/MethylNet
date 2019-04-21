@@ -27,9 +27,10 @@ NOTE: Images will be updated to reflect latest set of MethylNet commands.
 * See install instructions for PyMethylProcess at https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess  
 * conda install pytorch torchvision -c pytorch  
 * pip install methylnet  
-* download_help_data  
+* Alternative install: clone this repository and run python setup.py sdist bdist_wheel && pip install dist/methylnet-0.1.tar.gz   
+* Run for GSEA collections: download_help_data   
 * Alternative docker install coming out soon.  
-                * If looking to use only CPUs, only core docker or singularity needed, and see singulairty website for information on how to pull Docker images  
+                * If looking to use only CPUs, only core docker or singularity needed, and see singularity website for information on how to pull Docker images  
                 * See https://singularity.lbl.gov/faq#does-singularity-support-containers-that-require-gpus for information on getting Singularity to work with GPUs  
                 * nvidia-docker is also the Docker equivalent to run GPU jobs  
 * GPU usage is also possible through the base install (without Docker), provided that your machine has GPU access.  

@@ -43,7 +43,8 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'sphinx_click.ext'
+    'sphinx_click.ext',
+    'numpydoc'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

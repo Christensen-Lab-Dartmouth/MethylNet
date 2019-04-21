@@ -14,8 +14,8 @@ def embed():
     pass
 
 def embed_vae(train_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden_layer_encoder_topology, kl_warm_up=0, beta=1., scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, bce_loss=False, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=9, convolutional = False, height_kernel_sizes=[], width_kernel_sizes=[], add_validation_set=False, loss_reduction='sum', stratify_column='disease'):
-    from models import AutoEncoder, TybaltTitusVAE, CVAE
-    from datasets import get_methylation_dataset
+    from methylnet.models import AutoEncoder, TybaltTitusVAE
+    from methylnet.datasets import get_methylation_dataset
     import torch
     from torch.utils.data import DataLoader
     from torch.nn import MSELoss, BCELoss
@@ -162,12 +162,14 @@ def perform_embedding(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_de
 @click.option('-n', '--n_jobs_relaunch', default=0, help='Relaunch n top jobs from previous run.', show_default=True)
 @click.option('-c', '--crossover_p', default=0., help='Rate of crossover between hyperparameters.', show_default=True)
 @click.option('-v', '--val_loss_column', default='min_val_loss-batchsize_adj', help='Validation loss column.', type=click.Path(exists=False))
-def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, model_complexity_factor, set_beta,n_jobs, n_jobs_relaunch, crossover_p, val_loss_column):
-    from hyperparameter_scans import coarse_scan, find_top_jobs
+@click.option('-a', '--additional_command', default='', help='Additional command to input for torque run.', type=click.Path(exists=False))
+def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, model_complexity_factor, set_beta,n_jobs, n_jobs_relaunch, crossover_p, val_loss_column, additional_command):
+    """Launch randomized grid search of neural network hyperparameters."""
+    from methylnet.hyperparameter_scans import coarse_scan, find_top_jobs
     custom_jobs=[]
     if n_jobs_relaunch:
         custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p, val_loss_column)
-    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, model_complexity_factor=model_complexity_factor, set_beta=set_beta,n_jobs=n_jobs, custom_jobs=custom_jobs)
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, model_complexity_factor=model_complexity_factor, set_beta=set_beta,n_jobs=n_jobs, custom_jobs=custom_jobs, additional_command=additional_command)
 
 #################
 

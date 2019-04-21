@@ -1,0 +1,288 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>methylnet.torque_jobs &mdash; MethylNet 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> MethylNet
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MethylNet</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>methylnet.torque_jobs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for methylnet.torque_jobs</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">torque_jobs.py</span>
+<span class="sd">=======================</span>
+<span class="sd">Wraps and runs your commands through torque.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<div class="viewcode-block" id="assemble_replace_dict"><a class="viewcode-back" href="../../index.html#methylnet.torque_jobs.assemble_replace_dict">[docs]</a><span class="k">def</span> <span class="nf">assemble_replace_dict</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">use_gpu</span><span class="p">,</span> <span class="n">additions</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">ngpu</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create dictionary to update BASH submission script for torque.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    command : type</span>
+<span class="sd">        Command to executer through torque.</span>
+<span class="sd">    use_gpu : type</span>
+<span class="sd">        GPUs needed?</span>
+<span class="sd">    additions : type</span>
+<span class="sd">        Additional commands to add (eg. module loads).</span>
+<span class="sd">    queue : type</span>
+<span class="sd">        Queue to place job in.</span>
+<span class="sd">    time : type</span>
+<span class="sd">        How many hours to run job for.</span>
+<span class="sd">    ngpu : type</span>
+<span class="sd">        Number of GPU to use.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Dict</span>
+<span class="sd">        Dictionary used to update Torque Script.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">replace_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;COMMAND&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;CUDA_VISIBLE_DEVICES=&quot;$gpuNum&quot;&#39;</span> <span class="k">if</span> <span class="n">use_gpu</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">command</span><span class="p">),</span>
+                <span class="s1">&#39;GPU_SETUP&#39;</span><span class="p">:</span><span class="s2">&quot;&quot;&quot;gpuNum=`cat $PBS_GPUFILE | sed -e &#39;s/.*-gpu//g&#39;`</span>
+<span class="s2">unset CUDA_VISIBLE_DEVICES</span>
+<span class="s2">export CUDA_DEVICE=$gpuNum&quot;&quot;&quot;</span> <span class="k">if</span> <span class="n">use_gpu</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;NGPU&#39;</span><span class="p">:</span><span class="s1">&#39;#PBS -l gpus=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ngpu</span><span class="p">)</span> <span class="k">if</span> <span class="n">ngpu</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;USE_GPU&#39;</span><span class="p">:</span><span class="s2">&quot;#PBS -l feature=gpu&quot;</span> <span class="k">if</span> <span class="n">use_gpu</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;TIME&#39;</span><span class="p">:</span><span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="p">),</span><span class="s1">&#39;QUEUE&#39;</span><span class="p">:</span><span class="n">queue</span><span class="p">,</span><span class="s1">&#39;ADDITIONS&#39;</span><span class="p">:</span><span class="n">additions</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">replace_dict</span></div>
+
+<div class="viewcode-block" id="run_torque_job_"><a class="viewcode-back" href="../../index.html#methylnet.torque_jobs.run_torque_job_">[docs]</a><span class="k">def</span> <span class="nf">run_torque_job_</span><span class="p">(</span><span class="n">replace_dict</span><span class="p">,</span> <span class="n">additional_options</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Run torque job after creating submission script.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    replace_dict : type</span>
+<span class="sd">        Dictionary used to replace information in bash script to run torque job.</span>
+<span class="sd">    additional_options : type</span>
+<span class="sd">        Additional options to pass scheduler.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Custom torque job name.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">txt</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;#!/bin/bash -l</span>
+<span class="s2">#PBS -N run_torque</span>
+<span class="s2">#PBS -q QUEUE</span>
+<span class="s2">NGPU</span>
+<span class="s2">USE_GPU</span>
+<span class="s2">#PBS -l walltime=TIME:00:00</span>
+<span class="s2">#PBS -j oe</span>
+<span class="s2">cd $PBS_O_WORKDIR</span>
+<span class="s2">GPU_SETUP</span>
+<span class="s2">ADDITIONS</span>
+<span class="s2">COMMAND&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">replace_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;torque_job.sh&#39;</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+    <span class="n">job</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="s2">&quot;mksub </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;torque_job.sh&#39;</span><span class="p">,</span><span class="n">additional_options</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">job</span></div>
+
+<div class="viewcode-block" id="assemble_run_torque"><a class="viewcode-back" href="../../index.html#methylnet.torque_jobs.assemble_run_torque">[docs]</a><span class="k">def</span> <span class="nf">assemble_run_torque</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">use_gpu</span><span class="p">,</span> <span class="n">additions</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">ngpu</span><span class="p">,</span> <span class="n">additional_options</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Runs torque job after passing commands to setup bash file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    command : type</span>
+<span class="sd">        Command to executer through torque.</span>
+<span class="sd">    use_gpu : type</span>
+<span class="sd">        GPUs needed?</span>
+<span class="sd">    additions : type</span>
+<span class="sd">        Additional commands to add (eg. module loads).</span>
+<span class="sd">    queue : type</span>
+<span class="sd">        Queue to place job in.</span>
+<span class="sd">    time : type</span>
+<span class="sd">        How many hours to run job for.</span>
+<span class="sd">    ngpu : type</span>
+<span class="sd">        Number of GPU to use.</span>
+<span class="sd">    additional_options : type</span>
+<span class="sd">        Additional options to pass to Torque scheduler.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    job</span>
+<span class="sd">        Custom job name.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">job</span> <span class="o">=</span> <span class="n">run_torque_job_</span><span class="p">(</span><span class="n">assemble_replace_dict</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">use_gpu</span><span class="p">,</span> <span class="n">additions</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">ngpu</span><span class="p">),</span><span class="n">additional_options</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">job</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Joshua Levy
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

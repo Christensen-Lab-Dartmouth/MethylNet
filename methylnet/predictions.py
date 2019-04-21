@@ -175,7 +175,7 @@ def train_predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols
 @click.option('-j', '--job_name', default='predict_job', show_default=True, help='Embedding job name.', type=click.Path(exists=False))
 @click.option('-sft', '--add_softmax', is_flag=True, help='Add softmax for predicting probability distributions. Experimental.')
 def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum', hyperparameter_log='predictions/predict_hyperparameters_log.csv', job_name='predict_job', add_softmax=False):
-    """Perform variational autoencoding on methylation dataset."""
+    """Train prediction model by fine-tuning VAE and appending/training MLP to make classification/regression predictions on MethylationArrays."""
     hlt_list=filter(None,hidden_layer_topology.split(','))
     if hlt_list:
         hidden_layer_topology=list(map(int,hlt_list))
@@ -214,7 +214,7 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
 @click.option('-e', '--categorical_encoder', default='./predictions/one_hot_encoder.p', help='One hot encoder if categorical model. If path exists, then return top positive controbutions per samples of that class. Encoded values must be of sample class as interest_col.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./new_predictions/', help='Output directory for predictions.', type=click.Path(exists=False), show_default=True)
 def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest_cols, categorical, cuda, categorical_encoder, output_dir):
-    """Run prediction model again to further assess outcome."""
+    """Run prediction model again to further assess outcome. Only evaluate prediction model."""
     os.makedirs(output_dir,exist_ok=True)
     test_methyl_array = MethylationArray.from_pickle(test_pkl) # generate results pickle to run through classification/regression report
     if cuda:

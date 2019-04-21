@@ -6,7 +6,7 @@ Run randomized grid search to find ideal model hyperparameters, with possible de
 
 import os, pandas as pd, numpy as np, subprocess
 import time
-from methylnet.torque_job_runner import assemble_run_torque
+from methylnet.torque_jobs import assemble_run_torque
 
 def find_top_jobs(hyperparameter_input_csv,hyperparameter_output_log, n_top_jobs, crossover_p=0, val_loss_column='min_val_loss'):
     """Finds top performing jobs from hyper parameter scan to rerun and cross-over parameters.

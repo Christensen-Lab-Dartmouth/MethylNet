@@ -9,7 +9,10 @@ import math
 
 
 class CosineAnnealingWithRestartsLR(torch.optim.lr_scheduler._LRScheduler):
-    r"""Set the learning rate of each parameter group using a cosine annealing
+    r"""Borrowed from: https://github.com/mpyrozhok/adamwr/blob/master/cyclic_scheduler.py
+    Needs to be updated to reflect newest changes.
+    From original docstring:
+    Set the learning rate of each parameter group using a cosine annealing
     schedule, where :math:`\eta_{max}` is set to the initial lr and
     :math:`T_{cur}` is the number of epochs since the last restart in SGDR:
      .. math::
@@ -56,6 +59,29 @@ class CosineAnnealingWithRestartsLR(torch.optim.lr_scheduler._LRScheduler):
         return [self.cosine(base_lr) for base_lr in self.base_lrs]
 
 class Scheduler:
+    """Scheduler class that modulates learning rate of torch optimizers over epochs.
+
+    Parameters
+    ----------
+    optimizer : type
+        torch.Optimizer object
+    opts : type
+        Options of setting the learning rate scheduler, see default.
+
+    Attributes
+    ----------
+    schedulers : type
+        Different types of schedulers to choose from.
+    scheduler_step_fn : type
+        How scheduler updates learning rate.
+    initial_lr : type
+        Initial set learning rate.
+    scheduler_choice : type
+        What scheduler type was chosen.
+    scheduler : type
+        Scheduler object chosen that will more directly update optimizer LR.
+
+    """
 
     def __init__(self, optimizer=None, opts=dict(scheduler='null',lr_scheduler_decay=0.5,T_max=10,eta_min=5e-8,T_mult=2)):
         self.schedulers = {'exp':(lambda optimizer: ExponentialLR(optimizer, opts["lr_scheduler_decay"])),
@@ -69,8 +95,17 @@ class Scheduler:
         self.scheduler = self.schedulers[self.scheduler_choice](optimizer) if optimizer is not None else None
 
     def step(self):
+        """Update optimizer learning rate"""
         self.scheduler_step_fn[self.scheduler_choice](self.scheduler)
 
     def get_lr(self):
+        """Return current learning rate.
+
+        Returns
+        -------
+        float
+            Current learning rate.
+
+        """
         lr = (self.initial_lr if self.scheduler_choice == 'null' else self.scheduler.optimizer.param_groups[0]['lr'])
         return lr

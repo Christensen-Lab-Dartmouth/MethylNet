@@ -45,7 +45,7 @@ There is both an API and CLI available for use. Examples for CLI usage can be fo
 .. automodule:: methylnet.hyperparameter_scans
    :members:
 
-.. automodule:: methylnet.torque_job_runner
+.. automodule:: methylnet.torque_jobs
    :members:
 
 .. automodule:: methylnet.interpretation_classes
@@ -61,20 +61,24 @@ There is both an API and CLI available for use. Examples for CLI usage can be fo
    :members:
 
 .. click:: methylnet.embedding:embed
-  :prog: methylnet-embed
-  :show-nested:
+   :prog: methylnet-embed
+   :show-nested:
 
-.. click:: methylnet.predictions:predict
- :prog: methylnet-predict
- :show-nested:
+.. click:: methylnet.predictions:prediction
+   :prog: methylnet-predict
+   :show-nested:
+
+.. click:: methylnet.model_interpretability:interpret
+   :prog: methylnet-interpret
+   :show-nested:
 
 .. click:: methylnet.visualizations:visualize
-:prog: methylnet-visualize
-:show-nested:
+   :prog: methylnet-visualize
+   :show-nested:
 
 .. click:: methylnet.torque_job_runner:torque
-:prog: methylnet-torque
-:show-nested:
+   :prog: methylnet-torque
+   :show-nested:
 
 Example Usage
 =============

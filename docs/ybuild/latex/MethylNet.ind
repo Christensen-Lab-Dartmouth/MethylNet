@@ -1,0 +1,992 @@
+\begin{sphinxtheindex}
+\let\bigletter\sphinxstyleindexlettergroup
+\let\spxpagem \sphinxstyleindexpagemain
+\let\spxentry \sphinxstyleindexentry
+\let\spxextra \sphinxstyleindexextra
+
+  \bigletter {\sphinxsymbolsname}
+  \item \spxentry{--version}
+    \subitem \spxentry{methylnet-embed command line option}, \hyperpage{39}
+    \subitem \spxentry{methylnet-interpret command line option}, \hyperpage{49}
+    \subitem \spxentry{methylnet-predict command line option}, \hyperpage{43}
+    \subitem \spxentry{methylnet-torque command line option}, \hyperpage{61}
+    \subitem \spxentry{methylnet-visualize command line option}, \hyperpage{59}
+  \item \spxentry{-a, --abs\_val}
+    \subitem \spxentry{methylnet-interpret-regenerate\_top\_cpgs command line option}, 
+		\hyperpage{56}
+  \item \spxentry{-a, --additional\_command \textless{}additional\_command\textgreater{}}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{40}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+  \item \spxentry{-a, --additions \textless{}additions\textgreater{}}
+    \subitem \spxentry{methylnet-torque-run\_torque\_job command line option}, \hyperpage{61}
+  \item \spxentry{-a, --all\_cpgs\_pickle \textless{}all\_cpgs\_pickle\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{50}
+  \item \spxentry{-b, --beta \textless{}beta\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+  \item \spxentry{-b, --set\_beta \textless{}set\_beta\textgreater{}}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{40}
+  \item \spxentry{-bce, --bce\_loss}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+  \item \spxentry{-bs, --batch\_size \textless{}batch\_size\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+    \subitem \spxentry{methylnet-predict-make\_new\_predictions command line option}, 
+		\hyperpage{45}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-c, --cell\_types \textless{}cell\_types\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-plot\_all\_lola\_outputs command line option}, 
+		\hyperpage{53}
+    \subitem \spxentry{methylnet-interpret-plot\_lola\_output command line option}, \hyperpage{53}
+  \item \spxentry{-c, --class\_names \textless{}class\_names\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-shapley\_jaccard command line option}, \hyperpage{56}
+  \item \spxentry{-c, --classes \textless{}classes\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+    \subitem \spxentry{methylnet-interpret-plot\_top\_cpgs command line option}, \hyperpage{53}
+  \item \spxentry{-c, --col \textless{}col\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-bin\_regression\_shaps command line option}, 
+		\hyperpage{49}
+    \subitem \spxentry{methylnet-interpret-extract\_methylation\_array command line option}, 
+		\hyperpage{50}
+    \subitem \spxentry{methylnet-interpret-order\_results\_by\_col command line option}, 
+		\hyperpage{52}
+  \item \spxentry{-c, --command \textless{}command\textgreater{}}
+    \subitem \spxentry{methylnet-torque-run\_torque\_job command line option}, \hyperpage{61}
+  \item \spxentry{-c, --crossover\_p \textless{}crossover\_p\textgreater{}}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{40}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+  \item \spxentry{-c, --cuda}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{40}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+    \subitem \spxentry{methylnet-predict-make\_new\_predictions command line option}, 
+		\hyperpage{45}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{45}
+  \item \spxentry{-c, --job\_chunk\_size \textless{}job\_chunk\_size\textgreater{}}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{39}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+  \item \spxentry{-cat, --categorical}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+    \subitem \spxentry{methylnet-predict-make\_new\_predictions command line option}, 
+		\hyperpage{45}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{45}
+  \item \spxentry{-cc, --cross\_class}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{55}
+  \item \spxentry{-cgs, --cpg\_set \textless{}cpg\_set\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-ci, --class\_intersect}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-cl, --pred\_class \textless{}pred\_class\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{55}
+  \item \spxentry{-cn, --cell\_names \textless{}cell\_names\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{55}
+  \item \spxentry{-co, --classes\_only}
+    \subitem \spxentry{methylnet-interpret-extract\_methylation\_array command line option}, 
+		\hyperpage{50}
+  \item \spxentry{-co, --cooccurrence}
+    \subitem \spxentry{methylnet-interpret-shapley\_jaccard command line option}, \hyperpage{56}
+  \item \spxentry{-col, --collections \textless{}collections\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-col, --interest\_col \textless{}interest\_col\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+  \item \spxentry{-conv, --convolutional}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+  \item \spxentry{-d, --decay \textless{}decay\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-d, --depletion}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-d, --description\_col \textless{}description\_col\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-plot\_all\_lola\_outputs command line option}, 
+		\hyperpage{53}
+    \subitem \spxentry{methylnet-interpret-plot\_lola\_output command line option}, \hyperpage{53}
+  \item \spxentry{-do, --disease\_only}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-dp, --dropout\_p \textless{}dropout\_p\textgreater{}}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-e, --categorical\_encoder \textless{}categorical\_encoder\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{55}
+    \subitem \spxentry{methylnet-predict-classification\_report command line option}, 
+		\hyperpage{43}
+    \subitem \spxentry{methylnet-predict-make\_new\_predictions command line option}, 
+		\hyperpage{45}
+  \item \spxentry{-e, --n\_epochs \textless{}n\_epochs\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{40}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-eta, --eta\_min \textless{}eta\_min\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-ex, --extract\_library}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-fs, --feature\_selection}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{55}
+  \item \spxentry{-g, --generate\_input}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{39}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+  \item \spxentry{-g, --global\_vals}
+    \subitem \spxentry{methylnet-interpret-extract\_methylation\_array command line option}, 
+		\hyperpage{50}
+  \item \spxentry{-g, --top\_global}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-gn, --gpu\_node \textless{}gpu\_node\textgreater{}}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{39}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+  \item \spxentry{-gpu, --gpu \textless{}gpu\textgreater{}}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{39}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+  \item \spxentry{-gpu, --use\_gpu}
+    \subitem \spxentry{methylnet-torque-run\_torque\_job command line option}, \hyperpage{61}
+  \item \spxentry{-gsea, --gsea\_analyses \textless{}gsea\_analyses\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-gsp, --gsea\_pickle \textless{}gsea\_pickle\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-hcsv, --hyperparameter\_input\_csv \textless{}hyperparameter\_input\_csv\textgreater{}}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{39}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{43}
+  \item \spxentry{-hl, --hyperparameter\_log \textless{}hyperparameter\_log\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-hl, --hyperparameter\_output\_log \textless{}hyperparameter\_output\_log\textgreater{}}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{39}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{43}
+  \item \spxentry{-hlt, --hidden\_layer\_encoder\_topology \textless{}hidden\_layer\_encoder\_topology\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{40}
+  \item \spxentry{-hlt, --hidden\_layer\_topology \textless{}hidden\_layer\_topology\textgreater{}}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-hs, --height\_kernel\_sizes \textless{}height\_kernel\_sizes\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+  \item \spxentry{-i, --include\_individuals}
+    \subitem \spxentry{methylnet-interpret-shapley\_jaccard command line option}, \hyperpage{56}
+  \item \spxentry{-i, --individuals \textless{}individuals\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+    \subitem \spxentry{methylnet-interpret-plot\_top\_cpgs command line option}, \hyperpage{53}
+    \subitem \spxentry{methylnet-interpret-view\_methylation\_top\_cpgs command line option}, 
+		\hyperpage{57}
+  \item \spxentry{-i, --input\_csv \textless{}input\_csv\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-order\_results\_by\_col command line option}, 
+		\hyperpage{52}
+  \item \spxentry{-i, --train\_pkl \textless{}train\_pkl\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{40}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{45}
+  \item \spxentry{-ic, --interest\_cols \textless{}interest\_cols\textgreater{}}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+    \subitem \spxentry{methylnet-predict-make\_new\_predictions command line option}, 
+		\hyperpage{45}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{45}
+  \item \spxentry{-ind, --individual \textless{}individual\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{55}
+  \item \spxentry{-int, --intersection}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-j, --job\_name \textless{}job\_name\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-j, --n\_jobs \textless{}n\_jobs\textgreater{}}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{40}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+  \item \spxentry{-kl, --kl\_warm\_up \textless{}kl\_warm\_up\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{40}
+  \item \spxentry{-l, --head\_lola\_dir \textless{}head\_lola\_dir\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-plot\_all\_lola\_outputs command line option}, 
+		\hyperpage{53}
+  \item \spxentry{-l, --lola\_csv \textless{}lola\_csv\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-plot\_lola\_output command line option}, \hyperpage{53}
+  \item \spxentry{-l, --lola\_db \textless{}lola\_db\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-l, --loss\_reduction \textless{}loss\_reduction\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-lo, --length\_output \textless{}length\_output\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-lr, --learning\_rate \textless{}learning\_rate\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{40}
+  \item \spxentry{-lr\_mlp, --learning\_rate\_mlp \textless{}learning\_rate\_mlp\textgreater{}}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-lr\_vae, --learning\_rate\_vae \textless{}learning\_rate\_vae\textgreater{}}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-m, --max\_gap \textless{}max\_gap\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-m, --model\_pickle \textless{}model\_pickle\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+    \subitem \spxentry{methylnet-predict-make\_new\_predictions command line option}, 
+		\hyperpage{45}
+  \item \spxentry{-m, --t\_mult \textless{}t\_mult\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-mc, --model\_complexity\_factor \textless{}model\_complexity\_factor\textgreater{}}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{40}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+  \item \spxentry{-mth, --method \textless{}method\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+  \item \spxentry{-n, --n\_bins \textless{}n\_bins\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-bin\_regression\_shaps command line option}, 
+		\hyperpage{49}
+  \item \spxentry{-n, --n\_extract \textless{}n\_extract\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-extract\_methylation\_array command line option}, 
+		\hyperpage{50}
+  \item \spxentry{-n, --n\_jobs\_relaunch \textless{}n\_jobs\_relaunch\textgreater{}}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{40}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+  \item \spxentry{-n, --n\_latent \textless{}n\_latent\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{40}
+  \item \spxentry{-n, --n\_workers \textless{}n\_workers\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-n, --neg\_val}
+    \subitem \spxentry{methylnet-interpret-regenerate\_top\_cpgs command line option}, 
+		\hyperpage{56}
+  \item \spxentry{-n, --ngpu \textless{}ngpu\textgreater{}}
+    \subitem \spxentry{methylnet-torque-run\_torque\_job command line option}, \hyperpage{61}
+  \item \spxentry{-nf, --n\_top\_features \textless{}n\_top\_features\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+    \subitem \spxentry{methylnet-interpret-reduce\_top\_cpgs command line option}, \hyperpage{55}
+    \subitem \spxentry{methylnet-interpret-regenerate\_top\_cpgs command line option}, 
+		\hyperpage{56}
+  \item \spxentry{-nh, --nohup}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{39}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+  \item \spxentry{-ns, --n\_samples \textless{}n\_samples\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+  \item \spxentry{-o, --output\_csv \textless{}output\_csv\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-order\_results\_by\_col command line option}, 
+		\hyperpage{52}
+  \item \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{40}
+    \subitem \spxentry{methylnet-interpret-extract\_methylation\_array command line option}, 
+		\hyperpage{50}
+    \subitem \spxentry{methylnet-interpret-grab\_lola\_db\_cache command line option}, 
+		\hyperpage{50}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{50}
+    \subitem \spxentry{methylnet-interpret-plot\_top\_cpgs command line option}, \hyperpage{53}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+    \subitem \spxentry{methylnet-interpret-shapley\_jaccard command line option}, \hyperpage{56}
+    \subitem \spxentry{methylnet-interpret-split\_hyper\_hypo\_methylation command line option}, 
+		\hyperpage{57}
+    \subitem \spxentry{methylnet-interpret-view\_methylation\_top\_cpgs command line option}, 
+		\hyperpage{57}
+    \subitem \spxentry{methylnet-predict-classification\_report command line option}, 
+		\hyperpage{43}
+    \subitem \spxentry{methylnet-predict-make\_new\_predictions command line option}, 
+		\hyperpage{45}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{45}
+    \subitem \spxentry{methylnet-predict-regression\_report command line option}, \hyperpage{47}
+  \item \spxentry{-o, --output\_pkl \textless{}output\_pkl\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-reduce\_top\_cpgs command line option}, \hyperpage{55}
+    \subitem \spxentry{methylnet-interpret-regenerate\_top\_cpgs command line option}, 
+		\hyperpage{56}
+  \item \spxentry{-o, --outputfilename \textless{}outputfilename\textgreater{}}
+    \subitem \spxentry{methylnet-visualize-plot\_roc\_curve command line option}, \hyperpage{59}
+    \subitem \spxentry{methylnet-visualize-plot\_training\_curve command line option}, 
+		\hyperpage{59}
+  \item \spxentry{-o, --plot\_output\_dir \textless{}plot\_output\_dir\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-plot\_all\_lola\_outputs command line option}, 
+		\hyperpage{53}
+    \subitem \spxentry{methylnet-interpret-plot\_lola\_output command line option}, \hyperpage{53}
+  \item \spxentry{-opt, --optimize\_n\_cpgs}
+    \subitem \spxentry{methylnet-interpret-shapley\_jaccard command line option}, \hyperpage{56}
+  \item \spxentry{-os, --output\_shap\_pkl \textless{}output\_shap\_pkl\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-bin\_regression\_shaps command line option}, 
+		\hyperpage{49}
+  \item \spxentry{-ot, --output\_test\_pkl \textless{}output\_test\_pkl\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-bin\_regression\_shaps command line option}, 
+		\hyperpage{49}
+  \item \spxentry{-ov, --overall}
+    \subitem \spxentry{methylnet-interpret-shapley\_jaccard command line option}, \hyperpage{56}
+  \item \spxentry{-ov, --overlap\_test}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-ov, --overwrite}
+    \subitem \spxentry{methylnet-interpret-plot\_all\_lola\_outputs command line option}, 
+		\hyperpage{53}
+  \item \spxentry{-q, --queue \textless{}queue\textgreater{}}
+    \subitem \spxentry{methylnet-torque-run\_torque\_job command line option}, \hyperpage{61}
+  \item \spxentry{-r, --n\_random\_representative \textless{}n\_random\_representative\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+  \item \spxentry{-r, --reset\_all}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{39}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+  \item \spxentry{-r, --results\_csv \textless{}results\_csv\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{55}
+  \item \spxentry{-r, --results\_pickle \textless{}results\_pickle\textgreater{}}
+    \subitem \spxentry{methylnet-predict-classification\_report command line option}, 
+		\hyperpage{43}
+    \subitem \spxentry{methylnet-predict-regression\_report command line option}, \hyperpage{47}
+  \item \spxentry{-r, --roc\_curve\_csv \textless{}roc\_curve\_csv\textgreater{}}
+    \subitem \spxentry{methylnet-visualize-plot\_roc\_curve command line option}, \hyperpage{59}
+  \item \spxentry{-rc, --residual\_cutoff \textless{}residual\_cutoff\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{55}
+  \item \spxentry{-rt, --n\_random\_representative\_test \textless{}n\_random\_representative\_test\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+  \item \spxentry{-s, --scheduler \textless{}scheduler\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-s, --shapley\_data \textless{}shapley\_data\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-bin\_regression\_shaps command line option}, 
+		\hyperpage{49}
+    \subitem \spxentry{methylnet-interpret-extract\_methylation\_array command line option}, 
+		\hyperpage{50}
+    \subitem \spxentry{methylnet-interpret-list\_classes command line option}, \hyperpage{52}
+    \subitem \spxentry{methylnet-interpret-list\_individuals command line option}, \hyperpage{52}
+    \subitem \spxentry{methylnet-interpret-plot\_top\_cpgs command line option}, \hyperpage{53}
+    \subitem \spxentry{methylnet-interpret-reduce\_top\_cpgs command line option}, \hyperpage{55}
+    \subitem \spxentry{methylnet-interpret-regenerate\_top\_cpgs command line option}, 
+		\hyperpage{56}
+    \subitem \spxentry{methylnet-interpret-shapley\_jaccard command line option}, \hyperpage{56}
+    \subitem \spxentry{methylnet-interpret-split\_hyper\_hypo\_methylation command line option}, 
+		\hyperpage{57}
+    \subitem \spxentry{methylnet-interpret-view\_methylation\_top\_cpgs command line option}, 
+		\hyperpage{57}
+  \item \spxentry{-s, --shapley\_data\_list \textless{}shapley\_data\_list\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{50}
+  \item \spxentry{-sc, --stratify\_column \textless{}stratify\_column\textgreater{}}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{39}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+  \item \spxentry{-sft, --add\_softmax}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-ss, --set\_subtraction}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-ssbs, --shap\_sample\_batch\_size \textless{}shap\_sample\_batch\_size\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+  \item \spxentry{-sym, --symmetric}
+    \subitem \spxentry{methylnet-interpret-order\_results\_by\_col command line option}, 
+		\hyperpage{52}
+  \item \spxentry{-t, --t\_max \textless{}t\_max\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-t, --test\_pkl \textless{}test\_pkl\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-bin\_regression\_shaps command line option}, 
+		\hyperpage{49}
+    \subitem \spxentry{methylnet-interpret-extract\_methylation\_array command line option}, 
+		\hyperpage{50}
+    \subitem \spxentry{methylnet-interpret-order\_results\_by\_col command line option}, 
+		\hyperpage{52}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+    \subitem \spxentry{methylnet-interpret-split\_hyper\_hypo\_methylation command line option}, 
+		\hyperpage{57}
+    \subitem \spxentry{methylnet-interpret-view\_methylation\_top\_cpgs command line option}, 
+		\hyperpage{57}
+  \item \spxentry{-t, --time \textless{}time\textgreater{}}
+    \subitem \spxentry{methylnet-torque-run\_torque\_job command line option}, \hyperpage{61}
+  \item \spxentry{-t, --torque}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{39}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+  \item \spxentry{-t, --training\_curve\_file \textless{}training\_curve\_file\textgreater{}}
+    \subitem \spxentry{methylnet-visualize-plot\_training\_curve command line option}, 
+		\hyperpage{59}
+  \item \spxentry{-thr, --threshold \textless{}threshold\textgreater{}}
+    \subitem \spxentry{methylnet-visualize-plot\_training\_curve command line option}, 
+		\hyperpage{60}
+  \item \spxentry{-top, --top\_outputs \textless{}top\_outputs\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{55}
+  \item \spxentry{-tp, --test\_pkl \textless{}test\_pkl\textgreater{}}
+    \subitem \spxentry{methylnet-predict-make\_new\_predictions command line option}, 
+		\hyperpage{45}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{45}
+  \item \spxentry{-v, --add\_validation\_set}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-v, --val\_loss\_column \textless{}val\_loss\_column\textgreater{}}
+    \subitem \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{40}
+    \subitem \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}, 
+		\hyperpage{44}
+  \item \spxentry{-v, --val\_pkl \textless{}val\_pkl\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+  \item \spxentry{-vae, --input\_vae\_pkl \textless{}input\_vae\_pkl\textgreater{}}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{45}
+  \item \spxentry{-vae, --vae\_interpret}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{55}
+  \item \spxentry{-vae, --vae\_train}
+    \subitem \spxentry{methylnet-visualize-plot\_training\_curve command line option}, 
+		\hyperpage{59}
+  \item \spxentry{-vp, --val\_pkl \textless{}val\_pkl\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-w, --analysis \textless{}analysis\textgreater{}}
+    \subitem \spxentry{methylnet-interpret-interpret\_biology command line option}, \hyperpage{51}
+  \item \spxentry{-w, --n\_workers \textless{}n\_workers\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+    \subitem \spxentry{methylnet-interpret-produce\_shapley\_data command line option}, 
+		\hyperpage{54}
+    \subitem \spxentry{methylnet-predict-make\_new\_predictions command line option}, 
+		\hyperpage{45}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-wd, --weight\_decay \textless{}weight\_decay\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{40}
+    \subitem \spxentry{methylnet-predict-make\_prediction command line option}, \hyperpage{46}
+  \item \spxentry{-ws, --width\_kernel\_sizes \textless{}width\_kernel\_sizes\textgreater{}}
+    \subitem \spxentry{methylnet-embed-perform\_embedding command line option}, \hyperpage{41}
+
+  \indexspace
+  \bigletter A
+  \item \spxentry{add\_abs\_value\_classes()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{17}
+  \item \spxentry{add\_bin\_continuous\_classes()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{17}
+  \item \spxentry{add\_class()}\spxextra{methylnet.interpretation\_classes.ShapleyData method}, 
+		\hyperpage{15}
+  \item \spxentry{add\_global\_importance()}\spxextra{methylnet.interpretation\_classes.ShapleyData method}, 
+		\hyperpage{15}
+  \item \spxentry{add\_validation\_set()}\spxextra{methylnet.models.AutoEncoder method}, 
+		\hyperpage{24}
+  \item \spxentry{add\_validation\_set()}\spxextra{methylnet.models.MLPFinetuneVAE method}, 
+		\hyperpage{26}
+  \item \spxentry{assemble\_replace\_dict()}\spxextra{in module methylnet.torque\_jobs}, 
+		\hyperpage{9}
+  \item \spxentry{assemble\_run\_torque()}\spxextra{in module methylnet.torque\_jobs}, 
+		\hyperpage{9}
+  \item \spxentry{AutoEncoder}\spxextra{class in methylnet.models}, \hyperpage{23}
+
+  \indexspace
+  \bigletter B
+  \item \spxentry{BioInterpreter}\spxextra{class in methylnet.interpretation\_classes}, 
+		\hyperpage{11}
+  \item \spxentry{build\_explainer()}\spxextra{methylnet.interpretation\_classes.CpGExplainer method}, 
+		\hyperpage{13}
+
+  \indexspace
+  \bigletter C
+  \item \spxentry{cat()}\spxextra{in module methylnet.datasets}, \hyperpage{5}
+  \item \spxentry{classifier\_assign\_scores\_to\_shap\_data()}\spxextra{methylnet.interpretation\_classes.CpGExplainer method}, 
+		\hyperpage{13}
+  \item \spxentry{coarse\_scan()}\spxextra{in module methylnet.hyperparameter\_scans}, 
+		\hyperpage{7}
+  \item \spxentry{cooccurrence\_fn()}\spxextra{in module methylnet.interpretation\_classes}, 
+		\hyperpage{20}
+  \item \spxentry{CosineAnnealingWithRestartsLR}\spxextra{class in methylnet.schedulers}, 
+		\hyperpage{37}
+  \item \spxentry{CpGExplainer}\spxextra{class in methylnet.interpretation\_classes}, 
+		\hyperpage{12}
+
+  \indexspace
+  \bigletter D
+  \item \spxentry{decode()}\spxextra{methylnet.models.TybaltTitusVAE method}, \hyperpage{28}
+  \item \spxentry{decode()}\spxextra{methylnet.models.VAE\_MLP method}, \hyperpage{31}
+
+  \indexspace
+  \bigletter E
+  \item \spxentry{encode()}\spxextra{methylnet.models.TybaltTitusVAE method}, \hyperpage{28}
+  \item \spxentry{extract\_class()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{17}
+  \item \spxentry{extract\_individual()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{17}
+  \item \spxentry{extract\_methylation\_array()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{17}
+
+  \indexspace
+  \bigletter F
+  \item \spxentry{feature\_select()}\spxextra{methylnet.interpretation\_classes.CpGExplainer method}, 
+		\hyperpage{13}
+  \item \spxentry{find\_top\_jobs()}\spxextra{in module methylnet.hyperparameter\_scans}, 
+		\hyperpage{8}
+  \item \spxentry{fit()}\spxextra{methylnet.models.AutoEncoder method}, \hyperpage{24}
+  \item \spxentry{fit()}\spxextra{methylnet.models.MLPFinetuneVAE method}, \hyperpage{26}
+  \item \spxentry{fit\_transform()}\spxextra{methylnet.models.AutoEncoder method}, \hyperpage{24}
+  \item \spxentry{forward()}\spxextra{methylnet.models.TybaltTitusVAE method}, \hyperpage{28}
+  \item \spxentry{forward()}\spxextra{methylnet.models.VAE\_MLP method}, \hyperpage{31}
+  \item \spxentry{forward\_embed()}\spxextra{methylnet.models.VAE\_MLP method}, \hyperpage{31}
+  \item \spxentry{forward\_predict()}\spxextra{methylnet.models.TybaltTitusVAE method}, 
+		\hyperpage{28}
+  \item \spxentry{forward\_predict()}\spxextra{methylnet.models.VAE\_MLP method}, \hyperpage{31}
+  \item \spxentry{from\_explainer()}\spxextra{methylnet.interpretation\_classes.CpGExplainer class method}, 
+		\hyperpage{14}
+  \item \spxentry{from\_pickle()}\spxextra{methylnet.interpretation\_classes.ShapleyData class method}, 
+		\hyperpage{16}
+
+  \indexspace
+  \bigletter G
+  \item \spxentry{generate()}\spxextra{methylnet.datasets.Transformer method}, \hyperpage{5}
+  \item \spxentry{generate\_topology()}\spxextra{in module methylnet.hyperparameter\_scans}, 
+		\hyperpage{8}
+  \item \spxentry{get\_latent\_z()}\spxextra{methylnet.models.TybaltTitusVAE method}, 
+		\hyperpage{28}
+  \item \spxentry{get\_lr()}\spxextra{methylnet.schedulers.Scheduler method}, \hyperpage{38}
+  \item \spxentry{get\_methylation\_dataset()}\spxextra{in module methylnet.datasets}, 
+		\hyperpage{6}
+  \item \spxentry{get\_nearby\_cpg\_shapleys()}\spxextra{methylnet.interpretation\_classes.BioInterpreter method}, 
+		\hyperpage{11}
+  \item \spxentry{gometh()}\spxextra{methylnet.interpretation\_classes.BioInterpreter method}, 
+		\hyperpage{11}
+
+  \indexspace
+  \bigletter J
+  \item \spxentry{jaccard\_similarity()}\spxextra{in module methylnet.interpretation\_classes}, 
+		\hyperpage{20}
+  \item \spxentry{jaccard\_similarity\_top\_cpgs()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{17}
+
+  \indexspace
+  \bigletter L
+  \item \spxentry{limit\_number\_top\_cpgs()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{18}
+  \item \spxentry{list\_classes()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{18}
+  \item \spxentry{list\_individuals()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{18}
+
+  \indexspace
+  \bigletter M
+  \item \spxentry{main\_prediction\_function()}\spxextra{in module methylnet.interpretation\_classes}, 
+		\hyperpage{20}
+  \item \spxentry{MethylationDataSet}\spxextra{class in methylnet.datasets}, \hyperpage{3}
+  \item \spxentry{MethylationPredictionDataSet}\spxextra{class in methylnet.datasets}, 
+		\hyperpage{4}
+  \item \spxentry{methylnet-embed command line option}
+    \subitem \spxentry{--version}, \hyperpage{39}
+  \item \spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}
+    \subitem \spxentry{-a, --additional\_command \textless{}additional\_command\textgreater{}}, 
+		\hyperpage{40}
+    \subitem \spxentry{-b, --set\_beta \textless{}set\_beta\textgreater{}}, \hyperpage{40}
+    \subitem \spxentry{-c, --crossover\_p \textless{}crossover\_p\textgreater{}}, \hyperpage{40}
+    \subitem \spxentry{-c, --job\_chunk\_size \textless{}job\_chunk\_size\textgreater{}}, 
+		\hyperpage{39}
+    \subitem \spxentry{-g, --generate\_input}, \hyperpage{39}
+    \subitem \spxentry{-gn, --gpu\_node \textless{}gpu\_node\textgreater{}}, \hyperpage{39}
+    \subitem \spxentry{-gpu, --gpu \textless{}gpu\textgreater{}}, \hyperpage{39}
+    \subitem \spxentry{-hcsv, --hyperparameter\_input\_csv \textless{}hyperparameter\_input\_csv\textgreater{}}, 
+		\hyperpage{39}
+    \subitem \spxentry{-hl, --hyperparameter\_output\_log \textless{}hyperparameter\_output\_log\textgreater{}}, 
+		\hyperpage{39}
+    \subitem \spxentry{-j, --n\_jobs \textless{}n\_jobs\textgreater{}}, \hyperpage{40}
+    \subitem \spxentry{-mc, --model\_complexity\_factor \textless{}model\_complexity\_factor\textgreater{}}, 
+		\hyperpage{40}
+    \subitem \spxentry{-n, --n\_jobs\_relaunch \textless{}n\_jobs\_relaunch\textgreater{}}, 
+		\hyperpage{40}
+    \subitem \spxentry{-nh, --nohup}, \hyperpage{39}
+    \subitem \spxentry{-r, --reset\_all}, \hyperpage{39}
+    \subitem \spxentry{-sc, --stratify\_column \textless{}stratify\_column\textgreater{}}, 
+		\hyperpage{39}
+    \subitem \spxentry{-t, --torque}, \hyperpage{39}
+    \subitem \spxentry{-v, --val\_loss\_column \textless{}val\_loss\_column\textgreater{}}, 
+		\hyperpage{40}
+  \item \spxentry{methylnet-embed-perform\_embedding command line option}
+    \subitem \spxentry{-b, --beta \textless{}beta\textgreater{}}, \hyperpage{41}
+    \subitem \spxentry{-bce, --bce\_loss}, \hyperpage{41}
+    \subitem \spxentry{-bs, --batch\_size \textless{}batch\_size\textgreater{}}, \hyperpage{41}
+    \subitem \spxentry{-c, --cuda}, \hyperpage{40}
+    \subitem \spxentry{-conv, --convolutional}, \hyperpage{41}
+    \subitem \spxentry{-d, --decay \textless{}decay\textgreater{}}, \hyperpage{41}
+    \subitem \spxentry{-e, --n\_epochs \textless{}n\_epochs\textgreater{}}, \hyperpage{40}
+    \subitem \spxentry{-eta, --eta\_min \textless{}eta\_min\textgreater{}}, \hyperpage{41}
+    \subitem \spxentry{-hl, --hyperparameter\_log \textless{}hyperparameter\_log\textgreater{}}, 
+		\hyperpage{41}
+    \subitem \spxentry{-hlt, --hidden\_layer\_encoder\_topology \textless{}hidden\_layer\_encoder\_topology\textgreater{}}, 
+		\hyperpage{40}
+    \subitem \spxentry{-hs, --height\_kernel\_sizes \textless{}height\_kernel\_sizes\textgreater{}}, 
+		\hyperpage{41}
+    \subitem \spxentry{-i, --train\_pkl \textless{}train\_pkl\textgreater{}}, \hyperpage{40}
+    \subitem \spxentry{-j, --job\_name \textless{}job\_name\textgreater{}}, \hyperpage{41}
+    \subitem \spxentry{-kl, --kl\_warm\_up \textless{}kl\_warm\_up\textgreater{}}, \hyperpage{40}
+    \subitem \spxentry{-l, --loss\_reduction \textless{}loss\_reduction\textgreater{}}, 
+		\hyperpage{41}
+    \subitem \spxentry{-lr, --learning\_rate \textless{}learning\_rate\textgreater{}}, 
+		\hyperpage{40}
+    \subitem \spxentry{-m, --t\_mult \textless{}t\_mult\textgreater{}}, \hyperpage{41}
+    \subitem \spxentry{-n, --n\_latent \textless{}n\_latent\textgreater{}}, \hyperpage{40}
+    \subitem \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}, \hyperpage{40}
+    \subitem \spxentry{-s, --scheduler \textless{}scheduler\textgreater{}}, \hyperpage{41}
+    \subitem \spxentry{-sc, --stratify\_column \textless{}stratify\_column\textgreater{}}, 
+		\hyperpage{41}
+    \subitem \spxentry{-t, --t\_max \textless{}t\_max\textgreater{}}, \hyperpage{41}
+    \subitem \spxentry{-v, --add\_validation\_set}, \hyperpage{41}
+    \subitem \spxentry{-vp, --val\_pkl \textless{}val\_pkl\textgreater{}}, \hyperpage{41}
+    \subitem \spxentry{-w, --n\_workers \textless{}n\_workers\textgreater{}}, \hyperpage{41}
+    \subitem \spxentry{-wd, --weight\_decay \textless{}weight\_decay\textgreater{}}, \hyperpage{40}
+    \subitem \spxentry{-ws, --width\_kernel\_sizes \textless{}width\_kernel\_sizes\textgreater{}}, 
+		\hyperpage{41}
+  \item \spxentry{methylnet-interpret command line option}
+    \subitem \spxentry{--version}, \hyperpage{49}
+  \item \spxentry{methylnet-interpret-bin\_regression\_shaps command line option}
+    \subitem \spxentry{-c, --col \textless{}col\textgreater{}}, \hyperpage{49}
+    \subitem \spxentry{-n, --n\_bins \textless{}n\_bins\textgreater{}}, \hyperpage{49}
+    \subitem \spxentry{-os, --output\_shap\_pkl \textless{}output\_shap\_pkl\textgreater{}}, 
+		\hyperpage{49}
+    \subitem \spxentry{-ot, --output\_test\_pkl \textless{}output\_test\_pkl\textgreater{}}, 
+		\hyperpage{49}
+    \subitem \spxentry{-s, --shapley\_data \textless{}shapley\_data\textgreater{}}, \hyperpage{49}
+    \subitem \spxentry{-t, --test\_pkl \textless{}test\_pkl\textgreater{}}, \hyperpage{49}
+  \item \spxentry{methylnet-interpret-extract\_methylation\_array command line option}
+    \subitem \spxentry{-c, --col \textless{}col\textgreater{}}, \hyperpage{50}
+    \subitem \spxentry{-co, --classes\_only}, \hyperpage{50}
+    \subitem \spxentry{-g, --global\_vals}, \hyperpage{50}
+    \subitem \spxentry{-n, --n\_extract \textless{}n\_extract\textgreater{}}, \hyperpage{50}
+    \subitem \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}, \hyperpage{50}
+    \subitem \spxentry{-s, --shapley\_data \textless{}shapley\_data\textgreater{}}, \hyperpage{50}
+    \subitem \spxentry{-t, --test\_pkl \textless{}test\_pkl\textgreater{}}, \hyperpage{50}
+  \item \spxentry{methylnet-interpret-grab\_lola\_db\_cache command line option}
+    \subitem \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}, \hyperpage{50}
+  \item \spxentry{methylnet-interpret-interpret\_biology command line option}
+    \subitem \spxentry{-a, --all\_cpgs\_pickle \textless{}all\_cpgs\_pickle\textgreater{}}, 
+		\hyperpage{50}
+    \subitem \spxentry{-c, --classes \textless{}classes\textgreater{}}, \hyperpage{51}
+    \subitem \spxentry{-cgs, --cpg\_set \textless{}cpg\_set\textgreater{}}, \hyperpage{51}
+    \subitem \spxentry{-ci, --class\_intersect}, \hyperpage{51}
+    \subitem \spxentry{-col, --collections \textless{}collections\textgreater{}}, \hyperpage{51}
+    \subitem \spxentry{-d, --depletion}, \hyperpage{51}
+    \subitem \spxentry{-ex, --extract\_library}, \hyperpage{51}
+    \subitem \spxentry{-g, --top\_global}, \hyperpage{51}
+    \subitem \spxentry{-gsea, --gsea\_analyses \textless{}gsea\_analyses\textgreater{}}, 
+		\hyperpage{51}
+    \subitem \spxentry{-gsp, --gsea\_pickle \textless{}gsea\_pickle\textgreater{}}, \hyperpage{51}
+    \subitem \spxentry{-i, --individuals \textless{}individuals\textgreater{}}, \hyperpage{51}
+    \subitem \spxentry{-int, --intersection}, \hyperpage{51}
+    \subitem \spxentry{-l, --lola\_db \textless{}lola\_db\textgreater{}}, \hyperpage{51}
+    \subitem \spxentry{-lo, --length\_output \textless{}length\_output\textgreater{}}, 
+		\hyperpage{51}
+    \subitem \spxentry{-m, --max\_gap \textless{}max\_gap\textgreater{}}, \hyperpage{51}
+    \subitem \spxentry{-n, --n\_workers \textless{}n\_workers\textgreater{}}, \hyperpage{51}
+    \subitem \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}, \hyperpage{50}
+    \subitem \spxentry{-ov, --overlap\_test}, \hyperpage{51}
+    \subitem \spxentry{-s, --shapley\_data\_list \textless{}shapley\_data\_list\textgreater{}}, 
+		\hyperpage{50}
+    \subitem \spxentry{-ss, --set\_subtraction}, \hyperpage{51}
+    \subitem \spxentry{-w, --analysis \textless{}analysis\textgreater{}}, \hyperpage{51}
+  \item \spxentry{methylnet-interpret-list\_classes command line option}
+    \subitem \spxentry{-s, --shapley\_data \textless{}shapley\_data\textgreater{}}, \hyperpage{52}
+  \item \spxentry{methylnet-interpret-list\_individuals command line option}
+    \subitem \spxentry{-s, --shapley\_data \textless{}shapley\_data\textgreater{}}, \hyperpage{52}
+  \item \spxentry{methylnet-interpret-order\_results\_by\_col command line option}
+    \subitem \spxentry{-c, --col \textless{}col\textgreater{}}, \hyperpage{52}
+    \subitem \spxentry{-i, --input\_csv \textless{}input\_csv\textgreater{}}, \hyperpage{52}
+    \subitem \spxentry{-o, --output\_csv \textless{}output\_csv\textgreater{}}, \hyperpage{52}
+    \subitem \spxentry{-sym, --symmetric}, \hyperpage{52}
+    \subitem \spxentry{-t, --test\_pkl \textless{}test\_pkl\textgreater{}}, \hyperpage{52}
+  \item \spxentry{methylnet-interpret-plot\_all\_lola\_outputs command line option}
+    \subitem \spxentry{-c, --cell\_types \textless{}cell\_types\textgreater{}}, \hyperpage{53}
+    \subitem \spxentry{-d, --description\_col \textless{}description\_col\textgreater{}}, 
+		\hyperpage{53}
+    \subitem \spxentry{-l, --head\_lola\_dir \textless{}head\_lola\_dir\textgreater{}}, 
+		\hyperpage{53}
+    \subitem \spxentry{-o, --plot\_output\_dir \textless{}plot\_output\_dir\textgreater{}}, 
+		\hyperpage{53}
+    \subitem \spxentry{-ov, --overwrite}, \hyperpage{53}
+  \item \spxentry{methylnet-interpret-plot\_lola\_output command line option}
+    \subitem \spxentry{-c, --cell\_types \textless{}cell\_types\textgreater{}}, \hyperpage{53}
+    \subitem \spxentry{-d, --description\_col \textless{}description\_col\textgreater{}}, 
+		\hyperpage{53}
+    \subitem \spxentry{-l, --lola\_csv \textless{}lola\_csv\textgreater{}}, \hyperpage{53}
+    \subitem \spxentry{-o, --plot\_output\_dir \textless{}plot\_output\_dir\textgreater{}}, 
+		\hyperpage{53}
+  \item \spxentry{methylnet-interpret-plot\_top\_cpgs command line option}
+    \subitem \spxentry{-c, --classes \textless{}classes\textgreater{}}, \hyperpage{53}
+    \subitem \spxentry{-i, --individuals \textless{}individuals\textgreater{}}, \hyperpage{53}
+    \subitem \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}, \hyperpage{53}
+    \subitem \spxentry{-s, --shapley\_data \textless{}shapley\_data\textgreater{}}, \hyperpage{53}
+  \item \spxentry{methylnet-interpret-produce\_shapley\_data command line option}
+    \subitem \spxentry{-bs, --batch\_size \textless{}batch\_size\textgreater{}}, \hyperpage{54}
+    \subitem \spxentry{-c, --cuda}, \hyperpage{54}
+    \subitem \spxentry{-cc, --cross\_class}, \hyperpage{55}
+    \subitem \spxentry{-cl, --pred\_class \textless{}pred\_class\textgreater{}}, \hyperpage{55}
+    \subitem \spxentry{-cn, --cell\_names \textless{}cell\_names\textgreater{}}, \hyperpage{55}
+    \subitem \spxentry{-col, --interest\_col \textless{}interest\_col\textgreater{}}, 
+		\hyperpage{54}
+    \subitem \spxentry{-e, --categorical\_encoder \textless{}categorical\_encoder\textgreater{}}, 
+		\hyperpage{55}
+    \subitem \spxentry{-fs, --feature\_selection}, \hyperpage{55}
+    \subitem \spxentry{-i, --train\_pkl \textless{}train\_pkl\textgreater{}}, \hyperpage{54}
+    \subitem \spxentry{-ind, --individual \textless{}individual\textgreater{}}, \hyperpage{55}
+    \subitem \spxentry{-m, --model\_pickle \textless{}model\_pickle\textgreater{}}, \hyperpage{54}
+    \subitem \spxentry{-mth, --method \textless{}method\textgreater{}}, \hyperpage{54}
+    \subitem \spxentry{-nf, --n\_top\_features \textless{}n\_top\_features\textgreater{}}, 
+		\hyperpage{54}
+    \subitem \spxentry{-ns, --n\_samples \textless{}n\_samples\textgreater{}}, \hyperpage{54}
+    \subitem \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}, \hyperpage{54}
+    \subitem \spxentry{-r, --n\_random\_representative \textless{}n\_random\_representative\textgreater{}}, 
+		\hyperpage{54}
+    \subitem \spxentry{-r, --results\_csv \textless{}results\_csv\textgreater{}}, \hyperpage{55}
+    \subitem \spxentry{-rc, --residual\_cutoff \textless{}residual\_cutoff\textgreater{}}, 
+		\hyperpage{55}
+    \subitem \spxentry{-rt, --n\_random\_representative\_test \textless{}n\_random\_representative\_test\textgreater{}}, 
+		\hyperpage{54}
+    \subitem \spxentry{-ssbs, --shap\_sample\_batch\_size \textless{}shap\_sample\_batch\_size\textgreater{}}, 
+		\hyperpage{54}
+    \subitem \spxentry{-t, --test\_pkl \textless{}test\_pkl\textgreater{}}, \hyperpage{54}
+    \subitem \spxentry{-top, --top\_outputs \textless{}top\_outputs\textgreater{}}, \hyperpage{55}
+    \subitem \spxentry{-v, --val\_pkl \textless{}val\_pkl\textgreater{}}, \hyperpage{54}
+    \subitem \spxentry{-vae, --vae\_interpret}, \hyperpage{55}
+    \subitem \spxentry{-w, --n\_workers \textless{}n\_workers\textgreater{}}, \hyperpage{54}
+  \item \spxentry{methylnet-interpret-reduce\_top\_cpgs command line option}
+    \subitem \spxentry{-nf, --n\_top\_features \textless{}n\_top\_features\textgreater{}}, 
+		\hyperpage{55}
+    \subitem \spxentry{-o, --output\_pkl \textless{}output\_pkl\textgreater{}}, \hyperpage{55}
+    \subitem \spxentry{-s, --shapley\_data \textless{}shapley\_data\textgreater{}}, \hyperpage{55}
+  \item \spxentry{methylnet-interpret-regenerate\_top\_cpgs command line option}
+    \subitem \spxentry{-a, --abs\_val}, \hyperpage{56}
+    \subitem \spxentry{-n, --neg\_val}, \hyperpage{56}
+    \subitem \spxentry{-nf, --n\_top\_features \textless{}n\_top\_features\textgreater{}}, 
+		\hyperpage{56}
+    \subitem \spxentry{-o, --output\_pkl \textless{}output\_pkl\textgreater{}}, \hyperpage{56}
+    \subitem \spxentry{-s, --shapley\_data \textless{}shapley\_data\textgreater{}}, \hyperpage{56}
+  \item \spxentry{methylnet-interpret-shapley\_jaccard command line option}
+    \subitem \spxentry{-c, --class\_names \textless{}class\_names\textgreater{}}, \hyperpage{56}
+    \subitem \spxentry{-co, --cooccurrence}, \hyperpage{56}
+    \subitem \spxentry{-i, --include\_individuals}, \hyperpage{56}
+    \subitem \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}, \hyperpage{56}
+    \subitem \spxentry{-opt, --optimize\_n\_cpgs}, \hyperpage{56}
+    \subitem \spxentry{-ov, --overall}, \hyperpage{56}
+    \subitem \spxentry{-s, --shapley\_data \textless{}shapley\_data\textgreater{}}, \hyperpage{56}
+  \item \spxentry{methylnet-interpret-split\_hyper\_hypo\_methylation command line option}
+    \subitem \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}, \hyperpage{57}
+    \subitem \spxentry{-s, --shapley\_data \textless{}shapley\_data\textgreater{}}, \hyperpage{57}
+    \subitem \spxentry{-t, --test\_pkl \textless{}test\_pkl\textgreater{}}, \hyperpage{57}
+  \item \spxentry{methylnet-interpret-view\_methylation\_top\_cpgs command line option}
+    \subitem \spxentry{-i, --individuals \textless{}individuals\textgreater{}}, \hyperpage{57}
+    \subitem \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}, \hyperpage{57}
+    \subitem \spxentry{-s, --shapley\_data \textless{}shapley\_data\textgreater{}}, \hyperpage{57}
+    \subitem \spxentry{-t, --test\_pkl \textless{}test\_pkl\textgreater{}}, \hyperpage{57}
+  \item \spxentry{methylnet-predict command line option}
+    \subitem \spxentry{--version}, \hyperpage{43}
+  \item \spxentry{methylnet-predict-classification\_report command line option}
+    \subitem \spxentry{-e, --categorical\_encoder \textless{}categorical\_encoder\textgreater{}}, 
+		\hyperpage{43}
+    \subitem \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}, \hyperpage{43}
+    \subitem \spxentry{-r, --results\_pickle \textless{}results\_pickle\textgreater{}}, 
+		\hyperpage{43}
+  \item \spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}
+    \subitem \spxentry{-a, --additional\_command \textless{}additional\_command\textgreater{}}, 
+		\hyperpage{44}
+    \subitem \spxentry{-c, --crossover\_p \textless{}crossover\_p\textgreater{}}, \hyperpage{44}
+    \subitem \spxentry{-c, --job\_chunk\_size \textless{}job\_chunk\_size\textgreater{}}, 
+		\hyperpage{44}
+    \subitem \spxentry{-cat, --categorical}, \hyperpage{44}
+    \subitem \spxentry{-g, --generate\_input}, \hyperpage{44}
+    \subitem \spxentry{-gn, --gpu\_node \textless{}gpu\_node\textgreater{}}, \hyperpage{44}
+    \subitem \spxentry{-gpu, --gpu \textless{}gpu\textgreater{}}, \hyperpage{44}
+    \subitem \spxentry{-hcsv, --hyperparameter\_input\_csv \textless{}hyperparameter\_input\_csv\textgreater{}}, 
+		\hyperpage{43}
+    \subitem \spxentry{-hl, --hyperparameter\_output\_log \textless{}hyperparameter\_output\_log\textgreater{}}, 
+		\hyperpage{43}
+    \subitem \spxentry{-ic, --interest\_cols \textless{}interest\_cols\textgreater{}}, 
+		\hyperpage{44}
+    \subitem \spxentry{-j, --n\_jobs \textless{}n\_jobs\textgreater{}}, \hyperpage{44}
+    \subitem \spxentry{-mc, --model\_complexity\_factor \textless{}model\_complexity\_factor\textgreater{}}, 
+		\hyperpage{44}
+    \subitem \spxentry{-n, --n\_jobs\_relaunch \textless{}n\_jobs\_relaunch\textgreater{}}, 
+		\hyperpage{44}
+    \subitem \spxentry{-nh, --nohup}, \hyperpage{44}
+    \subitem \spxentry{-r, --reset\_all}, \hyperpage{44}
+    \subitem \spxentry{-sft, --add\_softmax}, \hyperpage{44}
+    \subitem \spxentry{-t, --torque}, \hyperpage{44}
+    \subitem \spxentry{-v, --val\_loss\_column \textless{}val\_loss\_column\textgreater{}}, 
+		\hyperpage{44}
+  \item \spxentry{methylnet-predict-make\_new\_predictions command line option}
+    \subitem \spxentry{-bs, --batch\_size \textless{}batch\_size\textgreater{}}, \hyperpage{45}
+    \subitem \spxentry{-c, --cuda}, \hyperpage{45}
+    \subitem \spxentry{-cat, --categorical}, \hyperpage{45}
+    \subitem \spxentry{-e, --categorical\_encoder \textless{}categorical\_encoder\textgreater{}}, 
+		\hyperpage{45}
+    \subitem \spxentry{-ic, --interest\_cols \textless{}interest\_cols\textgreater{}}, 
+		\hyperpage{45}
+    \subitem \spxentry{-m, --model\_pickle \textless{}model\_pickle\textgreater{}}, \hyperpage{45}
+    \subitem \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}, \hyperpage{45}
+    \subitem \spxentry{-tp, --test\_pkl \textless{}test\_pkl\textgreater{}}, \hyperpage{45}
+    \subitem \spxentry{-w, --n\_workers \textless{}n\_workers\textgreater{}}, \hyperpage{45}
+  \item \spxentry{methylnet-predict-make\_prediction command line option}
+    \subitem \spxentry{-bs, --batch\_size \textless{}batch\_size\textgreater{}}, \hyperpage{46}
+    \subitem \spxentry{-c, --cuda}, \hyperpage{45}
+    \subitem \spxentry{-cat, --categorical}, \hyperpage{45}
+    \subitem \spxentry{-d, --decay \textless{}decay\textgreater{}}, \hyperpage{46}
+    \subitem \spxentry{-do, --disease\_only}, \hyperpage{46}
+    \subitem \spxentry{-dp, --dropout\_p \textless{}dropout\_p\textgreater{}}, \hyperpage{46}
+    \subitem \spxentry{-e, --n\_epochs \textless{}n\_epochs\textgreater{}}, \hyperpage{46}
+    \subitem \spxentry{-eta, --eta\_min \textless{}eta\_min\textgreater{}}, \hyperpage{46}
+    \subitem \spxentry{-hl, --hyperparameter\_log \textless{}hyperparameter\_log\textgreater{}}, 
+		\hyperpage{46}
+    \subitem \spxentry{-hlt, --hidden\_layer\_topology \textless{}hidden\_layer\_topology\textgreater{}}, 
+		\hyperpage{46}
+    \subitem \spxentry{-i, --train\_pkl \textless{}train\_pkl\textgreater{}}, \hyperpage{45}
+    \subitem \spxentry{-ic, --interest\_cols \textless{}interest\_cols\textgreater{}}, 
+		\hyperpage{45}
+    \subitem \spxentry{-j, --job\_name \textless{}job\_name\textgreater{}}, \hyperpage{46}
+    \subitem \spxentry{-l, --loss\_reduction \textless{}loss\_reduction\textgreater{}}, 
+		\hyperpage{46}
+    \subitem \spxentry{-lr\_mlp, --learning\_rate\_mlp \textless{}learning\_rate\_mlp\textgreater{}}, 
+		\hyperpage{46}
+    \subitem \spxentry{-lr\_vae, --learning\_rate\_vae \textless{}learning\_rate\_vae\textgreater{}}, 
+		\hyperpage{46}
+    \subitem \spxentry{-m, --t\_mult \textless{}t\_mult\textgreater{}}, \hyperpage{46}
+    \subitem \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}, \hyperpage{45}
+    \subitem \spxentry{-s, --scheduler \textless{}scheduler\textgreater{}}, \hyperpage{46}
+    \subitem \spxentry{-sft, --add\_softmax}, \hyperpage{46}
+    \subitem \spxentry{-t, --t\_max \textless{}t\_max\textgreater{}}, \hyperpage{46}
+    \subitem \spxentry{-tp, --test\_pkl \textless{}test\_pkl\textgreater{}}, \hyperpage{45}
+    \subitem \spxentry{-v, --add\_validation\_set}, \hyperpage{46}
+    \subitem \spxentry{-vae, --input\_vae\_pkl \textless{}input\_vae\_pkl\textgreater{}}, 
+		\hyperpage{45}
+    \subitem \spxentry{-vp, --val\_pkl \textless{}val\_pkl\textgreater{}}, \hyperpage{46}
+    \subitem \spxentry{-w, --n\_workers \textless{}n\_workers\textgreater{}}, \hyperpage{46}
+    \subitem \spxentry{-wd, --weight\_decay \textless{}weight\_decay\textgreater{}}, \hyperpage{46}
+  \item \spxentry{methylnet-predict-regression\_report command line option}
+    \subitem \spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}, \hyperpage{47}
+    \subitem \spxentry{-r, --results\_pickle \textless{}results\_pickle\textgreater{}}, 
+		\hyperpage{47}
+  \item \spxentry{methylnet-torque command line option}
+    \subitem \spxentry{--version}, \hyperpage{61}
+  \item \spxentry{methylnet-torque-run\_torque\_job command line option}
+    \subitem \spxentry{-a, --additions \textless{}additions\textgreater{}}, \hyperpage{61}
+    \subitem \spxentry{-c, --command \textless{}command\textgreater{}}, \hyperpage{61}
+    \subitem \spxentry{-gpu, --use\_gpu}, \hyperpage{61}
+    \subitem \spxentry{-n, --ngpu \textless{}ngpu\textgreater{}}, \hyperpage{61}
+    \subitem \spxentry{-q, --queue \textless{}queue\textgreater{}}, \hyperpage{61}
+    \subitem \spxentry{-t, --time \textless{}time\textgreater{}}, \hyperpage{61}
+  \item \spxentry{methylnet-visualize command line option}
+    \subitem \spxentry{--version}, \hyperpage{59}
+  \item \spxentry{methylnet-visualize-plot\_roc\_curve command line option}
+    \subitem \spxentry{-o, --outputfilename \textless{}outputfilename\textgreater{}}, 
+		\hyperpage{59}
+    \subitem \spxentry{-r, --roc\_curve\_csv \textless{}roc\_curve\_csv\textgreater{}}, 
+		\hyperpage{59}
+  \item \spxentry{methylnet-visualize-plot\_training\_curve command line option}
+    \subitem \spxentry{-o, --outputfilename \textless{}outputfilename\textgreater{}}, 
+		\hyperpage{59}
+    \subitem \spxentry{-t, --training\_curve\_file \textless{}training\_curve\_file\textgreater{}}, 
+		\hyperpage{59}
+    \subitem \spxentry{-thr, --threshold \textless{}threshold\textgreater{}}, \hyperpage{60}
+    \subitem \spxentry{-vae, --vae\_train}, \hyperpage{59}
+  \item \spxentry{methylnet.datasets}\spxextra{module}, \hyperpage{2}
+  \item \spxentry{methylnet.hyperparameter\_scans}\spxextra{module}, \hyperpage{6}
+  \item \spxentry{methylnet.interpretation\_classes}\spxextra{module}, \hyperpage{10}
+  \item \spxentry{methylnet.models}\spxextra{module}, \hyperpage{21}
+  \item \spxentry{methylnet.plotter}\spxextra{module}, \hyperpage{34}
+  \item \spxentry{methylnet.schedulers}\spxextra{module}, \hyperpage{35}
+  \item \spxentry{methylnet.torque\_jobs}\spxextra{module}, \hyperpage{8}
+  \item \spxentry{MLPFinetuneVAE}\spxextra{class in methylnet.models}, \hyperpage{25}
+
+  \indexspace
+  \bigletter P
+  \item \spxentry{Plot}\spxextra{class in methylnet.plotter}, \hyperpage{35}
+  \item \spxentry{plot\_cpgs()}\spxextra{methylnet.interpretation\_classes.PlotCircos method}, 
+		\hyperpage{15}
+  \item \spxentry{plot\_lola\_output\_()}\spxextra{in module methylnet.interpretation\_classes}, 
+		\hyperpage{20}
+  \item \spxentry{PlotCircos}\spxextra{class in methylnet.interpretation\_classes}, \hyperpage{14}
+  \item \spxentry{Plotter}\spxextra{class in methylnet.plotter}, \hyperpage{35}
+  \item \spxentry{PlotTransformer}\spxextra{class in methylnet.plotter}, \hyperpage{35}
+  \item \spxentry{predict()}\spxextra{methylnet.models.MLPFinetuneVAE method}, \hyperpage{26}
+  \item \spxentry{project\_vae()}\spxextra{in module methylnet.models}, \hyperpage{31}
+
+  \indexspace
+  \bigletter R
+  \item \spxentry{RawBetaArrayDataSet}\spxextra{class in methylnet.datasets}, \hyperpage{4}
+  \item \spxentry{regenerate\_individual\_shap\_values()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{18}
+  \item \spxentry{regressor\_assign\_scores\_to\_shap\_data()}\spxextra{methylnet.interpretation\_classes.CpGExplainer method}, 
+		\hyperpage{14}
+  \item \spxentry{return\_binned\_shapley\_data()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{18}
+  \item \spxentry{return\_cpg\_sets()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{19}
+  \item \spxentry{return\_dataloader\_construct()}\spxextra{in module methylnet.interpretation\_classes}, 
+		\hyperpage{21}
+  \item \spxentry{return\_global\_importance\_cpgs()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{19}
+  \item \spxentry{return\_overlap\_score()}\spxextra{methylnet.interpretation\_classes.BioInterpreter method}, 
+		\hyperpage{12}
+  \item \spxentry{return\_predict\_function()}\spxextra{in module methylnet.interpretation\_classes}, 
+		\hyperpage{21}
+  \item \spxentry{return\_shap\_values()}\spxextra{in module methylnet.interpretation\_classes}, 
+		\hyperpage{21}
+  \item \spxentry{return\_shapley\_data\_by\_methylation\_status()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{19}
+  \item \spxentry{return\_shapley\_predictions()}\spxextra{methylnet.interpretation\_classes.CpGExplainer method}, 
+		\hyperpage{14}
+  \item \spxentry{return\_shapley\_scores()}\spxextra{methylnet.interpretation\_classes.CpGExplainer method}, 
+		\hyperpage{14}
+  \item \spxentry{return\_top\_cpgs()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{19}
+  \item \spxentry{run\_lola()}\spxextra{methylnet.interpretation\_classes.BioInterpreter method}, 
+		\hyperpage{12}
+  \item \spxentry{run\_torque\_job\_()}\spxextra{in module methylnet.torque\_jobs}, \hyperpage{9}
+
+  \indexspace
+  \bigletter S
+  \item \spxentry{sample\_z()}\spxextra{methylnet.models.TybaltTitusVAE method}, \hyperpage{29}
+  \item \spxentry{Scheduler}\spxextra{class in methylnet.schedulers}, \hyperpage{37}
+  \item \spxentry{ShapleyData}\spxextra{class in methylnet.interpretation\_classes}, \hyperpage{15}
+  \item \spxentry{ShapleyDataExplorer}\spxextra{class in methylnet.interpretation\_classes}, 
+		\hyperpage{16}
+  \item \spxentry{stack()}\spxextra{in module methylnet.datasets}, \hyperpage{6}
+  \item \spxentry{step()}\spxextra{methylnet.schedulers.Scheduler method}, \hyperpage{38}
+
+  \indexspace
+  \bigletter T
+  \item \spxentry{test\_mlp()}\spxextra{in module methylnet.models}, \hyperpage{32}
+  \item \spxentry{to\_methyl\_array()}\spxextra{methylnet.datasets.MethylationDataSet method}, 
+		\hyperpage{3}
+  \item \spxentry{to\_pickle()}\spxextra{methylnet.interpretation\_classes.ShapleyData method}, 
+		\hyperpage{16}
+  \item \spxentry{to\_tensor()}\spxextra{in module methylnet.interpretation\_classes}, 
+		\hyperpage{21}
+  \item \spxentry{toggle\_latent\_z()}\spxextra{methylnet.models.VAE\_MLP method}, \hyperpage{31}
+  \item \spxentry{train\_decoder\_()}\spxextra{in module methylnet.models}, \hyperpage{32}
+  \item \spxentry{train\_mlp()}\spxextra{in module methylnet.models}, \hyperpage{32}
+  \item \spxentry{train\_vae()}\spxextra{in module methylnet.models}, \hyperpage{33}
+  \item \spxentry{transform()}\spxextra{methylnet.models.AutoEncoder method}, \hyperpage{24}
+  \item \spxentry{Transformer}\spxextra{class in methylnet.datasets}, \hyperpage{5}
+  \item \spxentry{TybaltTitusVAE}\spxextra{class in methylnet.models}, \hyperpage{26}
+
+  \indexspace
+  \bigletter V
+  \item \spxentry{vae\_loss()}\spxextra{in module methylnet.models}, \hyperpage{33}
+  \item \spxentry{VAE\_MLP}\spxextra{class in methylnet.models}, \hyperpage{29}
+  \item \spxentry{val\_decoder\_()}\spxextra{in module methylnet.models}, \hyperpage{33}
+  \item \spxentry{val\_mlp()}\spxextra{in module methylnet.models}, \hyperpage{34}
+  \item \spxentry{val\_vae()}\spxextra{in module methylnet.models}, \hyperpage{34}
+  \item \spxentry{view\_methylation()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}, 
+		\hyperpage{19}
+
+\end{sphinxtheindex}

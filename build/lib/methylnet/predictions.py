@@ -1,5 +1,5 @@
 from pymethylprocess.MethylationDataTypes import MethylationArray, extract_pheno_beta_df_from_pickle_dict
-from methylnet.models import TybaltTitusVAE, CVAE, VAE_MLP, MLPFinetuneVAE
+from methylnet.models import TybaltTitusVAE, VAE_MLP, MLPFinetuneVAE
 from methylnet.datasets import get_methylation_dataset
 import torch
 from torch.utils.data import DataLoader
@@ -18,7 +18,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def prediction():
     pass
 
-def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum', add_softmax=False):
+def train_predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum', add_softmax=False):
     os.makedirs(output_dir,exist_ok=True)
 
     output_file = join(output_dir,'results.csv')
@@ -57,17 +57,19 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
 
     if not batch_size:
         batch_size=len(train_methyl_dataset)
+    train_batch_size = min(batch_size,len(train_methyl_dataset))
+    val_batch_size = min(batch_size,len(val_methyl_dataset))
 
     train_methyl_dataloader = DataLoader(
         dataset=train_methyl_dataset,
         num_workers=n_workers,
-        batch_size=batch_size,
+        batch_size=train_batch_size,
         shuffle=True)
 
     val_methyl_dataloader = DataLoader(
         dataset=val_methyl_dataset,
         num_workers=n_workers,
-        batch_size=min(batch_size,len(val_methyl_dataset)),
+        batch_size=val_batch_size,
         shuffle=True) # False
 
     test_methyl_dataloader = DataLoader(
@@ -75,6 +77,9 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
         num_workers=n_workers,
         batch_size=min(batch_size,len(test_methyl_dataset)),
         shuffle=False)
+
+    scaling_factors = dict(val=float(len(val_methyl_dataset))/((len(val_methyl_dataset)//val_batch_size)*val_batch_size),
+                           train_batch_size=train_batch_size,val_batch_size=val_batch_size)
 
     model=VAE_MLP(vae_model=vae_model,categorical=categorical,hidden_layer_topology=hidden_layer_topology,n_output=train_methyl_dataset.outcome_col.shape[1],dropout_p=dropout_p, add_softmax=add_softmax)
 
@@ -137,7 +142,7 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
     latent_projection.to_csv(output_file_latent)
     torch.save(vae_mlp.model,output_model)
     results_df.to_csv(output_file)#pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
-    return latent_projection, Y_pred, Y_true, vae_mlp
+    return latent_projection, Y_pred, Y_true, vae_mlp, scaling_factors
 
 # ADD OUTPUT METRICS AND TRAINING PLOT CURVE
 
@@ -170,13 +175,13 @@ def predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categ
 @click.option('-j', '--job_name', default='predict_job', show_default=True, help='Embedding job name.', type=click.Path(exists=False))
 @click.option('-sft', '--add_softmax', is_flag=True, help='Add softmax for predicting probability distributions. Experimental.')
 def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols,categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler='null', decay=0.5, t_max=10, eta_min=1e-6, t_mult=2, batch_size=50, val_pkl='val_methyl_array.pkl', n_workers=8, add_validation_set=False, loss_reduction='sum', hyperparameter_log='predictions/predict_hyperparameters_log.csv', job_name='predict_job', add_softmax=False):
-    """Perform variational autoencoding on methylation dataset."""
+    """Train prediction model by fine-tuning VAE and appending/training MLP to make classification/regression predictions on MethylationArrays."""
     hlt_list=filter(None,hidden_layer_topology.split(','))
     if hlt_list:
         hidden_layer_topology=list(map(int,hlt_list))
     else:
         hidden_layer_topology=[]
-    latent_projection, Y_pred, Y_true, vae_mlp = predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,list(interest_cols),categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, val_pkl, n_workers, add_validation_set, loss_reduction, add_softmax)
+    latent_projection, Y_pred, Y_true, vae_mlp, scaling_factors = train_predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,list(interest_cols),categorical,disease_only,hidden_layer_topology,learning_rate_vae,learning_rate_mlp,weight_decay,dropout_p,n_epochs, scheduler, decay, t_max, eta_min, t_mult, batch_size, val_pkl, n_workers, add_validation_set, loss_reduction, add_softmax)
     accuracy, precision, recall, f1 = -1,-1,-1,-1
     if categorical:
         from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
@@ -188,8 +193,8 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
             accuracy, precision, recall, f1 = ';'.join([str(v) for v in accuracy]),';'.join([str(v) for v in precision]),';'.join([str(v) for v in recall]),';'.join([str(v) for v in f1])
         else:
             accuracy, precision, recall, f1=accuracy[0], precision[0], recall[0], f1[0]
-    hyperparameter_row = [job_name,n_epochs, vae_mlp.best_epoch, vae_mlp.min_loss, vae_mlp.min_val_loss, accuracy, precision, recall, f1, vae_mlp.model.vae.n_input, vae_mlp.model.vae.n_latent, str(hidden_layer_topology), learning_rate_vae, learning_rate_mlp, weight_decay, scheduler, t_max, t_mult, eta_min, batch_size, dropout_p]
-    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "test_accuracy" if categorical else 'neg_mean_squared_error', "test_precision" if categorical else 'r2_score', "test_recall" if categorical else 'explained_variance', "test_f1" if categorical else 'mean_absolute_error', "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate_vae", "learning_rate_mlp", "weight_decay", "scheduler", "t_max", "t_mult", "eta_min","batch_size", "dropout_p"])
+    hyperparameter_row = [job_name,n_epochs, vae_mlp.best_epoch, vae_mlp.min_loss, vae_mlp.min_val_loss, vae_mlp.min_val_loss*scaling_factors['val'], accuracy, precision, recall, f1, vae_mlp.model.vae.n_input, vae_mlp.model.vae.n_latent, str(hidden_layer_topology), learning_rate_vae, learning_rate_mlp, weight_decay, scheduler, t_max, t_mult, eta_min, scaling_factors['train_batch_size'], scaling_factors['val_batch_size'], dropout_p]
+    hyperparameter_df = pd.DataFrame(columns=['job_name','n_epochs',"best_epoch", "min_loss", "min_val_loss", "min_val_loss-batchsize_adj","test_accuracy" if categorical else 'neg_mean_squared_error', "test_precision" if categorical else 'r2_score', "test_recall" if categorical else 'explained_variance', "test_f1" if categorical else 'mean_absolute_error', "n_input", "n_latent", "hidden_layer_encoder_topology", "learning_rate_vae", "learning_rate_mlp", "weight_decay", "scheduler", "t_max", "t_mult", "eta_min","train_batch_size", "val_batch_size", "dropout_p"])
     hyperparameter_df.loc[0] = hyperparameter_row
     if os.path.exists(hyperparameter_log):
         print('APPEND')
@@ -209,6 +214,7 @@ def make_prediction(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_co
 @click.option('-e', '--categorical_encoder', default='./predictions/one_hot_encoder.p', help='One hot encoder if categorical model. If path exists, then return top positive controbutions per samples of that class. Encoded values must be of sample class as interest_col.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./new_predictions/', help='Output directory for predictions.', type=click.Path(exists=False), show_default=True)
 def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest_cols, categorical, cuda, categorical_encoder, output_dir):
+    """Run prediction model again to further assess outcome. Only evaluate prediction model."""
     os.makedirs(output_dir,exist_ok=True)
     test_methyl_array = MethylationArray.from_pickle(test_pkl) # generate results pickle to run through classification/regression report
     if cuda:
@@ -272,19 +278,23 @@ def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest
 @click.option('-c', '--crossover_p', default=0., help='Rate of crossover between hyperparameters.', show_default=True)
 @click.option('-mc', '--model_complexity_factor', default=1., help='Degree of neural network model complexity for hyperparameter search. Search for less wide networks with a lower complexity value, bounded between 0 and infinity.', show_default=True)
 @click.option('-j', '--n_jobs', default=4, help='Number of jobs to generate.')
-@click.option('-v', '--val_loss_column', default='min_val_loss', help='Validation loss column.', type=click.Path(exists=False))
+@click.option('-v', '--val_loss_column', default="min_val_loss-batchsize_adj", help='Validation loss column.', type=click.Path(exists=False))
 @click.option('-sft', '--add_softmax', is_flag=True, help='Add softmax for predicting probability distributions.')
-def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column, add_softmax):
-    from hyperparameter_scans import coarse_scan, find_top_jobs
+@click.option('-a', '--additional_command', default='', help='Additional command to input for torque run.', type=click.Path(exists=False))
+def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column, add_softmax, additional_command):
+    """Run randomized hyperparameter scan of neural network hyperparameters."""
+    from methylnet.hyperparameter_scans import coarse_scan, find_top_jobs
     custom_jobs=[]
     if n_jobs_relaunch:
         custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p, val_loss_column)
-    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs, categorical=categorical,add_softmax=add_softmax)
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs, categorical=categorical,add_softmax=add_softmax, additional_command=additional_command)
 
 @prediction.command()
 @click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))
 @click.option('-o', '--output_dir', default='results/', show_default=True, help='Output directory.', type=click.Path(exists=False))
 def regression_report(results_pickle,output_dir):
+    """Generate regression report that gives concise results from regression tasks."""
+
     # FIXME expand functionality
     import matplotlib
     matplotlib.use('Agg')
@@ -312,6 +322,7 @@ def regression_report(results_pickle,output_dir):
 @click.option('-o', '--output_dir', default='results/', show_default=True, help='Output directory.', type=click.Path(exists=False))
 @click.option('-e', '--categorical_encoder', default='./predictions/one_hot_encoder.p', help='One hot encoder if categorical model. If path exists, then return top positive controbutions per samples of that class. Encoded values must be of sample class as interest_col.', type=click.Path(exists=False), show_default=True)
 def classification_report(results_pickle,output_dir, categorical_encoder):
+    """Generate classification report that gives results from classification tasks."""
     from mlxtend.evaluate import bootstrap
     from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, roc_curve, roc_auc_score, confusion_matrix
     os.makedirs(output_dir,exist_ok=True)

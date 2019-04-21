@@ -1,3 +1,9 @@
+"""
+datasets.py
+=======================
+Contains datatypes core to loading MethylationArrays into Torch tensors.
+"""
+
 import torch
 from torch import cat, stack, FloatTensor
 from torch.utils.data import Dataset
@@ -7,6 +13,15 @@ from sklearn.preprocessing import OneHotEncoder
 from pymethylprocess.MethylationDataTypes import MethylationArray
 
 def _reshape(cpgs_per_row, l):
+    """Reshapes one sample's methylation values into image.
+
+    Parameters
+    ----------
+    cpgs_per_row : int
+        Number of CpGs per row
+    l : int
+        Number of splits.
+    """
     def resize(vector):
         return vector[:,:int(l[1]/cpgs_per_row)*cpgs_per_row].reshape((l[0],int(l[1]/cpgs_per_row),cpgs_per_row))
     return resize
@@ -18,6 +33,26 @@ def convert_to_tensor():
     return to_tensor
 
 class Transformer:
+    """Push methyl array sample to pytorch tensor, possibly turning into image.
+
+    Parameters
+    ----------
+    convolutional : bool
+        Whether running convolutions on torch dataset.
+    cpg_per_row : int
+        Number of CpGs per row of image if convolutional.
+    l : tuple
+        Attributes that describe image.
+
+    Attributes
+    ----------
+    shape : tuple
+        Shape of methylation array image for sample
+    convolutional
+    cpg_per_row
+    l
+
+    """
     def __init__(self, convolutional=False, cpg_per_row=30000, l=None):
         self.convolutional = convolutional
         self.cpg_per_row = cpg_per_row
@@ -28,6 +63,13 @@ class Transformer:
             self.shape=None
 
     def generate(self):
+        """Generate function for transform.
+
+        Returns
+        -------
+        function
+
+        """
         data_aug = []
         if self.convolutional and self.l != None:
             data_aug.append(_reshape(self.cpgs_per_row, self.l))
@@ -40,13 +82,70 @@ class Transformer:
 # methyl_train_df = methyl_df2.drop(methyl_test_df.index)
 # instead get beta keys and sample
 
+
 def get_methylation_dataset(methylation_array, outcome_col, convolutional=False, cpg_per_row=1200, predict=False, categorical=False, categorical_encoder=False):
+    """Turn methylation array into pytorch dataset.
+
+    Parameters
+    ----------
+    methylation_array : MethylationArray
+        Input MethylationArray.
+    outcome_col : str
+        Pheno column to train on.
+    convolutional : bool
+        Whether running CNN on methylation data
+    cpg_per_row : int
+        If convolutional, number of cpgs per image row.
+    predict : bool
+        Running prediction algorithm vs VAE.
+    categorical : bool
+        Whether training on categorical vs continuous variables.
+    categorical_encoder :
+        Scikit learn encoder.
+
+    Returns
+    -------
+    Pytorch Dataset
+
+    """
     if predict:
         return MethylationPredictionDataSet(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col, categorical=categorical, categorical_encoder=categorical_encoder)
     else:
         return MethylationDataSet(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col)
 
 class MethylationDataSet(Dataset):
+    """Pytorch Dataset that contains instances of methylation array samples to be loaded.
+
+    Parameters
+    ----------
+    methylation_array : MethylationArray
+        Methylation Array input.
+    transform : Transformer
+        Transforms data into torch tensor.
+    outcome_col : str
+        Pheno column(s) to train on.
+    categorical : bool
+        Whether predicting categorical/classification.
+    categorical_encoder : encoder
+        Encoder used to binarize categorical column.
+
+    Attributes
+    ----------
+    samples : np.array
+        Samples of MethylationArray
+    features : np.array
+        List CpGs.
+    encoder :
+        Encoder used to binarize categorical column.
+    new_shape :
+        Shape of torch tensors.
+    length :
+        Number CpGs.
+    methylation_array
+    outcome_col
+    transform
+
+    """
     def __init__(self, methylation_array, transform, outcome_col='', categorical=False, categorical_encoder=False):
         self.methylation_array = methylation_array
         self.outcome_col = self.methylation_array.pheno.loc[:,outcome_col] if outcome_col else pd.Series(np.ones(len(self)),index=self.methylation_array.pheno.index)
@@ -74,6 +173,13 @@ class MethylationDataSet(Dataset):
         print(self.outcome_col.shape)
 
     def to_methyl_array(self):
+        """Convert torch dataset back into methylation array, useful because turning into torch dataset can cause the original MethylationArray beta matrix to turn into numpy array, when needs turn back into pandas dataframe.
+
+        Returns
+        -------
+        MethylationArray
+
+        """
         return MethylationArray(self.methylation_array.pheno,pd.DataFrame(self.methylation_array.beta,index=self.samples,columns=self.features),'')
 
     def __getitem__(self,index):
@@ -97,6 +203,38 @@ class MethylationDataSet(Dataset):
         return self.length
 
 class MethylationPredictionDataSet(MethylationDataSet):
+    """MethylationArray Torch Dataset that contains instances of methylation array samples to be loaded, specifically targetted for prediction.
+
+    Parameters
+    ----------
+    methylation_array : MethylationArray
+        Methylation Array input.
+    transform : Transformer
+        Transforms data into torch tensor.
+    outcome_col : str
+        Pheno column(s) to train on.
+    categorical : bool
+        Whether predicting categorical/classification.
+    categorical_encoder : encoder
+        Encoder used to binarize categorical column.
+
+    Attributes
+    ----------
+    samples : np.array
+        Samples of MethylationArray
+    features : np.array
+        List CpGs.
+    encoder :
+        Encoder used to binarize categorical column.
+    new_shape :
+        Shape of torch tensors.
+    length :
+        Number CpGs.
+    methylation_array
+    outcome_col
+    transform
+
+    """
     def __init__(self, methylation_array, transform, outcome_col='', categorical=False, categorical_encoder=False):
         super().__init__(methylation_array, transform, outcome_col, categorical, categorical_encoder=categorical_encoder)
         print(self.outcome_col)
@@ -105,6 +243,23 @@ class MethylationPredictionDataSet(MethylationDataSet):
         return self.transform.generate()(self.methylation_array.beta[index,:]),self.samples[index],torch.FloatTensor(self.outcome_col[index,:])
 
 class RawBetaArrayDataSet(Dataset):
+    """Torch Dataset just for beta matrix in numpy format.
+
+    Parameters
+    ----------
+    beta_array : numpy.array
+        Beta value matrix in numpy form.
+    transform :
+        Transforms data to torch tensor.
+
+    Attributes
+    ----------
+    length :
+        Number CpGs.
+    beta_array
+    transform
+
+    """
     def __init__(self, beta_array, transform):
         self.beta_array = beta_array
         self.transform = transform

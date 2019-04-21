@@ -13,6 +13,7 @@ methylnet/plotter.py
 methylnet/predictions.py
 methylnet/schedulers.py
 methylnet/torque_job_runner.py
+methylnet/torque_jobs.py
 methylnet/visualizations.py
 methylnet.egg-info/PKG-INFO
 methylnet.egg-info/SOURCES.txt

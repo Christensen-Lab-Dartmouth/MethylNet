@@ -18,6 +18,7 @@ def visualize():
 @click.option('-vae', '--vae_train', is_flag=True, help='Plot VAE Training curves.')
 @click.option('-thr', '--threshold', default=1e10, help='Loss values get rid of greater than this.')
 def plot_training_curve(training_curve_file, outputfilename, vae_train, threshold):
+    """Plot training curves as output from either the VAE training or VAE MLP."""
     import os
     os.makedirs(outputfilename[:outputfilename.rfind('/')],exist_ok=True)
     import matplotlib
@@ -64,6 +65,7 @@ def plot_training_curve(training_curve_file, outputfilename, vae_train, threshol
 @click.option('-r', '--roc_curve_csv', default='results/Weighted_ROC.csv', show_default=True, help='Weighted ROC Curve.', type=click.Path(exists=False))
 @click.option('-o', '--outputfilename', default='results/roc_curve.png', show_default=True, help='Output image.', type=click.Path(exists=False))
 def plot_roc_curve(roc_curve_csv, outputfilename):
+    """Plot ROC Curves from classification tasks; requires classification_report be run first."""
     import os
     from rpy2.robjects.packages import importr
     import rpy2.robjects as robjects

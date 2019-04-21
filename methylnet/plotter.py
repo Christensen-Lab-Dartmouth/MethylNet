@@ -10,6 +10,7 @@ import matplotlib.animation as animation
 import pandas as pd, numpy as np
 
 class PlotTransformer:
+    """Plotting Transformer to help with plotting embeddings changing over epochs; defunct."""
     def __init__(self, data, color_list):
         self.data=data
         self.color_list=color_list
@@ -17,6 +18,7 @@ class PlotTransformer:
         return pd.DataFrame(np.vstack((PCA(n_components=2).fit_transform(self.data).T,self.color_list)).T,columns=['x','y','color'])
 
 class Plot:
+    """Stores plotting information; defunct, superceded, see methylnet-visualize."""
     def __init__(self, title, xlab='vae1', ylab='vae2', data=[]):
         self.title=title
         self.xlab=xlab
@@ -36,6 +38,7 @@ class Plot:
         return scatter
 
 class Plotter:
+    """Plot embeddings and training curve from Plot objects; defunct, superceded, see methylnet-visualize."""
     def __init__(self,plots,animation=True):
         self.plots=plots
         self.animation=animation

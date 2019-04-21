@@ -28,114 +28,6 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 def interpret():
     pass
 
-def return_shap_values(test_arr, explainer, method, n_samples, additional_opts):
-    if method == 'kernel' or method == 'gradient': # ranked_outputs=ranked_outputs, add if feature_selection
-        svals=(explainer.shap_values(test_arr, nsamples=n_samples, **additional_opts)[0] if (method == 'gradient' and additional_opts['ranked_outputs'] != None) else explainer.shap_values(test_arr, nsamples=n_samples))
-        return np.stack(svals,axis=0) if type(svals) == type([]) else svals
-    else:
-        return (explainer.shap_values(test_arr, **additional_opts)[0] if additional_opts['ranked_outputs'] !=None else explainer.shap_values(test_arr))
-
-def to_tensor(arr):
-    return Transformer().generate()(arr)
-
-def return_predict_function(model, cuda):
-    def predict(loader): # model can be VAE_MLP, TybaltTitusVAE, or CVAE
-        model.eval()
-        outputs=[]
-        for input in loader:
-            input=Variable(input)
-            if cuda:
-                input = input.cuda()
-            outputs.append(np.squeeze(model.forward_predict(input).detach().cpu().numpy()))
-        outputs=np.vstack(outputs)
-        return outputs
-    return predict
-
-# https://github.com/slundberg/shap/blob/master/shap/common.py
-# Provided model function fails when applied to the provided data set.
-
-def return_dataloader_construct(n_workers,batch_size):
-    def construct_data_loader(raw_beta_array):
-        raw_beta_dataset=RawBetaArrayDataSet(raw_beta_array,Transformer())
-        raw_beta_dataloader=DataLoader(dataset=raw_beta_dataset,
-            num_workers=n_workers,
-            batch_size=batch_size,
-            shuffle=False)
-        return raw_beta_dataloader
-    return construct_data_loader
-
-def main_prediction_function(n_workers,batch_size, model, cuda):
-    dataloader_constructor=return_dataloader_construct(n_workers,batch_size)
-    predict_function=return_predict_function(model, cuda)
-    def main_predict(raw_beta_array):
-        return predict_function(dataloader_constructor(raw_beta_array))
-    return main_predict
-
-def plot_lola_output_(lola_csv, plot_output_dir, description_col, cell_types):
-    os.makedirs(plot_output_dir,exist_ok=True)
-    import matplotlib
-    matplotlib.use('Agg')
-    import seaborn as sns
-    import matplotlib.pyplot as plt
-    # from rpy2.robjects.packages import importr
-    # import rpy2.robjects as robjects
-    # from rpy2.robjects import pandas2ri
-    # pandas2ri.activate()
-    # ggplot=importr("ggplot2")
-    # importr("ggpubr")
-    # forcats=importr('forcats')
-    #
-    # create_bar_chart=robjects.r("""function(df,fill.col=NULL){
-    #                     ggboxplot(df, x = "description", y = "oddsRatio", fill = fill.col,#,
-    #                       color = "white",           # Set bar border colors to white
-    #                       palette = "jco",            # jco journal color palett. see ?ggpar
-    #
-    #                       orientation = "horiz")}           # Sort the value in dscending order
-    #                       #sort.by.groups = F, #TRUE,      # Sort inside each group
-    #                       # sort.val = "desc",
-    #                       #)
-    #                 #}""")
-
-    def create_bar_chart(df, description='description', cell_type=None):
-        sns.set(style="whitegrid")
-        f, ax = plt.subplots(figsize=(10,7))
-        sns.despine(bottom=True, left=True)
-        sns.stripplot(x="oddsRatio", y=description, hue=cell_type,
-              data=df, dodge=True, jitter=True,
-              alpha=.25, zorder=1)
-        sns.pointplot(x="oddsRatio", y=description, hue=cell_type,
-              data=df, dodge=.532, join=False, palette="dark",
-              markers="d", scale=.75, ci=None)
-        handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles[3:], labels[3:], title="Cell Types",
-                  handletextpad=0, columnspacing=1,
-                  loc="lower right", ncol=3, frameon=True)
-        ax.set_xlim(left=0)
-        return f,ax
-
-    lola_results=pd.read_csv(lola_csv)#[['collection','description','oddsRatio','cellType']]
-
-    # filter cell types here
-    collections_df=lola_results.groupby('collection')
-    for name,df in collections_df:
-        top_results_df=df.iloc[:min(25,df.shape[0]),:].reset_index(drop=True)
-
-        #top_results_df=pandas2ri.py2ri(top_results_df)#pandas2ri.py2ri(top_results_df)
-        #robjects.r("print")(top_results_df)
-        #top_results_df=robjects.r("function(df){data.frame(df,stringsAsFactors=FALSE)}")(robjects.r("function(df){lapply(df,as.character)}")(top_results_df)) # FIX
-        #print(top_results_df)
-        """RESET FACTORS ^^^"""
-        #diagnose_df=pandas2ri.ri2py(top_results_df)
-        top_results_df=top_results_df.fillna('NULL')
-        plt.figure()
-        f,ax=create_bar_chart(top_results_df,description_col,'cellType')
-        plt.tight_layout()
-        plt.savefig(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
-        plt.close()
-        #ggplot.ggsave(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
-    # add shore island breakdown
-
-
 @interpret.command() # FIXME add abs or just -1, positive contributions or any contributions
 @click.option('-i', '--train_pkl', default='./train_val_test_sets/train_methyl_array.pkl', help='Input database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
 @click.option('-v', '--val_pkl', default='./train_val_test_sets/val_methyl_array.pkl', help='Val database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
@@ -163,6 +55,10 @@ def plot_lola_output_(lola_csv, plot_output_dir, description_col, cell_types):
 @click.option('-rc', '--residual_cutoff', default=0., multiple=True, help='Activate for regression interpretations. Standard deviation in residuals before removing.', show_default=True)
 @click.option('-cn', '--cell_names', default=[''], multiple=True, help='Multioutput names for multi-output regression.', show_default=True)
 def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, batch_size, cuda, n_samples, n_top_features, output_dir, method, shap_sample_batch_size, n_random_representative, interest_col, n_random_representative_test, categorical_encoder, cross_class, feature_selection, top_outputs, vae_interpret, pred_class, results_csv, individual, residual_cutoff, cell_names):
+    """Explanations (coefficients for CpGs) for every individual prediction.
+    Produce SHAPley scores for each CpG for each individualized prediction, and then aggregate them across coarser classes.
+    Store CpGs with top SHAPley scores as well for quick access.
+    Store in Shapley data object."""
     os.makedirs(output_dir,exist_ok=True)
     if not pred_class:
         pred_class = None
@@ -243,6 +139,7 @@ def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, 
 @interpret.command()
 @click.option('-o', '--output_dir', default='./lola_db/', help='Output directory for lola dbs.', type=click.Path(exists=False), show_default=True)
 def grab_lola_db_cache(output_dir):
+    """Download core and extended LOLA databases for enrichment tests."""
     os.makedirs(output_dir,exist_ok=True)
     core_dir = join(output_dir,'core')
     extended_dir = join(output_dir,'extended')
@@ -271,7 +168,7 @@ def grab_lola_db_cache(output_dir):
 @click.option('-g', '--top_global', is_flag=True, help='Look at global top cpgs, overwrites classes and individuals.', show_default=True)
 @click.option('-ex', '--extract_library', is_flag=True, help='Extract a library of cpgs to subset future array for inspection or prediction tests.', show_default=True)
 def interpret_biology(all_cpgs_pickle,shapley_data_list,output_dir, analysis, n_workers, lola_db, individuals, classes, max_gap, class_intersect, length_output, set_subtraction, intersection, collections, gsea_analyses, gsea_pickle, depletion, overlap_test, cpg_set, top_global, extract_library):
-    """Add categorical encoder as custom input, then can use to change names of output csvs to match disease if encoder exists."""
+    """Interrogate CpGs with high SHAPley scores for individuals, classes, or overall, for enrichments, genes, GO, KEGG, LOLA, overlap with popular cpg sets, GSEA, find nearby cpgs to top."""
     os.makedirs(output_dir,exist_ok=True)
     if os.path.exists(all_cpgs_pickle):
         all_cpgs=list(pickle.load(open(all_cpgs_pickle,'rb')))
@@ -331,6 +228,7 @@ def interpret_biology(all_cpgs_pickle,shapley_data_list,output_dir, analysis, n_
 @click.option('-g', '--global_vals', is_flag=True, help='Only take top CpGs globally.', show_default=True)
 @click.option('-n', '--n_extract', default=1000, help='Number cpgs to extract.', show_default=True)
 def extract_methylation_array(shapley_data, classes_only, output_dir, test_pkl, col, global_vals, n_extract):
+    """Subset and write methylation array using top SHAP cpgs."""
     os.makedirs(output_dir,exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
@@ -347,6 +245,7 @@ def extract_methylation_array(shapley_data, classes_only, output_dir, test_pkl, 
 @click.option('-c', '--cell_types', default=[''], multiple=True, help='Cell types.', show_default=True)
 @click.option('-ov', '--overwrite', is_flag=True, help='Overwrite existing plots.', show_default=True)
 def plot_all_lola_outputs(head_lola_dir,plot_output_dir,description_col,cell_types,overwrite):
+    """Iterate through all LOLA csv results and plot forest plots of all enrichment scores."""
     import glob
     for lola_csv in glob.iglob(join(head_lola_dir,'**','*_LOLA.csv'),recursive=True):
         output_dir=join(plot_output_dir,lola_csv.split('/')[-2])
@@ -361,6 +260,7 @@ def plot_all_lola_outputs(head_lola_dir,plot_output_dir,description_col,cell_typ
 @click.option('-d', '--description_col', default='description', help='Description column for categorical variables', type=click.Path(exists=False),show_default=True)
 @click.option('-c', '--cell_types', default=[''], multiple=True, help='Cell types.', show_default=True)
 def plot_lola_output(lola_csv, plot_output_dir, description_col, cell_types):
+    """Plot LOLA results via forest plot for one csv file."""
     plot_lola_output_(lola_csv, plot_output_dir, description_col, cell_types)
 
 @interpret.command()
@@ -368,6 +268,7 @@ def plot_lola_output(lola_csv, plot_output_dir, description_col, cell_types):
 @click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/shapley_data_by_methylation/', help='Output directory for hypo/hyper shap data.', type=click.Path(exists=False), show_default=True)
 @click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
 def split_hyper_hypo_methylation(shapley_data, output_dir, test_pkl):
+    """Split SHAPleyData object by methylation type (needs to change; but low methylation is 0.5 beta value and below) and output to file."""
     os.makedirs(output_dir,exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
@@ -384,6 +285,7 @@ def split_hyper_hypo_methylation(shapley_data, output_dir, test_pkl):
 @click.option('-ot', '--output_test_pkl', default='./train_val_test_sets/test_methyl_array_shap_binned.pkl', help='Binned shap pickle for further testing.', type=click.Path(exists=False), show_default=True)
 @click.option('-os', '--output_shap_pkl', default='./interpretations/shapley_explanations/shapley_binned.p', help='Pickle containing top CpGs, binned phenotype.', type=click.Path(exists=False), show_default=True)
 def bin_regression_shaps(shapley_data, test_pkl,col,n_bins,output_test_pkl,output_shap_pkl):
+    """Take aggregate individual scores from regression results, that normally are not categorized, and aggregate across new category created from continuous data."""
     os.makedirs(output_test_pkl[:output_test_pkl.rfind('/')],exist_ok=True)
     os.makedirs(output_shap_pkl[:output_shap_pkl.rfind('/')],exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
@@ -406,6 +308,7 @@ def bin_regression_shaps(shapley_data, test_pkl,col,n_bins,output_test_pkl,outpu
 @click.option('-co', '--cooccurrence', is_flag=True, help='Output cooccurrence instead jaccard.', show_default=True)
 @click.option('-opt', '--optimize_n_cpgs', is_flag=True, help='Search for number of top CpGs to use.', show_default=True)
 def shapley_jaccard(shapley_data,class_names, output_dir, overall, include_individuals, cooccurrence, optimize_n_cpgs):
+    """Plot Shapley Jaccard Similarity Matrix to demonstrate sharing of Top CpGs between classes/groupings of individuals."""
     os.makedirs(output_dir,exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
@@ -431,6 +334,7 @@ def shapley_jaccard(shapley_data,class_names, output_dir, overall, include_indiv
 @click.option('-o', '--output_csv', default='./interpretations/shapley_explanations/top_cpgs_jaccard/all_jaccard_sorted.csv', help='Output directory for cpg jaccard_stats.', type=click.Path(exists=False), show_default=True)
 @click.option('-sym', '--symmetric', is_flag=True, help='Is symmetric?', show_default=True)
 def order_results_by_col(input_csv, test_pkl, col, output_csv, symmetric):
+    """Order results that produces some CSV by phenotype column, alphabetical ordering to show maybe that results group together. Plot using pymethyl-visualize."""
     os.makedirs(output_csv[:output_csv.rfind('.')],exist_ok=True)
     df=pd.read_csv(input_csv,index_col=0)
     if os.path.exists(test_pkl):
@@ -451,6 +355,7 @@ def order_results_by_col(input_csv, test_pkl, col, output_csv, symmetric):
 @click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/top_cpgs_methylation/', help='Output directory for cpg methylation shap.', type=click.Path(exists=False), show_default=True)
 @click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
 def view_methylation_top_cpgs(shapley_data,individuals, output_dir, test_pkl):
+    """Write the Top CpGs for each class/individuals to file along with methylation information."""
     os.makedirs(output_dir,exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
@@ -462,6 +367,7 @@ def view_methylation_top_cpgs(shapley_data,individuals, output_dir, test_pkl):
 @interpret.command()
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
 def list_individuals(shapley_data):
+    """List individuals that have ShapleyData. Not all made the cut from the test dataset."""
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
     print(shapley_data_explorer.list_individuals())
@@ -469,6 +375,7 @@ def list_individuals(shapley_data):
 @interpret.command()
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
 def list_classes(shapley_data):
+    """List classes/multioutput regression cell-types that have SHAPley data to be interrogated."""
     shapley_data=ShapleyData.from_pickle(shapley_data)
     print(list(shapley_data.top_cpgs['by_class'].keys()))
 
@@ -477,6 +384,7 @@ def list_classes(shapley_data):
 @click.option('-nf', '--n_top_features', default=500, show_default=True, help='Top features to select for shap outputs.')
 @click.option('-o', '--output_pkl', default='./interpretations/shapley_explanations/shapley_reduced_data.p', help='Pickle containing top CpGs, reduced number.', type=click.Path(exists=False), show_default=True)
 def reduce_top_cpgs(shapley_data,n_top_features,output_pkl):
+    """Reduce set of top cpgs."""
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
@@ -489,6 +397,7 @@ def reduce_top_cpgs(shapley_data,n_top_features,output_pkl):
 @click.option('-a', '--abs_val', is_flag=True, help='Top CpGs found using absolute value.')
 @click.option('-n', '--neg_val', is_flag=True, help='Return top CpGs that are making negative contributions.')
 def regenerate_top_cpgs(shapley_data,n_top_features,output_pkl, abs_val, neg_val):
+    """Increase size of Top CpGs using the original SHAP scores."""
     os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
@@ -500,6 +409,7 @@ def regenerate_top_cpgs(shapley_data,n_top_features,output_pkl, abs_val, neg_val
 @click.option('-i', '--individuals', default=[''], multiple=True, help='Individuals to evaluate.', show_default=True)
 @click.option('-c', '--classes', default=[''], multiple=True, help='Classes to evaluate.', show_default=True)
 def plot_top_cpgs(shapley_data,output_dir,individuals,classes):
+    """Plot the top cpgs locations in the genome using circos."""
     os.makedirs(output_dir,exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
