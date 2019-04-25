@@ -405,6 +405,58 @@ def regenerate_top_cpgs(shapley_data,n_top_features,output_pkl, abs_val, neg_val
 
 @interpret.command()
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_dir', default='./interpretations/shap_outputs/', help='Output directory for output plots.', type=click.Path(exists=False), show_default=True)
+@click.option('-i', '--individuals', default=[''], multiple=True, help='Individuals to evaluate.', show_default=True)
+@click.option('-c', '--classes', default=[''], multiple=True, help='Classes to evaluate.', show_default=True)
+@click.option('-hist', '--output_histogram', is_flag=True, help='Whether to output a histogram for each class/individual of their SHAP scores.')
+@click.option('-abs', '--absolute', is_flag=True, help='Use sums of absolute values in making computations.')
+def return_shap_values(shapley_data,output_dir,individuals,classes, output_histogram, absolute):
+    """Return matrix of shapley values per class, with option to, classes/individuals are columns, CpGs are rows, option to plot multiple histograms/density plots."""
+    os.makedirs(output_dir,exist_ok=True)
+    shapley_data=ShapleyData.from_pickle(shapley_data)
+    shapley_data_explorer=ShapleyDataExplorer(shapley_data)
+    individuals=list(filter(None,individuals))
+    classes=list(filter(None,classes))
+    if absolute:
+        shapley_data_explorer.make_shap_scores_abs()
+    if classes and classes[0]=='all':
+        classes = shapley_data_explorer.list_classes()
+    if individuals and individuals[0]=='all':
+        individuals = shapley_data_explorer.list_individuals(return_list=True)
+    concat_list=[]
+    if classes:
+        for class_name in classes:
+            concat_list.append(shapley_data_explorer.extract_class(class_name,get_shap_values=True))
+    if individuals:
+        for individual in individuals:
+            concat_list.append(shapley_data_explorer.extract_individual(individual,get_shap_values=True))
+    df=pd.concat(concat_list,axis=1,keys=classes+individuals)
+    df.to_csv(join(output_dir,'returned_shap_values.csv'))
+    if output_histogram:
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        sns.set()
+        for entity in (classes+individuals):
+            shap_scores = df[entity]
+            plt.figure()
+            sns.distplot(shap_scores)
+            plt.xlabel('SHAP value')
+            plt.ylabel('Frequency')
+            plt.savefig(join(output_dir,'{}_shap_values.png'.format(entity)),dpi=300)
+            top_10_shaps = shap_scores.abs().sort_values(ascending=False).iloc[:10]
+            top_10_shaps=pd.DataFrame({'cpgs':top_10_shaps.index, '|SHAP|':top_10_shaps.values})
+            plt.figure()
+            ax=sns.barplot('|SHAP|','cpgs',orient='h',data=top_10_shaps)
+            ax.tick_params(labelsize=4)
+            plt.savefig(join(output_dir,'{}_top_shap_values.png'.format(entity)),dpi=300)
+    if not absolute:
+        print("All saved values reflect absolute values of sums, not sums of absolute values, if CpG SHAP scores are opposite signs across individuals, this will reduce the score of the resulting SHAP estimate.")
+
+
+
+
+@interpret.command()
+@click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./interpretations/output_plots/', help='Output directory for output plots.', type=click.Path(exists=False), show_default=True)
 @click.option('-i', '--individuals', default=[''], multiple=True, help='Individuals to evaluate.', show_default=True)
 @click.option('-c', '--classes', default=[''], multiple=True, help='Classes to evaluate.', show_default=True)

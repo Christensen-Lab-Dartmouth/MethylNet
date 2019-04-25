@@ -198,6 +198,10 @@ class ShapleyDataExplorer:
             methylation_shapley_data_dict['hypo'].top_cpgs['by_class'][class_name]['overall']=hypo_df[['cpg','shapley_value']]
         return methylation_shapley_data_dict
 
+    def make_shap_scores_abs(self):
+        for class_name in self.list_classes():
+            self.shapley_data.shapley_values['by_class'][class_name] = self.shapley_data.shapley_values['by_class'][class_name].abs()
+
     def return_binned_shapley_data(self, original_class_name, outcome_col, add_top_negative=False):
         """Converts existing shap data based on continuous variable predictions into categorical variable.
 
@@ -271,7 +275,7 @@ class ShapleyDataExplorer:
             cpg_exclusion_sets[class_name]=set(reduce(lambda x,y:x.union(y),[cpg_set for class_name_query,cpg_set in cpg_sets.items() if class_name_query != class_name]))
         return cpg_sets, cpg_exclusion_sets
 
-    def extract_class(self, class_name, class_intersect=False):
+    def extract_class(self, class_name, class_intersect=False, get_shap_values=False):
         """Extract the top cpgs from a class
 
         Parameters
@@ -286,18 +290,21 @@ class ShapleyDataExplorer:
         DataFrame
             Cpgs and SHAP Values
         """
-        if class_intersect:
-            shap_dfs=[]
-            for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys():
-                shap_dfs.append(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual].set_index('cpg'))
-                df=pd.concat([shap_dfs],axis=1,join='inner')
-                df['shapley_value']=df.values.sum(axis=1)
-                df['cpg'] = np.array(list(df.index))
-            return df[['cpg','shapley_value']]
+        if return_shap_values:
+            return self.shapley_data.shapley_values['by_class'][class_name].mean(axis=0)
         else:
-            return self.shapley_data.top_cpgs['by_class'][class_name]['overall']
+            if class_intersect:
+                shap_dfs=[]
+                for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys():
+                    shap_dfs.append(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual].set_index('cpg'))
+                    df=pd.concat([shap_dfs],axis=1,join='inner')
+                    df['shapley_value']=df.values.sum(axis=1)
+                    df['cpg'] = np.array(list(df.index))
+                return df[['cpg','shapley_value']]
+            else:
+                return self.shapley_data.top_cpgs['by_class'][class_name]['overall']
 
-    def extract_individual(self, individual):
+    def extract_individual(self, individual, get_shap_values=False):
         """Extract the top cpgs from an individual
 
         Parameters
@@ -311,7 +318,7 @@ class ShapleyDataExplorer:
             Class name of individual, DataFrame of Cpgs and SHAP Values
         """
         class_name=self.indiv2class[individual]
-        return class_name,self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual]
+        return class_name,(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual] if not get_shap_values else self.shapley_data.shapley_values['by_class'][class_name].loc[individual])
 
     def regenerate_individual_shap_values(self, n_top_cpgs, abs_val=False, neg_val=False):
         """Use original SHAP scores to make nested dictionary of top CpGs based on shapley score, can do this for ABS SHAP or Negative SHAP scores as well.

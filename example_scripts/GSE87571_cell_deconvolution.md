@@ -85,7 +85,8 @@ CUDA_VISIBLE_DEVICES=0 methylnet-interpret produce_shapley_data -mth gradient -s
 
 Extract spreadsheet of top overall CpGs:
 ```
-
+methylnet-interpret return_shap_values -c all -hist  -o  interpretations/shap_results/ &
+methylnet-interpret return_shap_values -c all -hist -abs -o interpretations/abs_shap_results/  &
 ```
 
 Plot bar chart of top CpGs:
@@ -121,7 +122,7 @@ MethylNet Commands:
 * python model_interpretability.py shapley_jaccard -c all -i -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hyper_shapley_data.p -o ./interpretations/shapley_explanations/top_cpgs_jaccard/hyper/ && python model_interpretability.py order_results_by_col -c Age -i ./interpretations/shapley_explanations/top_cpgs_jaccard/hyper/all_jaccard.csv -o ./interpretations/shapley_explanations/top_cpgs_jaccard/hyper/all_jaccard.sorted.csv
 * pymethyl-visualize plot_heatmap -c -m similarity -fs .4 -i ./interpretations/shapley_explanations/top_cpgs_jaccard/hypo/all_jaccard.sorted.csv -o ./interpretations/shapley_explanations/top_cpgs_jaccard/hypo/all_hypo_jaccard.png
 * pymethyl-visualize plot_heatmap -c -m similarity -fs .4 -i ./interpretations/shapley_explanations/top_cpgs_jaccard/hyper/all_jaccard.sorted.csv -o ./interpretations/shapley_explanations/top_cpgs_jaccard/hyper/all_hyper_jaccard.png
-* python model_interpretability.py bin_regression_shaps -c Age -n 16
+* python model_interpretability.py bin_regression_shaps -c Age -n 8
 * python model_interpretability.py shapley_jaccard -c all -s ./interpretations/shapley_explanations/shapley_binned.p  -o ./interpretations/shapley_explanations/top_cpgs_jaccard/ -ov
 * python model_interpretability.py order_results_by_col -c Age -t null -i ./interpretations/shapley_explanations/top_cpgs_jaccard/all_jaccard.csv -o ./interpretations/shapley_explanations/top_cpgs_jaccard/all_jaccard.sorted.csv &
 * pymethyl-utils counts -i train_val_test_sets/test_methyl_array_shap_binned.pkl -k Age_binned
@@ -168,6 +169,7 @@ python model_interpretability.py interpret_biology -ov -c all -s interpretations
 
 # to-do search for missing cpgs, do same for other studies
 # check overlap with different blood types
+REDO!!!
 (13.92,22.0] top cpgs overlap with 0.0% of hannum cpgs
 (22.0,30.0] top cpgs overlap with 0.0% of hannum cpgs
 (30.0,38.0] top cpgs overlap with 1.45% of hannum cpgs
@@ -180,6 +182,8 @@ python model_interpretability.py interpret_biology -ov -c all -s interpretations
 This cohort was around this age distribution...
 
 Maybe look at horvath and epitoc age distribution for cohort.
+
+REDO!!!!
 
 (54.0,62.0] shared cpgs: 41/41.0
 (70.0,78.0] shared cpgs: 55/55.0

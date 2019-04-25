@@ -73,6 +73,8 @@ CUDA_VISIBLE_DEVICES=0 methylnet-interpret produce_shapley_data -mth gradient -s
 
 Extract spreadsheet of top overall CpGs:
 ```
+methylnet-interpret return_shap_values -c all -hist -s interpretations/shapley_explanations/shapley_binned.p -o  interpretations/shap_results/ &
+methylnet-interpret return_shap_values -c all -hist -abs -o interpretations/abs_shap_results/ -s interpretations/shapley_explanations/shapley_binned.p &
 
 ```
 
