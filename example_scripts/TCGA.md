@@ -82,3 +82,7 @@ Plot results:
 
 
 * nohup time python random_forest_test.py -tr train_val_test_sets/train_methyl_array.pkl -v train_val_test_sets/val_methyl_array.pkl -tt train_val_test_sets/test_methyl_array.pkl -o Disease_State -c -n 400 &
+
+* python TCGA_ElasticNet.py -n 1 -o disease -tr train_val_test_sets/train_methyl_array.pkl -v train_val_test_sets/val_methyl_array.pkl -tt train_val_test_sets/test_methyl_array.pkl
+
+* nohup python TCGA_SVC.py -n 2 -o disease -tr train_val_test_sets/train_methyl_array.pkl -v train_val_test_sets/val_methyl_array.pkl -tt train_val_test_sets/test_methyl_array.pkl -s &
