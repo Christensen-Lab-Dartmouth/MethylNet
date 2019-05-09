@@ -78,7 +78,7 @@ def generate_topology(topology_grid, probability_decay_factor=0.9):
         return ''
     return ''
 
-def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[], model_complexity_factor=0.9, set_beta=-1., n_jobs=4, categorical=True, add_softmax=False, additional_command = ""):
+def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[], model_complexity_factor=0.9, set_beta=-1., n_jobs=4, categorical=True, add_softmax=False, additional_command = "", cuda=True):
     """Perform randomized hyperparameter grid search
 
     Parameters
@@ -117,7 +117,8 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
         Classification task?
     add_softmax : type
         Add softmax layer at end of neural network.
-
+    cuda : type
+        Whether to use GPU?
     """
     from itertools import cycle
     from pathos.multiprocessing import ProcessingPool as Pool
@@ -173,16 +174,16 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
     for i in range(df_final.shape[0]):
         job_id = str(np.random.randint(0,100000000))
         if not mlp:
-            commands.append('sh -c "time methylnet-embed perform_embedding -bce -c -v -j {} -hl {} -sc {} {} && pymethyl-visualize transform_plot -i embeddings/vae_methyl_arr.pkl -o visualizations/{}_vae_embed.html -c {} -nn 10 "'.format(job_id,hyperparameter_output_log,stratify_column,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),job_id,stratify_column))
+            commands.append('sh -c "methylnet-embed perform_embedding -bce {} -v -j {} -hl {} -sc {} {} && pymethyl-visualize transform_plot -i embeddings/vae_methyl_arr.pkl -o visualizations/{}_vae_embed.html -c {} -nn 10 "'.format("-c" if cuda else "",job_id,hyperparameter_output_log,stratify_column,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),job_id,stratify_column))
         else:
-            commands.append('sh -c "time methylnet-predict make_prediction {} {} {} -c -v {} -j {} -hl {} {} && {}"'.format('-sft' if add_softmax else '','-cat' if categorical else '',''.join([' -ic {}'.format(col) for col in stratify_column]),'-do' if stratify_column[0]=='disease_only' else '',job_id,hyperparameter_output_log,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),
+            commands.append('sh -c "methylnet-predict make_prediction {} {} {} {} -v {} -j {} -hl {} {} && {}"'.format("-c" if cuda else "",'-sft' if add_softmax else '','-cat' if categorical else '',''.join([' -ic {}'.format(col) for col in stratify_column]),'-do' if stratify_column[0]=='disease_only' else '',job_id,hyperparameter_output_log,' '.join(['{} {}'.format(k2,df_final.loc[i,k2]) for k2 in list(df_final) if (df_final.loc[i,k2] != '' and df_final.loc[i,k2] != np.nan)]),
                                 '&&'.join([" pymethyl-visualize transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o visualizations/{}_{}_mlp_embed.html -c {} -nn 8 ".format(job_id,col,col) for col in stratify_column]))) #-do
         df.loc[np.arange(df.shape[0])==np.where(df['--job_name'].astype(str).map(lower)=='false')[0][0],'--job_name']=job_id
     for i in range(len(commands)):
         commands[i] = '{} {} {} {}'.format('CUDA_VISIBLE_DEVICES="{}"'.format(next(gpus)) if not torque else "",'nohup' if nohup else '',commands[i],'&' if nohup else '') # $gpuNum
     if torque:
         for command in commands:
-            job = assemble_run_torque(command, use_gpu=True, additions=additional_command, queue='gpuq', time=4, ngpu=1, additional_options='' if gpu_node == -1 else ' -l hostlist=g0{}'.format(gpu_node))
+            job = assemble_run_torque(command, use_gpu=cuda, additions=additional_command, queue='gpuq' if cuda else "normal", time=4, ngpu=1, additional_options='' if gpu_node == -1 else ' -l hostlist=g0{}'.format(gpu_node))
     else:
         if len(commands) == 1:
             subprocess.call(commands[0],shell=True)
@@ -194,8 +195,10 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
                         print(command)
                         subprocess.call(command,shell=True)
                 else:
-                    pool = Pool(len(command_list))
+                    for command in command_list:
+                        subprocess.call(command,shell=True)
+                    """pool = Pool(len(command_list))
                     pool.map(run, command_list)
                     pool.close()
-                    pool.join()
+                    pool.join()"""
     df.to_csv(hyperparameter_input_csv)

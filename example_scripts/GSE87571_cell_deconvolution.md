@@ -43,11 +43,11 @@ nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_Neu.html 
 **Embedding using VAE**
 Run 200 job hyperparameter scan for learning embeddings on torque (remove -t option to run local, same for prediction jobs below):  
 ```
-methylnet-embed launch_hyperparameter_scan -sc Age -t -mc 0.84 -b 1. -g -j 200
+methylnet-embed launch_hyperparameter_scan -cu -sc Age -t -mc 0.84 -b 1. -g -j 200
 ```
 Rerun top performing run to get final embeddings:
 ```
-methylnet-embed launch_hyperparameter_scan -sc Age -t -g -n 1 -b 1.
+methylnet-embed launch_hyperparameter_scan -cu -sc Age -t -g -n 1 -b 1.
 ```
 Visualize VAE-Embedding:
 ```
@@ -57,11 +57,11 @@ pymethyl-visualize transform_plot -i embeddings/vae_methyl_arr.pkl -nn 8 -c Age
 **Predictions using Transfer Learning**
 Run 200 job hyperparameter scan for learning predictions on torque:
 ```
-methylnet-predict launch_hyperparameter_scan -ic Age -t -mc 0.84 -g -j 200
+methylnet-predict launch_hyperparameter_scan -cu -ic Age -t -mc 0.84 -g -j 200
 ```
 Rerun top performing run to get final predictions:
 ```
-methylnet-predict launch_hyperparameter_scan -ic Age -t -g -n 1
+methylnet-predict launch_hyperparameter_scan -cu -ic Age -t -g -n 1
 ```
 Visualize embeddings after training prediction model:
 ```
@@ -85,13 +85,14 @@ CUDA_VISIBLE_DEVICES=0 methylnet-interpret produce_shapley_data -mth gradient -s
 
 Extract spreadsheet of top overall CpGs:
 ```
-methylnet-interpret return_shap_values -c all -hist  -o  interpretations/shap_results/ &
-methylnet-interpret return_shap_values -c all -hist -abs -o interpretations/abs_shap_results/  &
+methylnet-interpret return_shap_values -c all -hist  -o  interpretations/shap_results/ -s interpretations/shapley_explanations/shapley_data_new.pkl -log &
+methylnet-interpret return_shap_values -c all -hist -abs -o interpretations/abs_shap_results/ -log -s interpretations/shapley_explanations/shapley_data_new.pkl &
 ```
 
 Plot bar chart of top CpGs:
 ```
-
+pymethyl-visualize plot_heatmap -m distance -fs .6 -i interpretations/shap_results/returned_shap_values_corr_dist.csv -o ./interpretations/shap_results/distance_cpgs.png -x -y -c &
+pymethyl-visualize plot_heatmap -m distance -fs .6 -i interpretations/abs_shap_results/returned_shap_values_corr_dist.csv -o ./interpretations/abs_shap_results/distance_cpgs.png -x -y -c &
 ```
 
 Find genomic context of these CpGs:
@@ -195,6 +196,27 @@ REDO!!!!
 (30.0,38.0] shared cpgs: 1/1.0
 (46.0,54.0] shared cpgs: 27/27.0
 (86.0,94.0] shared cpgs: 45/45.0
+
+# This is it
+  (54.0,64.0] shared cpgs: 47/47.0
+  (64.0,74.0] shared cpgs: 55/55.0
+  (24.0,34.0] shared cpgs: 0/0.0
+  (74.0,84.0] shared cpgs: 57/57.0
+  (34.0,44.0] shared cpgs: 1/1.0
+  (13.92,24.0] shared cpgs: 0/0.0
+  (44.0,54.0] shared cpgs: 23/24.0
+  (84.0,94.0] shared cpgs: 50/51.0
+
+(13.92,24.0] top cpgs overlap with 0.0% of hannum cpgs
+(24.0,34.0] top cpgs overlap with 0.0% of hannum cpgs
+(34.0,44.0] top cpgs overlap with 1.45% of hannum cpgs
+(44.0,54.0] top cpgs overlap with 34.78% of hannum cpgs
+(54.0,64.0] top cpgs overlap with 68.12% of hannum cpgs
+(64.0,74.0] top cpgs overlap with 79.71% of hannum cpgs
+(74.0,84.0] top cpgs overlap with 82.61% of hannum cpgs
+(84.0,94.0] top cpgs overlap with 73.91% of hannum cpgs
+
+
 
 
 nohup pymethyl-utils est_age -a epitoc -a horvath -a hannum -ac Age  -i for_curtis/test_set/test_methyl_array.pkl &

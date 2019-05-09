@@ -267,13 +267,14 @@ def plot_lola_output(lola_csv, plot_output_dir, description_col, cell_types):
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/shapley_data_by_methylation/', help='Output directory for hypo/hyper shap data.', type=click.Path(exists=False), show_default=True)
 @click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
-def split_hyper_hypo_methylation(shapley_data, output_dir, test_pkl):
+@click.option('-thr', '--threshold', default='original', help='Pickle containing testing set.', type=click.Choice(['original','mean']), show_default=True)
+def split_hyper_hypo_methylation(shapley_data, output_dir, test_pkl, threshold):
     """Split SHAPleyData object by methylation type (needs to change; but low methylation is 0.5 beta value and below) and output to file."""
     os.makedirs(output_dir,exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
     test_methyl_array=MethylationArray.from_pickle(test_pkl)
-    shap_data_methylation=shapley_data_explorer.return_shapley_data_by_methylation_status(test_methyl_array)
+    shap_data_methylation=shapley_data_explorer.return_shapley_data_by_methylation_status(test_methyl_array, threshold)
     shap_data_methylation['hypo'].to_pickle(join(output_dir,'hypo_shapley_data.p'))
     shap_data_methylation['hyper'].to_pickle(join(output_dir,'hyper_shapley_data.p'))
 
@@ -410,8 +411,10 @@ def regenerate_top_cpgs(shapley_data,n_top_features,output_pkl, abs_val, neg_val
 @click.option('-c', '--classes', default=[''], multiple=True, help='Classes to evaluate.', show_default=True)
 @click.option('-hist', '--output_histogram', is_flag=True, help='Whether to output a histogram for each class/individual of their SHAP scores.')
 @click.option('-abs', '--absolute', is_flag=True, help='Use sums of absolute values in making computations.')
-def return_shap_values(shapley_data,output_dir,individuals,classes, output_histogram, absolute):
+@click.option('-log', '--log_transform', is_flag=True, help='Log transform final results for plotting.')
+def return_shap_values(shapley_data,output_dir,individuals,classes, output_histogram, absolute, log_transform):
     """Return matrix of shapley values per class, with option to, classes/individuals are columns, CpGs are rows, option to plot multiple histograms/density plots."""
+    from sklearn.metrics import pairwise_distances
     os.makedirs(output_dir,exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
@@ -432,6 +435,8 @@ def return_shap_values(shapley_data,output_dir,individuals,classes, output_histo
             concat_list.append(shapley_data_explorer.extract_individual(individual,get_shap_values=True))
     df=pd.concat(concat_list,axis=1,keys=classes+individuals)
     df.to_csv(join(output_dir,'returned_shap_values.csv'))
+    pd.DataFrame(pairwise_distances(df.T.values,metric='correlation'),index=list(df),columns=list(df)).to_csv(join(output_dir,'returned_shap_values_corr_dist.csv'))
+    #df.corr().to_csv(join(output_dir,'returned_shap_values_corr_dist.csv'))
     if output_histogram:
         import matplotlib.pyplot as plt
         import seaborn as sns
@@ -439,8 +444,10 @@ def return_shap_values(shapley_data,output_dir,individuals,classes, output_histo
         for entity in (classes+individuals):
             shap_scores = df[entity]
             plt.figure()
-            sns.distplot(shap_scores)
-            plt.xlabel('SHAP value')
+            ax=sns.distplot(shap_scores, kde=(log_transform==False))
+            if log_transform:
+                ax.set_xscale('symlog')
+            plt.xlabel('{} SHAP value'.format("Log" if log_transform else ""))
             plt.ylabel('Frequency')
             plt.savefig(join(output_dir,'{}_shap_values.png'.format(entity)),dpi=300)
             top_10_shaps = shap_scores.abs().sort_values(ascending=False).iloc[:10]

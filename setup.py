@@ -14,7 +14,8 @@ setup(name='methylnet',
                                'methylnet-predict=methylnet.predictions:prediction',
                                'methylnet-interpret=methylnet.model_interpretability:interpret',
                                'methylnet-visualize=methylnet.visualizations:visualize',
-                               'methylnet-torque=methylnet.torque_job_runner:torque']
+                               'methylnet-torque=methylnet.torque_job_runner:torque',
+                               'methylnet-test=methylnet.test_pipeline:test']
       },
       long_description=long_description,
       long_description_content_type='text/markdown',

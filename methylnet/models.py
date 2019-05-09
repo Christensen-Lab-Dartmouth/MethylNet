@@ -105,18 +105,19 @@ def val_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=
     #print(model)
     stop_iter = loader.dataset.length // loader.batch_size
     total_loss,total_recon_loss,total_kl_loss=0.,0.,0.
-    for i,(inputs, _, _) in enumerate(loader):
-        if i == stop_iter:
-            break
-        inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
-        #print(inputs.size())
-        if cuda:
-            inputs = inputs.cuda()
-        output, mean, logvar = model(inputs)
-        loss, reconstruction_loss, kl_loss = vae_loss(output, inputs, mean, logvar, loss_func, epoch, kl_warm_up, beta)
-        total_loss+=loss.item()
-        total_recon_loss+=reconstruction_loss.item()
-        total_kl_loss+=kl_loss.item()
+    with torch.no_grad():
+        for i,(inputs, _, _) in enumerate(loader):
+            if i == stop_iter:
+                break
+            inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
+            #print(inputs.size())
+            if cuda:
+                inputs = inputs.cuda()
+            output, mean, logvar = model(inputs)
+            loss, reconstruction_loss, kl_loss = vae_loss(output, inputs, mean, logvar, loss_func, epoch, kl_warm_up, beta)
+            total_loss+=loss.item()
+            total_recon_loss+=reconstruction_loss.item()
+            total_kl_loss+=kl_loss.item()
     return model, total_loss,total_recon_loss,total_kl_loss
 
 def project_vae(model, loader, cuda=True):
@@ -146,17 +147,18 @@ def project_vae(model, loader, cuda=True):
     final_outputs=[]
     sample_names_final=[]
     outcomes_final=[]
-    for inputs, sample_names, outcomes in loader:
-        inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
-        if cuda:
-            inputs = inputs.cuda()
-        z = np.squeeze(model.get_latent_z(inputs).detach().cpu().numpy())
-        final_outputs.append(z)
-        sample_names_final.extend([name[0] for name in sample_names])
-        outcomes_final.extend([outcome[0] for outcome in outcomes])
-    z=np.vstack(final_outputs)
-    sample_names=np.array(sample_names_final)
-    outcomes=np.array(outcomes_final)
+    with torch.no_grad():
+        for inputs, sample_names, outcomes in loader:
+            inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
+            if cuda:
+                inputs = inputs.cuda()
+            z = np.squeeze(model.get_latent_z(inputs).detach().cpu().numpy())
+            final_outputs.append(z)
+            sample_names_final.extend([name[0] for name in sample_names])
+            outcomes_final.extend([outcome[0] for outcome in outcomes])
+        z=np.vstack(final_outputs)
+        sample_names=np.array(sample_names_final)
+        outcomes=np.array(outcomes_final)
     return z, sample_names, outcomes
 
 class AutoEncoder:
@@ -475,6 +477,9 @@ class TybaltTitusVAE(nn.Module):
         noise = Variable(torch.randn(stddev.size()))
         if self.cuda_on:
             noise=noise.cuda()
+        if not self.training:
+            noise = 0.
+            stddev = 0.
         return (noise * stddev) + mean
 
     def encode(self, x):
@@ -647,24 +652,25 @@ def val_mlp(model, loader, loss_func, cuda=True, categorical=False, train_decode
     stop_iter = loader.dataset.length // loader.batch_size
     running_decoder_loss=0.
     running_loss=0.
-    for i,(inputs, samples, y_true) in enumerate(loader): # change dataloder for classification/regression tasks
-        if inputs.size()[0] == 1 and i == stop_iter:
-            break
-        inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
-        y_true = Variable(y_true)
-        #print(inputs.size())
-        if categorical:
-            y_true=y_true.argmax(1).long()
-        if cuda:
-            inputs = inputs.cuda()
-            y_true = y_true.cuda()
-        y_predict, z = model(inputs)
-        loss = loss_func(y_predict,y_true)
-        running_loss+=loss.item()
+    with torch.no_grad():
+        for i,(inputs, samples, y_true) in enumerate(loader): # change dataloder for classification/regression tasks
+            if inputs.size()[0] == 1 and i == stop_iter:
+                break
+            inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
+            y_true = Variable(y_true)
+            #print(inputs.size())
+            if categorical:
+                y_true=y_true.argmax(1).long()
+            if cuda:
+                inputs = inputs.cuda()
+                y_true = y_true.cuda()
+            y_predict, z = model(inputs)
+            loss = loss_func(y_predict,y_true)
+            running_loss+=loss.item()
+            if train_decoder:
+                running_decoder_loss += val_decoder_(model, inputs, z)
         if train_decoder:
-            running_decoder_loss += val_decoder_(model, inputs, z)
-    if train_decoder:
-        print('Val Decoder Loss is {}'.format(running_decoder_loss))
+            print('Val Decoder Loss is {}'.format(running_decoder_loss))
     return model, running_loss
 
 def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
@@ -701,27 +707,28 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
     final_latent=[]
     sample_names_final=[]
     Y_true=[]
-    for inputs, sample_names, y_true in loader: # change dataloder for classification/regression tasks
-        print(inputs)
-        inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
-        y_true = Variable(y_true)
-        #print(inputs.size())
-        if cuda:
-            inputs = inputs.cuda()
-            y_true = y_true.cuda()
-        y_predict, z = model(inputs)
-        y_predict=np.squeeze(y_predict.detach().cpu().numpy())
-        y_true=np.squeeze(y_true.detach().cpu().numpy())
-        #print(y_predict.shape,y_true.shape)
-        #print(y_predict,y_true)
-        if len(y_predict.shape) < 2:
-            y_predict=y_predict.flatten()
-        if len(y_true.shape) < 2:
-            y_true=y_true.flatten()  # FIXME
-        Y_pred.append(y_predict)
-        final_latent.append(np.squeeze(z.detach().cpu().numpy()))
-        sample_names_final.extend([name[0] for name in sample_names])
-        Y_true.append(y_true)
+    with torch.no_grad():
+        for inputs, sample_names, y_true in loader: # change dataloder for classification/regression tasks
+            print(inputs)
+            inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
+            y_true = Variable(y_true)
+            #print(inputs.size())
+            if cuda:
+                inputs = inputs.cuda()
+                y_true = y_true.cuda()
+            y_predict, z = model(inputs)
+            y_predict=np.squeeze(y_predict.detach().cpu().numpy())
+            y_true=np.squeeze(y_true.detach().cpu().numpy())
+            #print(y_predict.shape,y_true.shape)
+            #print(y_predict,y_true)
+            if len(y_predict.shape) < 2:
+                y_predict=y_predict.flatten()
+            if len(y_true.shape) < 2:
+                y_true=y_true.flatten()  # FIXME
+            Y_pred.append(y_predict)
+            final_latent.append(np.squeeze(z.detach().cpu().numpy()))
+            sample_names_final.extend([name[0] for name in sample_names])
+            Y_true.append(y_true)
     if len(Y_pred) > 1:
         if all(list(map(lambda x: len(np.shape(x))<2,Y_pred))):
             Y_pred = np.hstack(Y_pred)[:,np.newaxis]

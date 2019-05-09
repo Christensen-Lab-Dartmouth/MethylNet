@@ -9,22 +9,22 @@ Run commands from: https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess/
 **Embedding using VAE**
 Run 200 job hyperparameter scan for learning embeddings on torque (remove -t option to run local, same for prediction jobs below):  
 ```
-methylnet-embed launch_hyperparameter_scan -sc disease -t -mc 0.84 -b 1. -g -j 200 -a "module load python/3-Anaconda && source activate methylnet_pro2"
+methylnet-embed launch_hyperparameter_scan -cu -sc disease -t -mc 0.84 -b 1. -g -j 200 -a "module load python/3-Anaconda && source activate methylnet_pro2"
 ```
 FINISH BELOW
 Rerun top performing run to get final embeddings:
 ```
-methylnet-embed launch_hyperparameter_scan -sc disease -t -g -n 1 -b 1. -a "module load python/3-Anaconda && source activate methylnet_pro2"
+methylnet-embed launch_hyperparameter_scan -cu -sc disease -t -g -n 1 -b 1. -a "module load python/3-Anaconda && source activate methylnet_pro2"
 ```
 
 **Predictions using Transfer Learning**
 Run 200 job hyperparameter scan for learning predictions on torque:
 ```
-methylnet-predict launch_hyperparameter_scan -ic disease -cat -t -g -mc 0.65 -j 200 -a "module load python/3-Anaconda && source activate methylnet_pro2"
+methylnet-predict launch_hyperparameter_scan -cu -ic disease -cat -t -g -mc 0.70 -j 400 -a "module load python/3-Anaconda && source activate methylnet_pro2"
 ```
 Rerun top performing run to get final predictions:
 ```
-methylnet-predict launch_hyperparameter_scan -ic disease -cat -t -g -n 1 -a "module load python/3-Anaconda && source activate methylnet_pro2"
+methylnet-predict launch_hyperparameter_scan -cu -ic disease -cat -t -g -n 1 -a "module load python/3-Anaconda && source activate methylnet_pro2"
 ```
 
 **Plot Embedding and Prediction Results**
@@ -47,13 +47,33 @@ CUDA_VISIBLE_DEVICES=0 methylnet-interpret produce_shapley_data -mth gradient -s
 
 Extract spreadsheet of top overall CpGs:
 ```
-methylnet-interpret return_shap_values -c all -hist &
-methylnet-interpret return_shap_values -c all -hist -abs -o interpretations/abs_shap_results/ &
+methylnet-interpret return_shap_values -log -c all -hist -o interpretations/shap_results/ &
+methylnet-interpret return_shap_values -log -c all -hist -abs -o interpretations/abs_shap_results/ &
 ```
 
 Plot bar chart of top CpGs:
 ```
 
+```
+
+Find H-Cluster of CpGs between Disease Subtypes (FINISH):
+```
+methylnet-interpret regenerate_top_cpgs -nf 4000 && methylnet-interpret split_hyper_hypo_methylation -thr original -s ./interpretations/shapley_explanations/shapley_reduced_data.p && methylnet-interpret shapley_jaccard -c all -ov -s ./interpretations/shapley_explanations/shapley_data_by_methylation/hypo_shapley_data.p -o ./interpretations/shapley_explanations/top_cpgs_jaccard/hypo/ && pymethyl-visualize plot_heatmap -m similarity -fs .6 -i ./interpretations/shapley_explanations/top_cpgs_jaccard/hypo/all_jaccard.csv -o ./interpretations/shapley_explanations/top_cpgs_jaccard/all_jaccard.png -x -y -c &
+
+
+pymethyl-visualize plot_heatmap -m distance -fs .6 -i interpretations/shap_results/returned_shap_values_corr_dist.csv -o ./interpretations/shap_results/distance_cpgs.png -x -y -c &
+pymethyl-visualize plot_heatmap -m distance -fs .6 -i interpretations/abs_shap_results/returned_shap_values_corr_dist.csv -o ./interpretations/abs_shap_results/distance_cpgs.png -x -y -c &
+
+```
+
+Train Support Vector Machine Model and Evaluate for Comparison (copy TCGA_SVC.py example script):
+```
+python TCGA_SVC.py -n 24 -o disease -tr train_val_test_sets/train_methyl_array.pkl -v train_val_test_sets/val_methyl_array.pkl -tt train_val_test_sets/test_methyl_array.pkl -s &
+
+python
+>>> df=pd.read_csv("SklearnPredictions.csv")
+>>> accuracy_score(df['y_pred'],df['y_true'])
+0.8389021479713604
 ```
 
 Find genomic context of these CpGs:
@@ -85,4 +105,4 @@ Plot results:
 
 * python TCGA_ElasticNet.py -n 1 -o disease -tr train_val_test_sets/train_methyl_array.pkl -v train_val_test_sets/val_methyl_array.pkl -tt train_val_test_sets/test_methyl_array.pkl
 
-* nohup python TCGA_SVC.py -n 2 -o disease -tr train_val_test_sets/train_methyl_array.pkl -v train_val_test_sets/val_methyl_array.pkl -tt train_val_test_sets/test_methyl_array.pkl -s &
+*

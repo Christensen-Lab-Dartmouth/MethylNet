@@ -41,11 +41,11 @@ nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_Neu.html 
 **Embedding using VAE**
 Run 200 job hyperparameter scan for learning embeddings on torque (remove -t option to run local, same for prediction jobs below):  
 ```
-methylnet-embed launch_hyperparameter_scan -sc Age -t -mc 0.84 -b 1. -g -j 200
+methylnet-embed launch_hyperparameter_scan -cu -sc Age -t -mc 0.84 -b 1. -g -j 200
 ```
 Rerun top performing run to get final embeddings:
 ```
-methylnet-embed launch_hyperparameter_scan -sc Age -t -g -n 1 -b 1.
+methylnet-embed launch_hyperparameter_scan -cu -sc Age -t -g -n 1 -b 1.
 ```
 
 **Predictions using Transfer Learning**
@@ -73,14 +73,39 @@ CUDA_VISIBLE_DEVICES=0 methylnet-interpret produce_shapley_data -mth gradient -s
 
 Extract spreadsheet of top overall CpGs:
 ```
-methylnet-interpret return_shap_values -c all -hist -s interpretations/shapley_explanations/shapley_binned.p -o  interpretations/shap_results/ &
-methylnet-interpret return_shap_values -c all -hist -abs -o interpretations/abs_shap_results/ -s interpretations/shapley_explanations/shapley_binned.p &
+methylnet-interpret return_shap_values -log -c all -hist -s interpretations/shapley_explanations/shapley_binned.p -o  interpretations/shap_results/ &
+methylnet-interpret return_shap_values -log -c all -hist -abs -o interpretations/abs_shap_results/ -s interpretations/shapley_explanations/shapley_binned.p &
 
+```
+
+Overlap with Clock CpGs:
+
+```
+methylnet-interpret interpret_biology -ov -c all -s interpretations/shapley_explanations/shapley_binned.p -cgs hannum
+
+python
+import pandas as pd, matplotlib, matplotlib.pyplot as plt, seaborn as sns, numpy as np
+sns.set(font_scale=0.7)
+clock_cpg_results = list(map(lambda line: [w.replace('(','').replace(']','').replace(',','-').replace('%','') for w in line.split() if w[-1] in [']','%']],"""(13.92,24.0] top cpgs overlap with 0.0% of hannum cpgs
+(24.0,34.0] top cpgs overlap with 0.0% of hannum cpgs
+(34.0,44.0] top cpgs overlap with 1.45% of hannum cpgs
+(44.0,54.0] top cpgs overlap with 34.78% of hannum cpgs
+(54.0,64.0] top cpgs overlap with 68.12% of hannum cpgs
+(64.0,74.0] top cpgs overlap with 79.71% of hannum cpgs
+(74.0,84.0] top cpgs overlap with 82.61% of hannum cpgs
+(84.0,94.0] top cpgs overlap with 73.91% of hannum cpgs""".splitlines()))
+plt.figure()
+df=pd.DataFrame(clock_cpg_results,columns=['Age','Percent Hannum CpGs'])
+df.iloc[:,1]=df.iloc[:,1].astype(float)
+sns.barplot('Age','Percent Hannum CpGs',data=df, palette="Blues_d") # np.arange(df.shape[0])
+
+plt.savefig('hannum_overlap.png',dpi=300)
 ```
 
 Plot bar chart of top CpGs:
 ```
-
+pymethyl-visualize plot_heatmap -m distance -fs .6 -i interpretations/shap_results/returned_shap_values_corr_dist.csv -o ./interpretations/shap_results/distance_cpgs.png -x -y -c &
+pymethyl-visualize plot_heatmap -m distance -fs .6 -i interpretations/abs_shap_results/returned_shap_values_corr_dist.csv -o ./interpretations/abs_shap_results/distance_cpgs.png -x -y -c &
 ```
 
 Find genomic context of these CpGs:
@@ -91,6 +116,18 @@ Find genomic context of these CpGs:
 Run enrichment test with LOLA:
 ```
 
+```
+
+Creation Test Data:
+```
+from pymethylprocess.MethylationDataTypes import MethylationArray
+sample_p = 0.35
+methyl_array=MethylationArray.from_pickle("train_methyl_array.pkl")
+methyl_array.subsample("Age",frac=None,n_samples=int(methyl_array.pheno.shape[0]*sample_p)).write_pickle("train_methyl_array_subsampled.pkl")
+methyl_array=MethylationArray.from_pickle("val_methyl_array.pkl")
+methyl_array.subsample("Age",frac=None,n_samples=int(methyl_array.pheno.shape[0]*sample_p)).write_pickle("val_methyl_array_subsampled.pkl")
+methyl_array=MethylationArray.from_pickle("test_methyl_array.pkl")
+methyl_array.subsample("Age",frac=None,n_samples=int(methyl_array.pheno.shape[0]*sample_p)).write_pickle("test_methyl_array_subsampled.pkl")
 ```
 
 Plot results:
@@ -175,3 +212,13 @@ python predictions.py regression_report -r new_predictions/results.p -o new_resu
 
 
 pymethyl-utils ref_free_cell_deconv -c Bcell -c CD4T -c CD8T -c Mono -c NK -c Neu
+
+
+(54.0,64.0] top cpgs overlap with 68.12% of hannum cpgs
+(64.0,74.0] top cpgs overlap with 79.71% of hannum cpgs
+(24.0,34.0] top cpgs overlap with 0.0% of hannum cpgs
+(74.0,84.0] top cpgs overlap with 82.61% of hannum cpgs
+(34.0,44.0] top cpgs overlap with 1.45% of hannum cpgs
+(13.92,24.0] top cpgs overlap with 0.0% of hannum cpgs
+(44.0,54.0] top cpgs overlap with 34.78% of hannum cpgs
+(84.0,94.0] top cpgs overlap with 73.91% of hannum cpgs

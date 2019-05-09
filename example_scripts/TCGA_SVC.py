@@ -24,18 +24,16 @@ def run_svc(train_pkl, val_pkl, test_pkl, series=False, outcome_col='Disease_Sta
                             verbose=True)
 
     sklearn_model=model.fit(train_methyl_array,val_methyl_array,outcome_col)
+    pickle.dump(sklearn_model,open('sklearn_model.p','wb'))
 
     y_pred = model.predict(test_methyl_array)
+    pd.DataFrame(np.hstack((y_pred[:,np.newaxis],test_methyl_array.pheno[outcome_col].values[:,np.newaxis])),index=test_methyl_array.return_idx(),columns=['y_pred','y_true']).to_csv('SklearnPredictions.csv')
 
     original, std_err, (low_ci,high_ci) = model.return_outcome_metric(test_methyl_array, outcome_col, accuracy_score, run_bootstrap=True)
 
     results={'score':original,'Standard Error':std_err, '0.95 CI Low':low_ci, '0.95 CI High':high_ci}
 
-    pd.DataFrame(y_pred[:,np.newaxis],columns=['y_pred']).to_csv('SklearnPredictions.csv')
-
     print('\n'.join(['{}:{}'.format(k,v) for k,v in results.items()]))
-
-    pickle.dump(sklearn_model,open('sklearn_model.p','wb'))
 
 def main():
     p = argparse.ArgumentParser()

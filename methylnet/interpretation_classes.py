@@ -122,7 +122,7 @@ class ShapleyData:
         top_ft_idx=np.argsort(global_importance_shaps*-1)[:n_top_cpgs]
         self.top_cpgs['overall']=pd.DataFrame(np.hstack([cpgs[top_ft_idx][:,np.newaxis],global_importance_shaps[top_ft_idx][:,np.newaxis]]),columns=['cpg','shapley_value'])
 
-    def to_pickle(self,output_pkl):
+    def to_pickle(self,output_pkl, output_dict=False):
         """Export Shapley data to pickle.
 
         Parameters
@@ -132,10 +132,13 @@ class ShapleyData:
 
         """
         os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
-        pickle.dump(self, open(output_pkl,'wb'))
+        if output_dict:
+            pickle.dump(dict(shapley_values=self.shapley_values,top_cpgs=self.top_cpgs), open(output_pkl,'wb'))
+        else:
+            pickle.dump(self, open(output_pkl,'wb'))
 
     @classmethod
-    def from_pickle(self,input_pkl):
+    def from_pickle(self,input_pkl, from_dict=False):
         """Load SHAPley data from pickle.
 
         Parameters
@@ -144,7 +147,16 @@ class ShapleyData:
             Input pickle.
 
         """
-        return pickle.load(open(input_pkl,'rb'))
+        if from_dict:
+            d=pickle.load(open(input_pkl,'rb'))
+            shapley_data = ShapleyData()
+            shapley_data.shapley_values=d['shapley_values']
+            shapley_data.top_cpgs=d['top_cpgs']
+            return shapley_data
+        else:
+            return pickle.load(open(input_pkl,'rb'))
+
+
 
 class ShapleyDataExplorer:
     """Datatype used to explore saved ShapleyData.
@@ -168,7 +180,7 @@ class ShapleyDataExplorer:
             for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys():
                 self.indiv2class[individual]=class_name
 
-    def return_shapley_data_by_methylation_status(self, methyl_array):
+    def return_shapley_data_by_methylation_status(self, methyl_array, threshold):
         """Return dictionary containing two SHAPley datasets, each split by low/high levels of methylation. Todo: Define this using median methylation value vs 0.5.
 
         Parameters
@@ -182,18 +194,19 @@ class ShapleyDataExplorer:
             Contains shapley data by methylation status.
 
         """
+        threshold = {'mean':methyl_array.beta.mean().mean(),'original':0.5}[threshold]
         methylation_shapley_data_dict = {'hyper':copy.deepcopy(self.shapley_data),'hypo':copy.deepcopy(self.shapley_data)}
         for individual in self.list_individuals(return_list=True):
             class_name,individual,top_shap_df=self.view_methylation(individual,methyl_array)
-            hyper_df = top_shap_df[top_shap_df['methylation']>=0.5]
-            hypo_df = top_shap_df[top_shap_df['methylation']<0.5]
+            hyper_df = top_shap_df[top_shap_df['methylation']>=threshold]
+            hypo_df = top_shap_df[top_shap_df['methylation']<threshold]
             methylation_shapley_data_dict['hyper'].top_cpgs['by_class'][class_name]['by_individual'][individual]=hyper_df[['cpg','shapley_value']]
             methylation_shapley_data_dict['hypo'].top_cpgs['by_class'][class_name]['by_individual'][individual]=hypo_df[['cpg','shapley_value']]
         for class_name,individuals in self.list_individuals().items():
             top_shap_df=self.extract_class(class_name)
             top_shap_df['methylation']=methyl_array.beta.loc[individuals,self.shapley_data.top_cpgs['by_class'][class_name]['overall']['cpg'].values].mean(axis=0).values
-            hyper_df = top_shap_df[top_shap_df['methylation']>=0.5]
-            hypo_df = top_shap_df[top_shap_df['methylation']<0.5]
+            hyper_df = top_shap_df[top_shap_df['methylation']>=threshold]
+            hypo_df = top_shap_df[top_shap_df['methylation']<threshold]
             methylation_shapley_data_dict['hyper'].top_cpgs['by_class'][class_name]['overall']=hyper_df[['cpg','shapley_value']]
             methylation_shapley_data_dict['hypo'].top_cpgs['by_class'][class_name]['overall']=hypo_df[['cpg','shapley_value']]
         return methylation_shapley_data_dict
@@ -290,7 +303,7 @@ class ShapleyDataExplorer:
         DataFrame
             Cpgs and SHAP Values
         """
-        if return_shap_values:
+        if get_shap_values:
             return self.shapley_data.shapley_values['by_class'][class_name].mean(axis=0)
         else:
             if class_intersect:
@@ -382,6 +395,7 @@ class ShapleyDataExplorer:
         """
 
         class_name,top_shap_df=self.extract_individual(individual)
+        #print(top_shap_df['cpg'].values,len(top_shap_df['cpg'].values))
         top_shap_df['methylation']=methyl_arr.beta.loc[individual,top_shap_df['cpg'].values].values
         return class_name,individual,top_shap_df
 
