@@ -16,6 +16,8 @@ RUN cd ./methylnet_code && python3 setup.py sdist bdist_wheel && pip install dis
 
 RUN tar -xzf ./methylnet_code/test_data/age_test_data.tar.gz -C /pymethyl/
 
+RUN cp ./methylnet_code/example_scripts/*.yaml /pymethyl/
+
 RUN chmod 755 -R train_val_test_sets
 
 WORKDIR /pymethyl

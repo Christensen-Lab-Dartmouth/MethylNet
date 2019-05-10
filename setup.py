@@ -20,4 +20,5 @@ setup(name='methylnet',
       long_description=long_description,
       long_description_content_type='text/markdown',
       packages=['methylnet'],
-      install_requires=['pymethylprocess'])
+      install_requires=['pymethylprocess',
+                        'ruamel.yaml'])

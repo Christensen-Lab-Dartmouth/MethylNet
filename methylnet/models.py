@@ -146,7 +146,7 @@ def project_vae(model, loader, cuda=True):
     #print(model)
     final_outputs=[]
     sample_names_final=[]
-    outcomes_final=[]
+    #outcomes_final=[]
     with torch.no_grad():
         for inputs, sample_names, outcomes in loader:
             inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
@@ -155,11 +155,11 @@ def project_vae(model, loader, cuda=True):
             z = np.squeeze(model.get_latent_z(inputs).detach().cpu().numpy())
             final_outputs.append(z)
             sample_names_final.extend([name[0] for name in sample_names])
-            outcomes_final.extend([outcome[0] for outcome in outcomes])
+            #outcomes_final.extend([outcome[0] for outcome in outcomes])
         z=np.vstack(final_outputs)
         sample_names=np.array(sample_names_final)
-        outcomes=np.array(outcomes_final)
-    return z, sample_names, outcomes
+        #outcomes=np.array(outcomes_final)
+    return z, sample_names, None#outcomes
 
 class AutoEncoder:
     """Wraps Pytorch VAE module into Scikit-learn like interface for ease of training, validation and testing.

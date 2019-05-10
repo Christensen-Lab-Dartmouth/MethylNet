@@ -47,6 +47,15 @@ def find_top_jobs(hyperparameter_input_csv,hyperparameter_output_log, n_top_jobs
                     custom_jobs.iloc[i,j]=np.random.choice(vals)
     return [custom_jobs]
 
+def replace_grid(old_grid, new_grid, topology_grid):
+    #print(old_grid,new_grid)
+    for k in new_grid.keys():
+        if k != 'topology_grid':
+            old_grid["--{}".format(k)] = new_grid[k]
+    if 'topology_grid' in new_grid:
+        topology_grid = new_grid.pop('topology_grid')
+    return old_grid, topology_grid
+
 def generate_topology(topology_grid, probability_decay_factor=0.9):
     """Generates list denoting neural network topology, list of hidden layer sizes.
 
@@ -78,7 +87,7 @@ def generate_topology(topology_grid, probability_decay_factor=0.9):
         return ''
     return ''
 
-def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[], model_complexity_factor=0.9, set_beta=-1., n_jobs=4, categorical=True, add_softmax=False, additional_command = "", cuda=True):
+def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[], model_complexity_factor=0.9, set_beta=-1., n_jobs=4, categorical=True, add_softmax=False, additional_command = "", cuda=True, new_grid = {}):
     """Perform randomized hyperparameter grid search
 
     Parameters
@@ -126,8 +135,7 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
     generated_input=[]
     np.random.seed(int(time.time()))
     if mlp:
-        grid={#'--hidden_layer_topology':['', '100', '100,100', '100,200', '100,4096,300', '300,500,400', '200', '200,200', '300', '200,300,200', '500,300', '500,100', '1000,1000', '1000,2000,1000', '500,1000,500', '1000,3000,1000'],
-              '--learning_rate_vae':[1e-5,5e-5,1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1],'--learning_rate_mlp':[1e-5,5e-5,1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1,5e-1],
+        grid={'--learning_rate_vae':[1e-5,5e-5,1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1],'--learning_rate_mlp':[1e-5,5e-5,1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1,5e-1],
               '--weight_decay':[1e-4],'--n_epochs':[25,50,75,100,200,500,700], '--scheduler':['warm_restarts','null'], '--t_max':[10],
               '--eta_min':[1e-7,1e-6], '--t_mult':[1.,1.2,1.5,2],
               '--batch_size':[50,100,256,512], '--dropout_p':[0.,0.1,0.2,0.3,0.5],
@@ -137,13 +145,14 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
         grid={'--n_latent':[100,150,200,300,500],
               '--learning_rate':[5e-5,1e-4,5e-4,1e-3,5e-3,1e-2,5e-2,1e-1],
               '--weight_decay':[1e-4],'--n_epochs':[25,50,75,100,200,500,700],
-              #'--hidden_layer_encoder_topology':['','100','100,100','200','200,200','300','300,300','500','500,500','500,300','500,100','300,200'],
               '--kl_warm_up':[0,20], '--beta':[0.,0.5,1,10,50,100,200,500] if set_beta == -1. else [set_beta],
               '--scheduler':['warm_restarts','null'], '--t_max':[10],
               '--eta_min':[1e-7,1e-6], '--t_mult':[1.,1.2,1.5,2],
               '--batch_size':[50,100,256,512],
               '--n_workers':[4], '--loss_reduction':['sum']}
         topology_grid=[0,100,200,300,500,1000,2000]
+    if new_grid:
+        grid,topology_grid=replace_grid(grid,new_grid,topology_grid)
     grid['--hidden_layer_topology' if mlp else '--hidden_layer_encoder_topology']=[generate_topology(topology_grid,probability_decay_factor=model_complexity_factor) for i in range(40)]
     if generate_input:
         for i in range(n_jobs):

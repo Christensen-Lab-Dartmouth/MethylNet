@@ -83,12 +83,12 @@ def embed_vae(train_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
         num_workers=n_workers,
         batch_size=1,
         shuffle=False)
-    latent_projection, sample_names, outcomes = auto_encoder.transform(methyl_dataset_loader)
+    latent_projection, sample_names, _ = auto_encoder.transform(methyl_dataset_loader)
     #print(latent_projection.shape)
     methyl_array = methyl_dataset.to_methyl_array()
     #sample_names = np.array([sample_name[0] for sample_name in sample_names]) # FIXME
     #outcomes = np.array([outcome[0] for outcome in outcomes]) # FIXME
-    outcome_dict=dict(zip(sample_names,outcomes))
+    #outcome_dict=dict(zip(sample_names,outcomes))
     #print(methyl_array.beta)
     latent_projection=pd.DataFrame(latent_projection,index=methyl_array.beta.index)
     methyl_array.beta=latent_projection
@@ -96,8 +96,8 @@ def embed_vae(train_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
     latent_projection.to_csv(output_file)
     pickle.dump(auto_encoder.training_plot_data,open(training_curve_file,'wb'))
     torch.save(auto_encoder.model,output_model)
-    pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
-    return latent_projection, outcome_dict, scaling_factors, n_input, auto_encoder
+    #pickle.dump(outcome_dict, open(outcome_dict_file,'wb'))
+    return latent_projection, None, scaling_factors, n_input, auto_encoder
 
 @embed.command()
 @click.option('-i', '--train_pkl', default='./train_val_test_sets/train_methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
@@ -164,13 +164,21 @@ def perform_embedding(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_de
 @click.option('-v', '--val_loss_column', default='min_val_loss-batchsize_adj', help='Validation loss column.', type=click.Path(exists=False))
 @click.option('-a', '--additional_command', default='', help='Additional command to input for torque run.', type=click.Path(exists=False))
 @click.option('-cu', '--cuda', is_flag=True, help='Use GPUs.')
-def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, model_complexity_factor, set_beta,n_jobs, n_jobs_relaunch, crossover_p, val_loss_column, additional_command, cuda):
+@click.option('-grid', '--hyperparameter_yaml', default='', help='YAML file with custom subset of hyperparameter grid.', type=click.Path(exists=False))
+def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, model_complexity_factor, set_beta,n_jobs, n_jobs_relaunch, crossover_p, val_loss_column, additional_command, cuda, hyperparameter_yaml):
     """Launch randomized grid search of neural network hyperparameters."""
     from methylnet.hyperparameter_scans import coarse_scan, find_top_jobs
     custom_jobs=[]
     if n_jobs_relaunch:
         custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p, val_loss_column)
-    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, model_complexity_factor=model_complexity_factor, set_beta=set_beta,n_jobs=n_jobs, custom_jobs=custom_jobs, additional_command=additional_command, cuda=cuda)
+    if os.path.exists(hyperparameter_yaml):
+        from ruamel.yaml import safe_load as load
+        with open(hyperparameter_yaml) as f:
+            new_grid = load(f)
+        #print(new_grid)
+    else:
+        new_grid = {}
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, model_complexity_factor=model_complexity_factor, set_beta=set_beta,n_jobs=n_jobs, custom_jobs=custom_jobs, additional_command=additional_command, cuda=cuda, new_grid=new_grid)
 
 #################
 

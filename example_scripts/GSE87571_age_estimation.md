@@ -129,7 +129,7 @@ methyl_array.subsample("Age",frac=None,n_samples=int(methyl_array.pheno.shape[0]
 methyl_array=MethylationArray.from_pickle("test_methyl_array.pkl")
 methyl_array.subsample("Age",frac=None,n_samples=int(methyl_array.pheno.shape[0]*sample_p)).write_pickle("test_methyl_array_subsampled.pkl")
 
-pymethyl-utils feature_select_train_val_test -n 25000s
+pymethyl-utils feature_select_train_val_test -n 25000
 ```
 
 Plot results:
