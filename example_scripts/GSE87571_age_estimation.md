@@ -41,19 +41,21 @@ nohup pymethyl-visualize transform_plot -o visualizations/pre_vae_umap_Neu.html 
 **Embedding using VAE**
 Run 200 job hyperparameter scan for learning embeddings on torque (remove -t option to run local, same for prediction jobs below):  
 ```
-methylnet-embed launch_hyperparameter_scan -cu -sc Age -t -mc 0.84 -b 1. -g -j 200
+methylnet-embed launch_hyperparameter_scan -cu -sc Age -t -mc 0.84 -b 1. -g -j 200 -a "module load python/3-Anaconda && source activate methylnet_pro2"
 ```
 Rerun top performing run to get final embeddings:
 ```
-methylnet-embed launch_hyperparameter_scan -cu -sc Age -t -g -n 1 -b 1.
+methylnet-embed launch_hyperparameter_scan -cu -sc Age -t -g -n 1 -b 1. -a "module load python/3-Anaconda && source activate methylnet_pro2"
 ```
 
 **Predictions using Transfer Learning**
 Run 200 job hyperparameter scan for learning predictions on torque:
 ```
+methylnet-predict launch_hyperparameter_scan -ic Bcell -ic CD4T -ic CD8T -ic Mono -ic NK -ic Neu -t -mc 0.84 -g -cu -j 200 -a "module load python/3-Anaconda && source activate methylnet_pro2"
 ```
 Rerun top performing run to get final predictions:
 ```
+methylnet-predict launch_hyperparameter_scan -ic Bcell -ic CD4T -ic CD8T -ic Mono -ic NK -ic Neu -t -mc 0.84 -cu -t -g -n 1 -a "module load python/3-Anaconda && source activate methylnet_pro2"
 ```
 
 **Plot Embedding and Prediction Results**
@@ -170,7 +172,7 @@ rsync /Users/joshualevy/Documents/GitHub/methylation/*.py /Users/joshualevy/Docu
 * mkdir embeddings
 * python embedding.py launch_hyperparameter_scan -sc Age -t -mc 0.84 -b 1. -g -j 20
 * python embedding.py launch_hyperparameter_scan -sc Age -t -g -n 1 -b 1.
-* python predictions.py launch_hyperparameter_scan -ic Bcell -ic CD4T -ic CD8T -ic Mono -ic NK -ic Neu -t -mc 0.84 -g -j 350 # -sft
+* python predictions.py launch_hyperparameter_scan -ic Bcell -ic CD4T -ic CD8T -ic Mono -ic NK -ic Neu -t -mc 0.84 -g -j 200 # -sft
 # REDO BELOW
 * python predictions.py launch_hyperparameter_scan -ic Bcell -ic CD4T -ic CD8T -ic Mono -ic NK -ic Neu -mc 0.84 -t -g -n 1
 # run horvath age model and the houseman deconv

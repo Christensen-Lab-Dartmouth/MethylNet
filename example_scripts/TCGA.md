@@ -38,7 +38,19 @@ methylnet-visualize plot_roc_curve
 **MethylNet Interpretations**
 If using torque:  
 ```
-methylnet-torque run_torque_job -c "methylnet-interpret produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 100 -col disease -r 0 -rt 30 -nf 1000 -c" -gpu -a "module load python/3-Anaconda && source activate methylnet_pro2" -q gpuq -t 24 -n 1
+methylnet-torque run_torque_job -c "methylnet-interpret produce_shapley_data -mth gradient -ssbs 30 -ns 300 -bs 100 -col disease -r 0 -rt 10 -nf 4000 -c" -gpu -a "module load python/3-Anaconda && source activate methylnet_pro2" -q gpuq -t 24 -n 1
+
+methylnet-torque run_torque_job -c "methylnet-interpret produce_shapley_data -mth gradient -ssbs 300 -ns 600 -bs 512 -col disease -r 0 -rt 5 -nf 4000 -c" -gpu -a "module load python/3-Anaconda && source activate methylnet_pro2" -q gpuq -t 24 -n 1
+
+python
+encoder = pickle.load(open("predictions/one_hot_encoder.p",'rb'))
+ft=[ft.split('_') for ft in encoder.get_feature_names()]
+a=np.load("raw_shap_data.npy")
+df=pd.DataFrame(np.corrcoef(a.reshape(a.shape[0],-1)),index=ft,columns=ft)
+
+methylnet-interpret interpret_embedding_classes -i ./predictions/vae_mlp_methyl_arr.pkl
+
+pymethyl-visualize plot_heatmap -m distance -fs .6 -i results/class_embedding_differences.csv  -o ./results/class_embedding_differences.png -x -y -c &
 ```
 Else (running with GPU 0):  
 ```

@@ -21,4 +21,7 @@ setup(name='methylnet',
       long_description_content_type='text/markdown',
       packages=['methylnet'],
       install_requires=['pymethylprocess',
-                        'ruamel.yaml'])
+                        'ruamel.yaml',
+                        'modin',
+                        'statsmodels',
+                        'mlxtend'])

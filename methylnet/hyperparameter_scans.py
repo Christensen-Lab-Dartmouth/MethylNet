@@ -48,6 +48,7 @@ def find_top_jobs(hyperparameter_input_csv,hyperparameter_output_log, n_top_jobs
     return [custom_jobs]
 
 def replace_grid(old_grid, new_grid, topology_grid):
+    """Replaces old hyperparameter search grid with one supplied by YAML."""
     #print(old_grid,new_grid)
     for k in new_grid.keys():
         if k != 'topology_grid':

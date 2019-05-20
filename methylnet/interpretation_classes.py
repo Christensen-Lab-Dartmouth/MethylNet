@@ -76,7 +76,7 @@ class ShapleyData:
         self.top_cpgs={'by_class':{},'overall':{}}
         self.shapley_values={'by_class':{},'overall':{}}
 
-    def add_class(self, class_name, shap_df, cpgs, n_top_cpgs, add_top_negative=False):
+    def add_class(self, class_name, shap_df, cpgs, n_top_cpgs, add_top_negative=False, add_top_abs=False):
         """Store SHAP scores for particular class to Shapley_Data class. Save feature importances on granular level, explanations for individual and aggregate predictions.
 
         Parameters
@@ -100,7 +100,7 @@ class ShapleyData:
         top_idx = np.argsort(class_importance_shaps*signed)[:n_top_cpgs]
         self.top_cpgs['by_class'][class_name]={'by_individual':{},'overall':{}}
         self.top_cpgs['by_class'][class_name]['overall']=pd.DataFrame(np.hstack([cpgs[top_idx][:,np.newaxis],class_importance_shaps[top_idx][:,np.newaxis]]),columns=['cpg','shapley_value'])
-        top_idxs = np.argsort(shap_vals*signed)[:,:n_top_cpgs]
+        top_idxs = np.argsort(shap_vals*signed if not add_top_abs else -np.abs(shap_vals))[:,:n_top_cpgs]
         for i,individual in enumerate(list(shap_df.index)):
             self.top_cpgs['by_class'][class_name]['by_individual'][individual]=pd.DataFrame(shap_df.iloc[i,top_idxs[i,:]].T.reset_index(drop=False).values,columns=['cpg','shapley_value'])
 
@@ -854,12 +854,14 @@ class CpGExplainer:
                 class_name = str(i) if not cell_names else cell_names[i]
                 shap_df = pd.DataFrame(self.shap_values[i,...],index=test_methyl_array.beta.index,columns=cpgs)
                 if shap_df.shape[0]:
-                    shapley_data.add_class('{}_pos'.format(class_name), shap_df, cpgs, n_top_features)
-                    shapley_data.add_class('{}_neg'.format(class_name), shap_df, cpgs, n_top_features, add_top_negative=True)
+                    shapley_data.add_class(class_name, shap_df, cpgs, n_top_features, add_top_abs=True)
+                    #shapley_data.add_class('{}_pos'.format(class_name), shap_df, cpgs, n_top_features)
+                    #shapley_data.add_class('{}_neg'.format(class_name), shap_df, cpgs, n_top_features, add_top_negative=True)
         else: # regression tasks
             shap_df = pd.DataFrame(self.shap_values,index=test_methyl_array.beta.index,columns=cpgs)
-            shapley_data.add_class('regression_pos' if not cell_names else '{}_pos'.format(cell_names[0]), shap_df, cpgs, n_top_features)
-            shapley_data.add_class('regression_neg' if not cell_names else '{}_neg'.format(cell_names[0]), shap_df, cpgs, n_top_features, add_top_negative=True)
+            shapley_data.add_class('regression' if not cell_names else '{}'.format(cell_names[0]), shap_df, cpgs, n_top_features, add_top_abs=True)
+            #shapley_data.add_class('regression_pos' if not cell_names else '{}_pos'.format(cell_names[0]), shap_df, cpgs, n_top_features)
+            #shapley_data.add_class('regression_neg' if not cell_names else '{}_neg'.format(cell_names[0]), shap_df, cpgs, n_top_features, add_top_negative=True)
         self.shapley_data = shapley_data
 
     def feature_select(self, methyl_array, n_top_features):
@@ -1322,3 +1324,88 @@ def plot_lola_output_(lola_csv, plot_output_dir, description_col, cell_types):
         plt.close()
         #ggplot.ggsave(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
     # add shore island breakdown
+
+class DistanceMatrixCompute:
+    """From any embeddings, calculate pairwise distances between classes that label embeddings.
+
+    Parameters
+    ----------
+    methyl_array : MethylationArray
+        Methylation array storing beta and pheno data.
+    pheno_col : str
+        Column name from which to extract sample names from and group by class.
+
+    Attributes
+    ----------
+    col : pd.DataFrame
+        Column of pheno array.
+    classes : np.array
+        Unique classes of pheno column.
+    embeddings : pd.DataFrame
+        Embeddings of beta values.
+    """
+
+    def __init__(self, methyl_array, pheno_col):
+        self.embeddings = methyl_array.beta
+        self.col = methyl_array.pheno[pheno_col]
+        self.classes = self.col.unique()
+
+    def compute_distances(self, metric='cosine', trim=0.):
+        """Compute distance matrix between classes by average distances between points of classes.
+
+        Parameters
+        ----------
+        metric : str
+            Scikit-learn distance metric.
+
+        """
+        from itertools import combinations
+        from sklearn.metrics import pairwise_distances
+        from scipy.stats import trim_mean
+        distance_calculator = lambda x,y: trim_mean(pairwise_distances(x,y,metric=metric).flatten(),trim)#.mean()
+        self.distances = pd.DataFrame(0,index=self.classes,columns=self.classes)
+
+        for i,j in combinations(self.classes,r=2):
+            x1=self.embeddings.loc[self.col[self.col==i].index]
+            x2=self.embeddings.loc[self.col[self.col==j].index]
+            self.distances.loc[i,j]=distance_calculator(x1,x2)
+            self.distances.loc[j,i]=self.distances.loc[i,j]
+
+    def calculate_p_values(self):
+        """Compute pairwise p-values between different clusters using manova."""
+        from statsmodels.multivariate.manova import MANOVA
+        test_id = 0 # returns wilk's lambda
+        self.p_values = pd.DataFrame(1,index=self.classes,columns=self.classes)
+
+        for i,j in combinations(self.classes,r=2):
+            if i!=j:
+                cluster_labels = self.col[np.isin(self.col,np.array([i,j]))]
+                embeddings = self.embeddings[cluster_labels.index].values
+                cluster_labels = cluster_labels.values[:,np.newaxis]
+                p_val = MANOVA(cluster_labels, embeddings).mv_test().results['x0']['stat'].values[test_id, 4]
+                self.p_values.loc[i,j]=p_val
+                self.p_values.loc[j,i]=self.p_values.loc[i,j]
+                #cluster_labels = cluster_labels.map({v:k for k,v in enumerate(self.col.unique().tolist())})
+
+
+    def return_distances(self):
+        """Return the distance matrix
+
+        Returns
+        -------
+        pd.DataFrame
+            Distance matrix between classes.
+
+        """
+        return self.distances
+
+    def return_p_values(self):
+        """Return the distance matrix
+
+        Returns
+        -------
+        pd.DataFrame
+            MANOVA values between classes.
+
+        """
+        return self.p_values
