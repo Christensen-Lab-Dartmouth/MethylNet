@@ -2,7 +2,7 @@
 
 Deep Learning with Methylation
 
-MethylNet is a command line tool and python library that provides classes to handle deep learning tasks for methylation data. It is built off of pythonic MethylationArray data types introduced in (https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess), and uses PyTorch to explore/make predictions on the methylation data.
+MethylNet is a command line tool and python library that provides classes to handle deep learning tasks for methylation data. It is built off of pythonic MethylationArray data types introduced in (https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess), and uses PyTorch to explore/make predictions on the methylation data.  
 
 **What MethylNet can do:**  
 1. Extract DNA Methylation Latent Space by training Variational Auto-encoders (VAE) after hyperparameter and neural network topology grid-search.  
@@ -33,7 +33,7 @@ NOTE: Images will be updated to reflect latest set of MethylNet commands.
                 * If looking to use only CPUs, only core docker or singularity needed, and see singularity website for information on how to pull Docker images  
                 * See https://singularity.lbl.gov/faq#does-singularity-support-containers-that-require-gpus for information on getting Singularity to work with GPUs  
                 * nvidia-docker is also the Docker equivalent to run GPU jobs  
-* GPU usage is also possible through the base install (without Docker), provided that your machine has GPU access.  
+* GPU usage is also possible through the base install (without Docker, or considering nvidia-docker options), provided that your machine has GPU access.  
 
 **Running MethylNet:**
 1. source activate methylnet  
@@ -45,6 +45,13 @@ NOTE: Images will be updated to reflect latest set of MethylNet commands.
 7. Find top CpGs by running SHAP.  
 8. Interrogate SHAP derived CpGs.  
 9. See help-docs for usage.  
+
+**Running Test Pipeline:**
+1. docker pull joshualevy44/pymethylprocess:0.1.3  
+2. Clone the MethylNet Repository  
+3. sh docker_build.sh  
+4. sh run_docker.sh  
+5. methylnet-test test_pipeline  
 
 **Example of Running Pipeline:**  
 See ./example_scripts for examples on how to explicitly run:

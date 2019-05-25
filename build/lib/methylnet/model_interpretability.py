@@ -29,8 +29,8 @@ def interpret():
     pass
 
 @interpret.command() # FIXME add abs or just -1, positive contributions or any contributions
-@click.option('-i', '--train_pkl', default='./train_val_test_sets/train_methyl_array.pkl', help='Input database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
-@click.option('-v', '--val_pkl', default='./train_val_test_sets/val_methyl_array.pkl', help='Val database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
+@click.option('-i', '--train_pkl', default='./train_val_test_sets/train_methyl_array.pkl', help='Input database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
+@click.option('-v', '--val_pkl', default='./train_val_test_sets/val_methyl_array.pkl', help='Val database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
 @click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
 @click.option('-m', '--model_pickle', default='./predictions/output_model.p', help='Pytorch model containing forward_predict method.', type=click.Path(exists=False), show_default=True)
 @click.option('-w', '--n_workers', default=9, show_default=True, help='Number of workers.')
@@ -54,7 +54,8 @@ def interpret():
 @click.option('-ind', '--individual', default='', help='One individual top cpgs.', type=click.Path(exists=False), show_default=True)
 @click.option('-rc', '--residual_cutoff', default=0., multiple=True, help='Activate for regression interpretations. Standard deviation in residuals before removing.', show_default=True)
 @click.option('-cn', '--cell_names', default=[''], multiple=True, help='Multioutput names for multi-output regression.', show_default=True)
-def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, batch_size, cuda, n_samples, n_top_features, output_dir, method, shap_sample_batch_size, n_random_representative, interest_col, n_random_representative_test, categorical_encoder, cross_class, feature_selection, top_outputs, vae_interpret, pred_class, results_csv, individual, residual_cutoff, cell_names):
+@click.option('-dsd', '--dump_shap_data', is_flag=True, help='Dump raw SHAP data to numpy file, warning, may be large file.', show_default=True)
+def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, batch_size, cuda, n_samples, n_top_features, output_dir, method, shap_sample_batch_size, n_random_representative, interest_col, n_random_representative_test, categorical_encoder, cross_class, feature_selection, top_outputs, vae_interpret, pred_class, results_csv, individual, residual_cutoff, cell_names, dump_shap_data):
     """Explanations (coefficients for CpGs) for every individual prediction.
     Produce SHAPley scores for each CpG for each individualized prediction, and then aggregate them across coarser classes.
     Store CpGs with top SHAPley scores as well for quick access.
@@ -122,6 +123,8 @@ def produce_shapley_data(train_pkl, val_pkl, test_pkl, model_pickle, n_workers, 
     if not shap_sample_batch_size:
         shap_sample_batch_size = None
     cpg_explainer.return_shapley_scores(test_methyl_array, n_samples, n_outputs=n_test_results_outputs, shap_sample_batch_size=shap_sample_batch_size, top_outputs=top_outputs)
+    if dump_shap_data:
+        np.save(file='raw_shap_data.npy',arr=cpg_explainer.shap_values)
     if not residual_cutoff:
         cpg_explainer.classifier_assign_scores_to_shap_data(test_methyl_array, n_top_features, interest_col=interest_col, prediction_classes=prediction_classes)
     else:
@@ -267,13 +270,14 @@ def plot_lola_output(lola_csv, plot_output_dir, description_col, cell_types):
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./interpretations/shapley_explanations/shapley_data_by_methylation/', help='Output directory for hypo/hyper shap data.', type=click.Path(exists=False), show_default=True)
 @click.option('-t', '--test_pkl', default='./train_val_test_sets/test_methyl_array.pkl', help='Pickle containing testing set.', type=click.Path(exists=False), show_default=True)
-def split_hyper_hypo_methylation(shapley_data, output_dir, test_pkl):
+@click.option('-thr', '--threshold', default='original', help='Pickle containing testing set.', type=click.Choice(['original','mean']), show_default=True)
+def split_hyper_hypo_methylation(shapley_data, output_dir, test_pkl, threshold):
     """Split SHAPleyData object by methylation type (needs to change; but low methylation is 0.5 beta value and below) and output to file."""
     os.makedirs(output_dir,exist_ok=True)
     shapley_data=ShapleyData.from_pickle(shapley_data)
     shapley_data_explorer=ShapleyDataExplorer(shapley_data)
     test_methyl_array=MethylationArray.from_pickle(test_pkl)
-    shap_data_methylation=shapley_data_explorer.return_shapley_data_by_methylation_status(test_methyl_array)
+    shap_data_methylation=shapley_data_explorer.return_shapley_data_by_methylation_status(test_methyl_array, threshold)
     shap_data_methylation['hypo'].to_pickle(join(output_dir,'hypo_shapley_data.p'))
     shap_data_methylation['hyper'].to_pickle(join(output_dir,'hyper_shapley_data.p'))
 
@@ -405,6 +409,61 @@ def regenerate_top_cpgs(shapley_data,n_top_features,output_pkl, abs_val, neg_val
 
 @interpret.command()
 @click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_dir', default='./interpretations/shap_outputs/', help='Output directory for output plots.', type=click.Path(exists=False), show_default=True)
+@click.option('-i', '--individuals', default=[''], multiple=True, help='Individuals to evaluate.', show_default=True)
+@click.option('-c', '--classes', default=[''], multiple=True, help='Classes to evaluate.', show_default=True)
+@click.option('-hist', '--output_histogram', is_flag=True, help='Whether to output a histogram for each class/individual of their SHAP scores.')
+@click.option('-abs', '--absolute', is_flag=True, help='Use sums of absolute values in making computations.')
+@click.option('-log', '--log_transform', is_flag=True, help='Log transform final results for plotting.')
+def return_shap_values(shapley_data,output_dir,individuals,classes, output_histogram, absolute, log_transform):
+    """Return matrix of shapley values per class, with option to, classes/individuals are columns, CpGs are rows, option to plot multiple histograms/density plots."""
+    from sklearn.metrics import pairwise_distances
+    os.makedirs(output_dir,exist_ok=True)
+    shapley_data=ShapleyData.from_pickle(shapley_data)
+    shapley_data_explorer=ShapleyDataExplorer(shapley_data)
+    individuals=list(filter(None,individuals))
+    classes=list(filter(None,classes))
+    if absolute:
+        shapley_data_explorer.make_shap_scores_abs()
+    if classes and classes[0]=='all':
+        classes = shapley_data_explorer.list_classes()
+    if individuals and individuals[0]=='all':
+        individuals = shapley_data_explorer.list_individuals(return_list=True)
+    concat_list=[]
+    if classes:
+        for class_name in classes:
+            concat_list.append(shapley_data_explorer.extract_class(class_name,get_shap_values=True))
+    if individuals:
+        for individual in individuals:
+            concat_list.append(shapley_data_explorer.extract_individual(individual,get_shap_values=True))
+    df=pd.concat(concat_list,axis=1,keys=classes+individuals)
+    df.to_csv(join(output_dir,'returned_shap_values.csv'))
+    pd.DataFrame(pairwise_distances(df.T.values,metric='correlation'),index=list(df),columns=list(df)).to_csv(join(output_dir,'returned_shap_values_corr_dist.csv'))
+    #df.corr().to_csv(join(output_dir,'returned_shap_values_corr_dist.csv'))
+    if output_histogram:
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        sns.set()
+        for entity in (classes+individuals):
+            shap_scores = df[entity]
+            plt.figure()
+            ax=sns.distplot(shap_scores, kde=(log_transform==False))
+            if log_transform:
+                ax.set_xscale('symlog')
+            plt.xlabel('{} SHAP value'.format("Log" if log_transform else ""))
+            plt.ylabel('Frequency')
+            plt.savefig(join(output_dir,'{}_shap_values.png'.format(entity)),dpi=300)
+            top_10_shaps = shap_scores.abs().sort_values(ascending=False).iloc[:10]
+            top_10_shaps=pd.DataFrame({'cpgs':top_10_shaps.index, '|SHAP|':top_10_shaps.values})
+            plt.figure()
+            ax=sns.barplot('|SHAP|','cpgs',orient='h',data=top_10_shaps)
+            ax.tick_params(labelsize=4)
+            plt.savefig(join(output_dir,'{}_top_shap_values.png'.format(entity)),dpi=300)
+    if not absolute:
+        print("All saved values reflect absolute values of sums, not sums of absolute values, if CpG SHAP scores are opposite signs across individuals, this will reduce the score of the resulting SHAP estimate.")
+
+@interpret.command()
+@click.option('-s', '--shapley_data', default='./interpretations/shapley_explanations/shapley_data.p', help='Pickle containing top CpGs.', type=click.Path(exists=False), show_default=True)
 @click.option('-o', '--output_dir', default='./interpretations/output_plots/', help='Output directory for output plots.', type=click.Path(exists=False), show_default=True)
 @click.option('-i', '--individuals', default=[''], multiple=True, help='Individuals to evaluate.', show_default=True)
 @click.option('-c', '--classes', default=[''], multiple=True, help='Classes to evaluate.', show_default=True)
@@ -428,6 +487,24 @@ def plot_top_cpgs(shapley_data,output_dir,individuals,classes):
     top_cpgs=shapley_data_explorer.return_top_cpgs(classes=classes,individuals=individuals,cpg_exclusion_sets=cpg_exclusion_sets,cpg_sets=cpg_sets)
     circos_plotter=PlotCircos()
     circos_plotter.plot_cpgs(top_cpgs,output_dir)
+
+@interpret.command()
+@click.option('-i', '--embedding_methyl_array_pkl', default='./embeddings/vae_methyl_arr.pkl', help='Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
+@click.option('-c', '--pheno_col', default='disease', help='Column to separate on.', type=click.Path(exists=False), show_default=True)
+@click.option('-m', '--metric', default='cosine', help='Distance metric to compare classes.', type=click.Path(exists=False), show_default=True)
+@click.option('-t', '--trim', default=0.0, help='Trim outlier distances. Number 0-0.5.', type=click.Path(exists=False), show_default=True)
+@click.option('-o', '--output_csv', default='./results/class_embedding_differences.csv', help='Distances between classes.', type=click.Path(exists=False), show_default=True)
+@click.option('-op', '--output_pval_csv', default='', help='If specify a CSV file, outputs pairwise manova tests between embeddings for clusters.', type=click.Path(exists=False), show_default=True)
+def interpret_embedding_classes(embedding_methyl_array_pkl, pheno_col, metric, trim, output_csv, output_pval_csv):
+    """Compare average distance between classes in embedding space."""
+    os.makedirs(output_csv[:output_csv.rfind('/')],exist_ok=True)
+    methyl_array = MethylationArray.from_pickle(embedding_methyl_array_pkl)
+    distance_compute = DistanceMatrixCompute(methyl_array, pheno_col)
+    distance_compute.compute_distances(metric, trim)
+    distance_compute.return_distances().to_csv(output_csv)
+    if output_pval_csv:
+        distance_compute.calculate_p_values()
+        distance_compute.return_p_values().to_csv(output_pval_csv)
 
 #################
 

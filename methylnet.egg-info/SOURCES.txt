@@ -12,6 +12,7 @@ methylnet/models.py
 methylnet/plotter.py
 methylnet/predictions.py
 methylnet/schedulers.py
+methylnet/test_pipeline.py
 methylnet/torque_job_runner.py
 methylnet/torque_jobs.py
 methylnet/visualizations.py

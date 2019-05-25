@@ -76,7 +76,7 @@ class ShapleyData:
         self.top_cpgs={'by_class':{},'overall':{}}
         self.shapley_values={'by_class':{},'overall':{}}
 
-    def add_class(self, class_name, shap_df, cpgs, n_top_cpgs, add_top_negative=False):
+    def add_class(self, class_name, shap_df, cpgs, n_top_cpgs, add_top_negative=False, add_top_abs=False):
         """Store SHAP scores for particular class to Shapley_Data class. Save feature importances on granular level, explanations for individual and aggregate predictions.
 
         Parameters
@@ -100,7 +100,7 @@ class ShapleyData:
         top_idx = np.argsort(class_importance_shaps*signed)[:n_top_cpgs]
         self.top_cpgs['by_class'][class_name]={'by_individual':{},'overall':{}}
         self.top_cpgs['by_class'][class_name]['overall']=pd.DataFrame(np.hstack([cpgs[top_idx][:,np.newaxis],class_importance_shaps[top_idx][:,np.newaxis]]),columns=['cpg','shapley_value'])
-        top_idxs = np.argsort(shap_vals*signed)[:,:n_top_cpgs]
+        top_idxs = np.argsort(shap_vals*signed if not add_top_abs else -np.abs(shap_vals))[:,:n_top_cpgs]
         for i,individual in enumerate(list(shap_df.index)):
             self.top_cpgs['by_class'][class_name]['by_individual'][individual]=pd.DataFrame(shap_df.iloc[i,top_idxs[i,:]].T.reset_index(drop=False).values,columns=['cpg','shapley_value'])
 
@@ -122,7 +122,7 @@ class ShapleyData:
         top_ft_idx=np.argsort(global_importance_shaps*-1)[:n_top_cpgs]
         self.top_cpgs['overall']=pd.DataFrame(np.hstack([cpgs[top_ft_idx][:,np.newaxis],global_importance_shaps[top_ft_idx][:,np.newaxis]]),columns=['cpg','shapley_value'])
 
-    def to_pickle(self,output_pkl):
+    def to_pickle(self,output_pkl, output_dict=False):
         """Export Shapley data to pickle.
 
         Parameters
@@ -132,10 +132,13 @@ class ShapleyData:
 
         """
         os.makedirs(output_pkl[:output_pkl.rfind('/')],exist_ok=True)
-        pickle.dump(self, open(output_pkl,'wb'))
+        if output_dict:
+            pickle.dump(dict(shapley_values=self.shapley_values,top_cpgs=self.top_cpgs), open(output_pkl,'wb'))
+        else:
+            pickle.dump(self, open(output_pkl,'wb'))
 
     @classmethod
-    def from_pickle(self,input_pkl):
+    def from_pickle(self,input_pkl, from_dict=False):
         """Load SHAPley data from pickle.
 
         Parameters
@@ -144,7 +147,16 @@ class ShapleyData:
             Input pickle.
 
         """
-        return pickle.load(open(input_pkl,'rb'))
+        if from_dict:
+            d=pickle.load(open(input_pkl,'rb'))
+            shapley_data = ShapleyData()
+            shapley_data.shapley_values=d['shapley_values']
+            shapley_data.top_cpgs=d['top_cpgs']
+            return shapley_data
+        else:
+            return pickle.load(open(input_pkl,'rb'))
+
+
 
 class ShapleyDataExplorer:
     """Datatype used to explore saved ShapleyData.
@@ -168,7 +180,7 @@ class ShapleyDataExplorer:
             for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys():
                 self.indiv2class[individual]=class_name
 
-    def return_shapley_data_by_methylation_status(self, methyl_array):
+    def return_shapley_data_by_methylation_status(self, methyl_array, threshold):
         """Return dictionary containing two SHAPley datasets, each split by low/high levels of methylation. Todo: Define this using median methylation value vs 0.5.
 
         Parameters
@@ -182,21 +194,26 @@ class ShapleyDataExplorer:
             Contains shapley data by methylation status.
 
         """
+        threshold = {'mean':methyl_array.beta.mean().mean(),'original':0.5}[threshold]
         methylation_shapley_data_dict = {'hyper':copy.deepcopy(self.shapley_data),'hypo':copy.deepcopy(self.shapley_data)}
         for individual in self.list_individuals(return_list=True):
             class_name,individual,top_shap_df=self.view_methylation(individual,methyl_array)
-            hyper_df = top_shap_df[top_shap_df['methylation']>=0.5]
-            hypo_df = top_shap_df[top_shap_df['methylation']<0.5]
+            hyper_df = top_shap_df[top_shap_df['methylation']>=threshold]
+            hypo_df = top_shap_df[top_shap_df['methylation']<threshold]
             methylation_shapley_data_dict['hyper'].top_cpgs['by_class'][class_name]['by_individual'][individual]=hyper_df[['cpg','shapley_value']]
             methylation_shapley_data_dict['hypo'].top_cpgs['by_class'][class_name]['by_individual'][individual]=hypo_df[['cpg','shapley_value']]
         for class_name,individuals in self.list_individuals().items():
             top_shap_df=self.extract_class(class_name)
             top_shap_df['methylation']=methyl_array.beta.loc[individuals,self.shapley_data.top_cpgs['by_class'][class_name]['overall']['cpg'].values].mean(axis=0).values
-            hyper_df = top_shap_df[top_shap_df['methylation']>=0.5]
-            hypo_df = top_shap_df[top_shap_df['methylation']<0.5]
+            hyper_df = top_shap_df[top_shap_df['methylation']>=threshold]
+            hypo_df = top_shap_df[top_shap_df['methylation']<threshold]
             methylation_shapley_data_dict['hyper'].top_cpgs['by_class'][class_name]['overall']=hyper_df[['cpg','shapley_value']]
             methylation_shapley_data_dict['hypo'].top_cpgs['by_class'][class_name]['overall']=hypo_df[['cpg','shapley_value']]
         return methylation_shapley_data_dict
+
+    def make_shap_scores_abs(self):
+        for class_name in self.list_classes():
+            self.shapley_data.shapley_values['by_class'][class_name] = self.shapley_data.shapley_values['by_class'][class_name].abs()
 
     def return_binned_shapley_data(self, original_class_name, outcome_col, add_top_negative=False):
         """Converts existing shap data based on continuous variable predictions into categorical variable.
@@ -271,7 +288,7 @@ class ShapleyDataExplorer:
             cpg_exclusion_sets[class_name]=set(reduce(lambda x,y:x.union(y),[cpg_set for class_name_query,cpg_set in cpg_sets.items() if class_name_query != class_name]))
         return cpg_sets, cpg_exclusion_sets
 
-    def extract_class(self, class_name, class_intersect=False):
+    def extract_class(self, class_name, class_intersect=False, get_shap_values=False):
         """Extract the top cpgs from a class
 
         Parameters
@@ -286,18 +303,21 @@ class ShapleyDataExplorer:
         DataFrame
             Cpgs and SHAP Values
         """
-        if class_intersect:
-            shap_dfs=[]
-            for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys():
-                shap_dfs.append(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual].set_index('cpg'))
-                df=pd.concat([shap_dfs],axis=1,join='inner')
-                df['shapley_value']=df.values.sum(axis=1)
-                df['cpg'] = np.array(list(df.index))
-            return df[['cpg','shapley_value']]
+        if get_shap_values:
+            return self.shapley_data.shapley_values['by_class'][class_name].mean(axis=0)
         else:
-            return self.shapley_data.top_cpgs['by_class'][class_name]['overall']
+            if class_intersect:
+                shap_dfs=[]
+                for individual in self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'].keys():
+                    shap_dfs.append(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual].set_index('cpg'))
+                    df=pd.concat([shap_dfs],axis=1,join='inner')
+                    df['shapley_value']=df.values.sum(axis=1)
+                    df['cpg'] = np.array(list(df.index))
+                return df[['cpg','shapley_value']]
+            else:
+                return self.shapley_data.top_cpgs['by_class'][class_name]['overall']
 
-    def extract_individual(self, individual):
+    def extract_individual(self, individual, get_shap_values=False):
         """Extract the top cpgs from an individual
 
         Parameters
@@ -311,7 +331,7 @@ class ShapleyDataExplorer:
             Class name of individual, DataFrame of Cpgs and SHAP Values
         """
         class_name=self.indiv2class[individual]
-        return class_name,self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual]
+        return class_name,(self.shapley_data.top_cpgs['by_class'][class_name]['by_individual'][individual] if not get_shap_values else self.shapley_data.shapley_values['by_class'][class_name].loc[individual])
 
     def regenerate_individual_shap_values(self, n_top_cpgs, abs_val=False, neg_val=False):
         """Use original SHAP scores to make nested dictionary of top CpGs based on shapley score, can do this for ABS SHAP or Negative SHAP scores as well.
@@ -375,6 +395,7 @@ class ShapleyDataExplorer:
         """
 
         class_name,top_shap_df=self.extract_individual(individual)
+        #print(top_shap_df['cpg'].values,len(top_shap_df['cpg'].values))
         top_shap_df['methylation']=methyl_arr.beta.loc[individual,top_shap_df['cpg'].values].values
         return class_name,individual,top_shap_df
 
@@ -833,12 +854,14 @@ class CpGExplainer:
                 class_name = str(i) if not cell_names else cell_names[i]
                 shap_df = pd.DataFrame(self.shap_values[i,...],index=test_methyl_array.beta.index,columns=cpgs)
                 if shap_df.shape[0]:
-                    shapley_data.add_class('{}_pos'.format(class_name), shap_df, cpgs, n_top_features)
-                    shapley_data.add_class('{}_neg'.format(class_name), shap_df, cpgs, n_top_features, add_top_negative=True)
+                    shapley_data.add_class(class_name, shap_df, cpgs, n_top_features, add_top_abs=True)
+                    #shapley_data.add_class('{}_pos'.format(class_name), shap_df, cpgs, n_top_features)
+                    #shapley_data.add_class('{}_neg'.format(class_name), shap_df, cpgs, n_top_features, add_top_negative=True)
         else: # regression tasks
             shap_df = pd.DataFrame(self.shap_values,index=test_methyl_array.beta.index,columns=cpgs)
-            shapley_data.add_class('regression_pos' if not cell_names else '{}_pos'.format(cell_names[0]), shap_df, cpgs, n_top_features)
-            shapley_data.add_class('regression_neg' if not cell_names else '{}_neg'.format(cell_names[0]), shap_df, cpgs, n_top_features, add_top_negative=True)
+            shapley_data.add_class('regression' if not cell_names else '{}'.format(cell_names[0]), shap_df, cpgs, n_top_features, add_top_abs=True)
+            #shapley_data.add_class('regression_pos' if not cell_names else '{}_pos'.format(cell_names[0]), shap_df, cpgs, n_top_features)
+            #shapley_data.add_class('regression_neg' if not cell_names else '{}_neg'.format(cell_names[0]), shap_df, cpgs, n_top_features, add_top_negative=True)
         self.shapley_data = shapley_data
 
     def feature_select(self, methyl_array, n_top_features):
@@ -1301,3 +1324,88 @@ def plot_lola_output_(lola_csv, plot_output_dir, description_col, cell_types):
         plt.close()
         #ggplot.ggsave(join(plot_output_dir,lola_csv.split('/')[-1].replace('.csv','_{}.png'.format(name))))
     # add shore island breakdown
+
+class DistanceMatrixCompute:
+    """From any embeddings, calculate pairwise distances between classes that label embeddings.
+
+    Parameters
+    ----------
+    methyl_array : MethylationArray
+        Methylation array storing beta and pheno data.
+    pheno_col : str
+        Column name from which to extract sample names from and group by class.
+
+    Attributes
+    ----------
+    col : pd.DataFrame
+        Column of pheno array.
+    classes : np.array
+        Unique classes of pheno column.
+    embeddings : pd.DataFrame
+        Embeddings of beta values.
+    """
+
+    def __init__(self, methyl_array, pheno_col):
+        self.embeddings = methyl_array.beta
+        self.col = methyl_array.pheno[pheno_col]
+        self.classes = self.col.unique()
+
+    def compute_distances(self, metric='cosine', trim=0.):
+        """Compute distance matrix between classes by average distances between points of classes.
+
+        Parameters
+        ----------
+        metric : str
+            Scikit-learn distance metric.
+
+        """
+        from itertools import combinations
+        from sklearn.metrics import pairwise_distances
+        from scipy.stats import trim_mean
+        distance_calculator = lambda x,y: trim_mean(pairwise_distances(x,y,metric=metric).flatten(),trim)#.mean()
+        self.distances = pd.DataFrame(0,index=self.classes,columns=self.classes)
+
+        for i,j in combinations(self.classes,r=2):
+            x1=self.embeddings.loc[self.col[self.col==i].index]
+            x2=self.embeddings.loc[self.col[self.col==j].index]
+            self.distances.loc[i,j]=distance_calculator(x1,x2)
+            self.distances.loc[j,i]=self.distances.loc[i,j]
+
+    def calculate_p_values(self):
+        """Compute pairwise p-values between different clusters using manova."""
+        from statsmodels.multivariate.manova import MANOVA
+        test_id = 0 # returns wilk's lambda
+        self.p_values = pd.DataFrame(1,index=self.classes,columns=self.classes)
+
+        for i,j in combinations(self.classes,r=2):
+            if i!=j:
+                cluster_labels = self.col[np.isin(self.col,np.array([i,j]))]
+                embeddings = self.embeddings[cluster_labels.index].values
+                cluster_labels = cluster_labels.values[:,np.newaxis]
+                p_val = MANOVA(cluster_labels, embeddings).mv_test().results['x0']['stat'].values[test_id, 4]
+                self.p_values.loc[i,j]=p_val
+                self.p_values.loc[j,i]=self.p_values.loc[i,j]
+                #cluster_labels = cluster_labels.map({v:k for k,v in enumerate(self.col.unique().tolist())})
+
+
+    def return_distances(self):
+        """Return the distance matrix
+
+        Returns
+        -------
+        pd.DataFrame
+            Distance matrix between classes.
+
+        """
+        return self.distances
+
+    def return_p_values(self):
+        """Return the distance matrix
+
+        Returns
+        -------
+        pd.DataFrame
+            MANOVA values between classes.
+
+        """
+        return self.p_values

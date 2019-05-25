@@ -59,7 +59,7 @@
 
 
 \title{MethylNet Documentation}
-\date{Apr 21, 2019}
+\date{May 20, 2019}
 \release{0.1}
 \author{Joshua Levy}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -471,7 +471,7 @@ Run randomized grid search to find ideal model hyperparameters, with possible de
 \index{coarse\_scan() (in module methylnet.hyperparameter\_scans)@\spxentry{coarse\_scan()}\spxextra{in module methylnet.hyperparameter\_scans}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{index:methylnet.hyperparameter_scans.coarse_scan}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{methylnet.hyperparameter\_scans.}}\sphinxbfcode{\sphinxupquote{coarse\_scan}}}{\emph{hyperparameter\_input\_csv}, \emph{hyperparameter\_output\_log}, \emph{generate\_input}, \emph{job\_chunk\_size}, \emph{stratify\_column}, \emph{reset\_all}, \emph{torque}, \emph{gpu}, \emph{gpu\_node}, \emph{nohup}, \emph{mlp=False}, \emph{custom\_jobs={[}{]}}, \emph{model\_complexity\_factor=0.9}, \emph{set\_beta=-1.0}, \emph{n\_jobs=4}, \emph{categorical=True}, \emph{add\_softmax=False}, \emph{additional\_command=''}}{}
+\phantomsection\label{\detokenize{index:methylnet.hyperparameter_scans.coarse_scan}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{methylnet.hyperparameter\_scans.}}\sphinxbfcode{\sphinxupquote{coarse\_scan}}}{\emph{hyperparameter\_input\_csv}, \emph{hyperparameter\_output\_log}, \emph{generate\_input}, \emph{job\_chunk\_size}, \emph{stratify\_column}, \emph{reset\_all}, \emph{torque}, \emph{gpu}, \emph{gpu\_node}, \emph{nohup}, \emph{mlp=False}, \emph{custom\_jobs={[}{]}}, \emph{model\_complexity\_factor=0.9}, \emph{set\_beta=-1.0}, \emph{n\_jobs=4}, \emph{categorical=True}, \emph{add\_softmax=False}, \emph{additional\_command=''}, \emph{cuda=True}, \emph{new\_grid=\{\}}}{}
 Perform randomized hyperparameter grid search
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{description}
@@ -525,6 +525,9 @@ Classification task?
 
 \item[{\sphinxstylestrong{add\_softmax}}] \leavevmode{[}type{]}
 Add softmax layer at end of neural network.
+
+\item[{\sphinxstylestrong{cuda}}] \leavevmode{[}type{]}
+Whether to use GPU?
 
 \end{description}
 
@@ -588,6 +591,14 @@ List of hidden layer sizes.
 \end{description}
 
 \end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{replace\_grid() (in module methylnet.hyperparameter\_scans)@\spxentry{replace\_grid()}\spxextra{in module methylnet.hyperparameter\_scans}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:methylnet.hyperparameter_scans.replace_grid}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{methylnet.hyperparameter\_scans.}}\sphinxbfcode{\sphinxupquote{replace\_grid}}}{\emph{old\_grid}, \emph{new\_grid}, \emph{topology\_grid}}{}
+Replaces old hyperparameter search grid with one supplied by YAML.
 
 \end{fulllineitems}
 
@@ -1122,6 +1133,134 @@ Description of returned object.
 
 \end{fulllineitems}
 
+\index{DistanceMatrixCompute (class in methylnet.interpretation\_classes)@\spxentry{DistanceMatrixCompute}\spxextra{class in methylnet.interpretation\_classes}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.DistanceMatrixCompute}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{methylnet.interpretation\_classes.}}\sphinxbfcode{\sphinxupquote{DistanceMatrixCompute}}}{\emph{methyl\_array}, \emph{pheno\_col}}{}
+From any embeddings, calculate pairwise distances between classes that label embeddings.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{description}
+\item[{\sphinxstylestrong{methyl\_array}}] \leavevmode{[}MethylationArray{]}
+Methylation array storing beta and pheno data.
+
+\item[{\sphinxstylestrong{pheno\_col}}] \leavevmode{[}str{]}
+Column name from which to extract sample names from and group by class.
+
+\end{description}
+
+\item[{Attributes}] \leavevmode\begin{description}
+\item[{\sphinxstylestrong{col}}] \leavevmode{[}pd.DataFrame{]}
+Column of pheno array.
+
+\item[{\sphinxstylestrong{classes}}] \leavevmode{[}np.array{]}
+Unique classes of pheno column.
+
+\item[{\sphinxstylestrong{embeddings}}] \leavevmode{[}pd.DataFrame{]}
+Embeddings of beta values.
+
+\end{description}
+
+\end{description}\end{quote}
+\subsubsection*{Methods}
+
+
+\begin{savenotes}\sphinxatlongtablestart\begin{longtable}{\X{1}{2}\X{1}{2}}
+\hline
+
+\endfirsthead
+
+\multicolumn{2}{c}%
+{\makebox[0pt]{\sphinxtablecontinued{\tablename\ \thetable{} -- continued from previous page}}}\\
+\hline
+
+\endhead
+
+\hline
+\multicolumn{2}{r}{\makebox[0pt][r]{\sphinxtablecontinued{Continued on next page}}}\\
+\endfoot
+
+\endlastfoot
+
+{\hyperref[\detokenize{index:methylnet.interpretation_classes.DistanceMatrixCompute.calculate_p_values}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{calculate\_p\_values}}}}}(self)
+&
+Compute pairwise p-values between different clusters using manova.
+\\
+\hline
+{\hyperref[\detokenize{index:methylnet.interpretation_classes.DistanceMatrixCompute.compute_distances}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{compute\_distances}}}}}(self{[}, metric, trim{]})
+&
+Compute distance matrix between classes by average distances between points of classes.
+\\
+\hline
+{\hyperref[\detokenize{index:methylnet.interpretation_classes.DistanceMatrixCompute.return_distances}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{return\_distances}}}}}(self)
+&
+Return the distance matrix
+\\
+\hline
+{\hyperref[\detokenize{index:methylnet.interpretation_classes.DistanceMatrixCompute.return_p_values}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{return\_p\_values}}}}}(self)
+&
+Return the distance matrix
+\\
+\hline
+\end{longtable}\sphinxatlongtableend\end{savenotes}
+\index{calculate\_p\_values() (methylnet.interpretation\_classes.DistanceMatrixCompute method)@\spxentry{calculate\_p\_values()}\spxextra{methylnet.interpretation\_classes.DistanceMatrixCompute method}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.DistanceMatrixCompute.calculate_p_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{calculate\_p\_values}}}{\emph{self}}{}
+Compute pairwise p-values between different clusters using manova.
+
+\end{fulllineitems}
+
+\index{compute\_distances() (methylnet.interpretation\_classes.DistanceMatrixCompute method)@\spxentry{compute\_distances()}\spxextra{methylnet.interpretation\_classes.DistanceMatrixCompute method}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.DistanceMatrixCompute.compute_distances}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{compute\_distances}}}{\emph{self}, \emph{metric='cosine'}, \emph{trim=0.0}}{}
+Compute distance matrix between classes by average distances between points of classes.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{description}
+\item[{\sphinxstylestrong{metric}}] \leavevmode{[}str{]}
+Scikit-learn distance metric.
+
+\end{description}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{return\_distances() (methylnet.interpretation\_classes.DistanceMatrixCompute method)@\spxentry{return\_distances()}\spxextra{methylnet.interpretation\_classes.DistanceMatrixCompute method}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.DistanceMatrixCompute.return_distances}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{return\_distances}}}{\emph{self}}{}
+Return the distance matrix
+\begin{quote}\begin{description}
+\item[{Returns}] \leavevmode\begin{description}
+\item[{pd.DataFrame}] \leavevmode
+Distance matrix between classes.
+
+\end{description}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{return\_p\_values() (methylnet.interpretation\_classes.DistanceMatrixCompute method)@\spxentry{return\_p\_values()}\spxextra{methylnet.interpretation\_classes.DistanceMatrixCompute method}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.DistanceMatrixCompute.return_p_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{return\_p\_values}}}{\emph{self}}{}
+Return the distance matrix
+\begin{quote}\begin{description}
+\item[{Returns}] \leavevmode\begin{description}
+\item[{pd.DataFrame}] \leavevmode
+MANOVA values between classes.
+
+\end{description}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
 \index{PlotCircos (class in methylnet.interpretation\_classes)@\spxentry{PlotCircos}\spxextra{class in methylnet.interpretation\_classes}}
 
 \begin{fulllineitems}
@@ -1235,12 +1374,12 @@ Store SHAP scores for particular class to Shapley\_Data class.
 Add overall feature importances, globally across all samples.
 \\
 \hline
-{\hyperref[\detokenize{index:methylnet.interpretation_classes.ShapleyData.from_pickle}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{from\_pickle}}}}}(input\_pkl)
+{\hyperref[\detokenize{index:methylnet.interpretation_classes.ShapleyData.from_pickle}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{from\_pickle}}}}}(input\_pkl{[}, from\_dict{]})
 &
 Load SHAPley data from pickle.
 \\
 \hline
-{\hyperref[\detokenize{index:methylnet.interpretation_classes.ShapleyData.to_pickle}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{to\_pickle}}}}}(self, output\_pkl)
+{\hyperref[\detokenize{index:methylnet.interpretation_classes.ShapleyData.to_pickle}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{to\_pickle}}}}}(self, output\_pkl{[}, output\_dict{]})
 &
 Export Shapley data to pickle.
 \\
@@ -1249,7 +1388,7 @@ Export Shapley data to pickle.
 \index{add\_class() (methylnet.interpretation\_classes.ShapleyData method)@\spxentry{add\_class()}\spxextra{methylnet.interpretation\_classes.ShapleyData method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.ShapleyData.add_class}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{add\_class}}}{\emph{self}, \emph{class\_name}, \emph{shap\_df}, \emph{cpgs}, \emph{n\_top\_cpgs}, \emph{add\_top\_negative=False}}{}
+\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.ShapleyData.add_class}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{add\_class}}}{\emph{self}, \emph{class\_name}, \emph{shap\_df}, \emph{cpgs}, \emph{n\_top\_cpgs}, \emph{add\_top\_negative=False}, \emph{add\_top\_abs=False}}{}
 Store SHAP scores for particular class to Shapley\_Data class. Save feature importances on granular level, explanations for individual and aggregate predictions.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{description}
@@ -1299,7 +1438,7 @@ Number of top CpGs to rank and save as well.
 \index{from\_pickle() (methylnet.interpretation\_classes.ShapleyData class method)@\spxentry{from\_pickle()}\spxextra{methylnet.interpretation\_classes.ShapleyData class method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.ShapleyData.from_pickle}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{classmethod }}\sphinxbfcode{\sphinxupquote{from\_pickle}}}{\emph{input\_pkl}}{}
+\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.ShapleyData.from_pickle}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{classmethod }}\sphinxbfcode{\sphinxupquote{from\_pickle}}}{\emph{input\_pkl}, \emph{from\_dict=False}}{}
 Load SHAPley data from pickle.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{description}
@@ -1315,7 +1454,7 @@ Input pickle.
 \index{to\_pickle() (methylnet.interpretation\_classes.ShapleyData method)@\spxentry{to\_pickle()}\spxextra{methylnet.interpretation\_classes.ShapleyData method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.ShapleyData.to_pickle}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{to\_pickle}}}{\emph{self}, \emph{output\_pkl}}{}
+\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.ShapleyData.to_pickle}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{to\_pickle}}}{\emph{self}, \emph{output\_pkl}, \emph{output\_dict=False}}{}
 Export Shapley data to pickle.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{description}
@@ -1386,7 +1525,7 @@ Bin continuous outcome variable and extract top positive and negative CpGs for e
 Extract the top cpgs from a class
 \\
 \hline
-{\hyperref[\detokenize{index:methylnet.interpretation_classes.ShapleyDataExplorer.extract_individual}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{extract\_individual}}}}}(self, individual)
+{\hyperref[\detokenize{index:methylnet.interpretation_classes.ShapleyDataExplorer.extract_individual}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{extract\_individual}}}}}(self, individual{[}, …{]})
 &
 Extract the top cpgs from an individual
 \\
@@ -1452,6 +1591,19 @@ Use MethylationArray to output top SHAP values for individual with methylation d
 \\
 \hline
 \end{longtable}\sphinxatlongtableend\end{savenotes}
+
+
+\begin{savenotes}\sphinxattablestart
+\centering
+\begin{tabulary}{\linewidth}[t]{|T|T|}
+\hline
+
+\sphinxstylestrong{make\_shap\_scores\_abs}
+&\\
+\hline
+\end{tabulary}
+\par
+\sphinxattableend\end{savenotes}
 \index{add\_abs\_value\_classes() (methylnet.interpretation\_classes.ShapleyDataExplorer method)@\spxentry{add\_abs\_value\_classes()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}}
 
 \begin{fulllineitems}
@@ -1471,7 +1623,7 @@ Bin continuous outcome variable and extract top positive and negative CpGs for e
 \index{extract\_class() (methylnet.interpretation\_classes.ShapleyDataExplorer method)@\spxentry{extract\_class()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.ShapleyDataExplorer.extract_class}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{extract\_class}}}{\emph{self}, \emph{class\_name}, \emph{class\_intersect=False}}{}
+\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.ShapleyDataExplorer.extract_class}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{extract\_class}}}{\emph{self}, \emph{class\_name}, \emph{class\_intersect=False}, \emph{get\_shap\_values=False}}{}
 Extract the top cpgs from a class
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{description}
@@ -1496,7 +1648,7 @@ Cpgs and SHAP Values
 \index{extract\_individual() (methylnet.interpretation\_classes.ShapleyDataExplorer method)@\spxentry{extract\_individual()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.ShapleyDataExplorer.extract_individual}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{extract\_individual}}}{\emph{self}, \emph{individual}}{}
+\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.ShapleyDataExplorer.extract_individual}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{extract\_individual}}}{\emph{self}, \emph{individual}, \emph{get\_shap\_values=False}}{}
 Extract the top cpgs from an individual
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{description}
@@ -1732,7 +1884,7 @@ Return overall globally important CpGs.
 \index{return\_shapley\_data\_by\_methylation\_status() (methylnet.interpretation\_classes.ShapleyDataExplorer method)@\spxentry{return\_shapley\_data\_by\_methylation\_status()}\spxextra{methylnet.interpretation\_classes.ShapleyDataExplorer method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.ShapleyDataExplorer.return_shapley_data_by_methylation_status}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{return\_shapley\_data\_by\_methylation\_status}}}{\emph{self}, \emph{methyl\_array}}{}
+\phantomsection\label{\detokenize{index:methylnet.interpretation_classes.ShapleyDataExplorer.return_shapley_data_by_methylation_status}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{return\_shapley\_data\_by\_methylation\_status}}}{\emph{self}, \emph{methyl\_array}, \emph{threshold}}{}
 Return dictionary containing two SHAPley datasets, each split by low/high levels of methylation. Todo: Define this using median methylation value vs 0.5.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{description}
@@ -3918,10 +4070,10 @@ Relaunch n top jobs from previous run.  {[}default: 0{]}
 
 \end{fulllineitems}
 
-\index{methylnet-embed-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}!-c, --crossover\_p \textless{}crossover\_p\textgreater{}@\spxentry{-c, --crossover\_p \textless{}crossover\_p\textgreater{}}}\index{-c, --crossover\_p \textless{}crossover\_p\textgreater{}@\spxentry{-c, --crossover\_p \textless{}crossover\_p\textgreater{}}!methylnet-embed-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}}
+\index{methylnet-embed-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}!-cp, --crossover\_p \textless{}crossover\_p\textgreater{}@\spxentry{-cp, --crossover\_p \textless{}crossover\_p\textgreater{}}}\index{-cp, --crossover\_p \textless{}crossover\_p\textgreater{}@\spxentry{-cp, --crossover\_p \textless{}crossover\_p\textgreater{}}!methylnet-embed-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{index:cmdoption-methylnet-embed-launch-hyperparameter-scan-crossover-p}}\pysigline{\sphinxbfcode{\sphinxupquote{-c}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}crossover\_p}}\sphinxcode{\sphinxupquote{~\textless{}crossover\_p\textgreater{}}}}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-embed-launch-hyperparameter-scan-cp}}\pysigline{\sphinxbfcode{\sphinxupquote{-cp}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}crossover\_p}}\sphinxcode{\sphinxupquote{~\textless{}crossover\_p\textgreater{}}}}
 Rate of crossover between hyperparameters.  {[}default: 0.0{]}
 
 \end{fulllineitems}
@@ -3939,6 +4091,22 @@ Validation loss column.
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{index:cmdoption-methylnet-embed-launch-hyperparameter-scan-a}}\pysigline{\sphinxbfcode{\sphinxupquote{-a}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}additional\_command}}\sphinxcode{\sphinxupquote{~\textless{}additional\_command\textgreater{}}}}
 Additional command to input for torque run.
+
+\end{fulllineitems}
+
+\index{methylnet-embed-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}!-cu, --cuda@\spxentry{-cu, --cuda}}\index{-cu, --cuda@\spxentry{-cu, --cuda}!methylnet-embed-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-embed-launch-hyperparameter-scan-cu}}\pysigline{\sphinxbfcode{\sphinxupquote{-cu}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}cuda}}\sphinxcode{\sphinxupquote{}}}
+Use GPUs.
+
+\end{fulllineitems}
+
+\index{methylnet-embed-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}!-grid, --hyperparameter\_yaml \textless{}hyperparameter\_yaml\textgreater{}@\spxentry{-grid, --hyperparameter\_yaml \textless{}hyperparameter\_yaml\textgreater{}}}\index{-grid, --hyperparameter\_yaml \textless{}hyperparameter\_yaml\textgreater{}@\spxentry{-grid, --hyperparameter\_yaml \textless{}hyperparameter\_yaml\textgreater{}}!methylnet-embed-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-embed-launch\_hyperparameter\_scan command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-embed-launch-hyperparameter-scan-grid}}\pysigline{\sphinxbfcode{\sphinxupquote{-grid}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}hyperparameter\_yaml}}\sphinxcode{\sphinxupquote{~\textless{}hyperparameter\_yaml\textgreater{}}}}
+YAML file with custom subset of hyperparameter grid.
 
 \end{fulllineitems}
 
@@ -4218,6 +4386,14 @@ One hot encoder if categorical model. If path exists, then return top positive c
 
 \end{fulllineitems}
 
+\index{methylnet-predict-classification\_report command line option@\spxentry{methylnet-predict-classification\_report command line option}!-a, --average\_mechanism \textless{}average\_mechanism\textgreater{}@\spxentry{-a, --average\_mechanism \textless{}average\_mechanism\textgreater{}}}\index{-a, --average\_mechanism \textless{}average\_mechanism\textgreater{}@\spxentry{-a, --average\_mechanism \textless{}average\_mechanism\textgreater{}}!methylnet-predict-classification\_report command line option@\spxentry{methylnet-predict-classification\_report command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-predict-classification-report-a}}\pysigline{\sphinxbfcode{\sphinxupquote{-a}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}average\_mechanism}}\sphinxcode{\sphinxupquote{~\textless{}average\_mechanism\textgreater{}}}}
+Output directory.  {[}default: micro{]}
+
+\end{fulllineitems}
+
 
 
 \section{launch\_hyperparameter\_scan}
@@ -4324,10 +4500,10 @@ Relaunch n top jobs from previous run.  {[}default: 0{]}
 
 \end{fulllineitems}
 
-\index{methylnet-predict-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}!-c, --crossover\_p \textless{}crossover\_p\textgreater{}@\spxentry{-c, --crossover\_p \textless{}crossover\_p\textgreater{}}}\index{-c, --crossover\_p \textless{}crossover\_p\textgreater{}@\spxentry{-c, --crossover\_p \textless{}crossover\_p\textgreater{}}!methylnet-predict-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}}
+\index{methylnet-predict-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}!-cp, --crossover\_p \textless{}crossover\_p\textgreater{}@\spxentry{-cp, --crossover\_p \textless{}crossover\_p\textgreater{}}}\index{-cp, --crossover\_p \textless{}crossover\_p\textgreater{}@\spxentry{-cp, --crossover\_p \textless{}crossover\_p\textgreater{}}!methylnet-predict-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{index:cmdoption-methylnet-predict-launch-hyperparameter-scan-crossover-p}}\pysigline{\sphinxbfcode{\sphinxupquote{-c}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}crossover\_p}}\sphinxcode{\sphinxupquote{~\textless{}crossover\_p\textgreater{}}}}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-predict-launch-hyperparameter-scan-cp}}\pysigline{\sphinxbfcode{\sphinxupquote{-cp}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}crossover\_p}}\sphinxcode{\sphinxupquote{~\textless{}crossover\_p\textgreater{}}}}
 Rate of crossover between hyperparameters.  {[}default: 0.0{]}
 
 \end{fulllineitems}
@@ -4369,6 +4545,22 @@ Add softmax for predicting probability distributions.
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{index:cmdoption-methylnet-predict-launch-hyperparameter-scan-a}}\pysigline{\sphinxbfcode{\sphinxupquote{-a}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}additional\_command}}\sphinxcode{\sphinxupquote{~\textless{}additional\_command\textgreater{}}}}
 Additional command to input for torque run.
+
+\end{fulllineitems}
+
+\index{methylnet-predict-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}!-cu, --cuda@\spxentry{-cu, --cuda}}\index{-cu, --cuda@\spxentry{-cu, --cuda}!methylnet-predict-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-predict-launch-hyperparameter-scan-cu}}\pysigline{\sphinxbfcode{\sphinxupquote{-cu}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}cuda}}\sphinxcode{\sphinxupquote{}}}
+Use GPUs.
+
+\end{fulllineitems}
+
+\index{methylnet-predict-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}!-grid, --hyperparameter\_yaml \textless{}hyperparameter\_yaml\textgreater{}@\spxentry{-grid, --hyperparameter\_yaml \textless{}hyperparameter\_yaml\textgreater{}}}\index{-grid, --hyperparameter\_yaml \textless{}hyperparameter\_yaml\textgreater{}@\spxentry{-grid, --hyperparameter\_yaml \textless{}hyperparameter\_yaml\textgreater{}}!methylnet-predict-launch\_hyperparameter\_scan command line option@\spxentry{methylnet-predict-launch\_hyperparameter\_scan command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-predict-launch-hyperparameter-scan-grid}}\pysigline{\sphinxbfcode{\sphinxupquote{-grid}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}hyperparameter\_yaml}}\sphinxcode{\sphinxupquote{~\textless{}hyperparameter\_yaml\textgreater{}}}}
+YAML file with custom subset of hyperparameter grid.
 
 \end{fulllineitems}
 
@@ -5044,6 +5236,64 @@ Extract a library of cpgs to subset future array for inspection or prediction te
 
 
 
+\section{interpret\_embedding\_classes}
+\label{\detokenize{index:methylnet-interpret-interpret-embedding-classes}}
+Compare average distance between classes in embedding space.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+methylnet\PYGZhy{}interpret interpret\PYGZus{}embedding\PYGZus{}classes \PYG{o}{[}OPTIONS\PYG{o}{]}
+\end{sphinxVerbatim}
+\subsubsection*{Options}
+\index{methylnet-interpret-interpret\_embedding\_classes command line option@\spxentry{methylnet-interpret-interpret\_embedding\_classes command line option}!-i, --embedding\_methyl\_array\_pkl \textless{}embedding\_methyl\_array\_pkl\textgreater{}@\spxentry{-i, --embedding\_methyl\_array\_pkl \textless{}embedding\_methyl\_array\_pkl\textgreater{}}}\index{-i, --embedding\_methyl\_array\_pkl \textless{}embedding\_methyl\_array\_pkl\textgreater{}@\spxentry{-i, --embedding\_methyl\_array\_pkl \textless{}embedding\_methyl\_array\_pkl\textgreater{}}!methylnet-interpret-interpret\_embedding\_classes command line option@\spxentry{methylnet-interpret-interpret\_embedding\_classes command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-interpret-embedding-classes-i}}\pysigline{\sphinxbfcode{\sphinxupquote{-i}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}embedding\_methyl\_array\_pkl}}\sphinxcode{\sphinxupquote{~\textless{}embedding\_methyl\_array\_pkl\textgreater{}}}}
+Use ./predictions/vae\_mlp\_methyl\_arr.pkl or ./embeddings/vae\_methyl\_arr.pkl for vae interpretations.  {[}default: ./embeddings/vae\_methyl\_arr.pkl{]}
+
+\end{fulllineitems}
+
+\index{methylnet-interpret-interpret\_embedding\_classes command line option@\spxentry{methylnet-interpret-interpret\_embedding\_classes command line option}!-c, --pheno\_col \textless{}pheno\_col\textgreater{}@\spxentry{-c, --pheno\_col \textless{}pheno\_col\textgreater{}}}\index{-c, --pheno\_col \textless{}pheno\_col\textgreater{}@\spxentry{-c, --pheno\_col \textless{}pheno\_col\textgreater{}}!methylnet-interpret-interpret\_embedding\_classes command line option@\spxentry{methylnet-interpret-interpret\_embedding\_classes command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-interpret-embedding-classes-c}}\pysigline{\sphinxbfcode{\sphinxupquote{-c}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}pheno\_col}}\sphinxcode{\sphinxupquote{~\textless{}pheno\_col\textgreater{}}}}
+Column to separate on.  {[}default: disease{]}
+
+\end{fulllineitems}
+
+\index{methylnet-interpret-interpret\_embedding\_classes command line option@\spxentry{methylnet-interpret-interpret\_embedding\_classes command line option}!-m, --metric \textless{}metric\textgreater{}@\spxentry{-m, --metric \textless{}metric\textgreater{}}}\index{-m, --metric \textless{}metric\textgreater{}@\spxentry{-m, --metric \textless{}metric\textgreater{}}!methylnet-interpret-interpret\_embedding\_classes command line option@\spxentry{methylnet-interpret-interpret\_embedding\_classes command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-interpret-embedding-classes-m}}\pysigline{\sphinxbfcode{\sphinxupquote{-m}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}metric}}\sphinxcode{\sphinxupquote{~\textless{}metric\textgreater{}}}}
+Distance metric to compare classes.  {[}default: cosine{]}
+
+\end{fulllineitems}
+
+\index{methylnet-interpret-interpret\_embedding\_classes command line option@\spxentry{methylnet-interpret-interpret\_embedding\_classes command line option}!-t, --trim \textless{}trim\textgreater{}@\spxentry{-t, --trim \textless{}trim\textgreater{}}}\index{-t, --trim \textless{}trim\textgreater{}@\spxentry{-t, --trim \textless{}trim\textgreater{}}!methylnet-interpret-interpret\_embedding\_classes command line option@\spxentry{methylnet-interpret-interpret\_embedding\_classes command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-interpret-embedding-classes-t}}\pysigline{\sphinxbfcode{\sphinxupquote{-t}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}trim}}\sphinxcode{\sphinxupquote{~\textless{}trim\textgreater{}}}}
+Trim outlier distances. Number 0-0.5.  {[}default: 0.0{]}
+
+\end{fulllineitems}
+
+\index{methylnet-interpret-interpret\_embedding\_classes command line option@\spxentry{methylnet-interpret-interpret\_embedding\_classes command line option}!-o, --output\_csv \textless{}output\_csv\textgreater{}@\spxentry{-o, --output\_csv \textless{}output\_csv\textgreater{}}}\index{-o, --output\_csv \textless{}output\_csv\textgreater{}@\spxentry{-o, --output\_csv \textless{}output\_csv\textgreater{}}!methylnet-interpret-interpret\_embedding\_classes command line option@\spxentry{methylnet-interpret-interpret\_embedding\_classes command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-interpret-embedding-classes-o}}\pysigline{\sphinxbfcode{\sphinxupquote{-o}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}output\_csv}}\sphinxcode{\sphinxupquote{~\textless{}output\_csv\textgreater{}}}}
+Distances between classes.  {[}default: ./results/class\_embedding\_differences.csv{]}
+
+\end{fulllineitems}
+
+\index{methylnet-interpret-interpret\_embedding\_classes command line option@\spxentry{methylnet-interpret-interpret\_embedding\_classes command line option}!-op, --output\_pval\_csv \textless{}output\_pval\_csv\textgreater{}@\spxentry{-op, --output\_pval\_csv \textless{}output\_pval\_csv\textgreater{}}}\index{-op, --output\_pval\_csv \textless{}output\_pval\_csv\textgreater{}@\spxentry{-op, --output\_pval\_csv \textless{}output\_pval\_csv\textgreater{}}!methylnet-interpret-interpret\_embedding\_classes command line option@\spxentry{methylnet-interpret-interpret\_embedding\_classes command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-interpret-embedding-classes-op}}\pysigline{\sphinxbfcode{\sphinxupquote{-op}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}output\_pval\_csv}}\sphinxcode{\sphinxupquote{~\textless{}output\_pval\_csv\textgreater{}}}}
+If specify a CSV file, outputs pairwise manova tests between embeddings for clusters.  {[}default: {]}
+
+\end{fulllineitems}
+
+
+
 \section{list\_classes}
 \label{\detokenize{index:methylnet-interpret-list-classes}}
 List classes/multioutput regression cell-types that have SHAPley data to be interrogated.
@@ -5279,7 +5529,7 @@ methylnet\PYGZhy{}interpret produce\PYGZus{}shapley\PYGZus{}data \PYG{o}{[}OPTIO
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-produce-shapley-data-i}}\pysigline{\sphinxbfcode{\sphinxupquote{-i}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}train\_pkl}}\sphinxcode{\sphinxupquote{~\textless{}train\_pkl\textgreater{}}}}
-Input database for beta and phenotype data. Use ./predictions/vae\_mlp\_methyl\_arr.pkl or ./embeddings/vae\_mlp\_methyl\_arr.pkl for vae interpretations.  {[}default: ./train\_val\_test\_sets/train\_methyl\_array.pkl{]}
+Input database for beta and phenotype data. Use ./predictions/vae\_mlp\_methyl\_arr.pkl or ./embeddings/vae\_methyl\_arr.pkl for vae interpretations.  {[}default: ./train\_val\_test\_sets/train\_methyl\_array.pkl{]}
 
 \end{fulllineitems}
 
@@ -5287,7 +5537,7 @@ Input database for beta and phenotype data. Use ./predictions/vae\_mlp\_methyl\_
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-produce-shapley-data-v}}\pysigline{\sphinxbfcode{\sphinxupquote{-v}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}val\_pkl}}\sphinxcode{\sphinxupquote{~\textless{}val\_pkl\textgreater{}}}}
-Val database for beta and phenotype data. Use ./predictions/vae\_mlp\_methyl\_arr.pkl or ./embeddings/vae\_mlp\_methyl\_arr.pkl for vae interpretations.  {[}default: ./train\_val\_test\_sets/val\_methyl\_array.pkl{]}
+Val database for beta and phenotype data. Use ./predictions/vae\_mlp\_methyl\_arr.pkl or ./embeddings/vae\_methyl\_arr.pkl for vae interpretations.  {[}default: ./train\_val\_test\_sets/val\_methyl\_array.pkl{]}
 
 \end{fulllineitems}
 
@@ -5475,6 +5725,14 @@ Multioutput names for multi-output regression.  {[}default: {]}
 
 \end{fulllineitems}
 
+\index{methylnet-interpret-produce\_shapley\_data command line option@\spxentry{methylnet-interpret-produce\_shapley\_data command line option}!-dsd, --dump\_shap\_data@\spxentry{-dsd, --dump\_shap\_data}}\index{-dsd, --dump\_shap\_data@\spxentry{-dsd, --dump\_shap\_data}!methylnet-interpret-produce\_shapley\_data command line option@\spxentry{methylnet-interpret-produce\_shapley\_data command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-produce-shapley-data-dsd}}\pysigline{\sphinxbfcode{\sphinxupquote{-dsd}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}dump\_shap\_data}}\sphinxcode{\sphinxupquote{}}}
+Dump raw SHAP data to numpy file, warning, may be large file.  {[}default: False{]}
+
+\end{fulllineitems}
+
 
 
 \section{reduce\_top\_cpgs}
@@ -5556,6 +5814,72 @@ Top CpGs found using absolute value.
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-regenerate-top-cpgs-n}}\pysigline{\sphinxbfcode{\sphinxupquote{-n}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}neg\_val}}\sphinxcode{\sphinxupquote{}}}
 Return top CpGs that are making negative contributions.
+
+\end{fulllineitems}
+
+
+
+\section{return\_shap\_values}
+\label{\detokenize{index:methylnet-interpret-return-shap-values}}
+Return matrix of shapley values per class, with option to, classes/individuals are columns, CpGs are rows, option to plot multiple histograms/density plots.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+methylnet\PYGZhy{}interpret return\PYGZus{}shap\PYGZus{}values \PYG{o}{[}OPTIONS\PYG{o}{]}
+\end{sphinxVerbatim}
+\subsubsection*{Options}
+\index{methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}!-s, --shapley\_data \textless{}shapley\_data\textgreater{}@\spxentry{-s, --shapley\_data \textless{}shapley\_data\textgreater{}}}\index{-s, --shapley\_data \textless{}shapley\_data\textgreater{}@\spxentry{-s, --shapley\_data \textless{}shapley\_data\textgreater{}}!methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-return-shap-values-s}}\pysigline{\sphinxbfcode{\sphinxupquote{-s}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}shapley\_data}}\sphinxcode{\sphinxupquote{~\textless{}shapley\_data\textgreater{}}}}
+Pickle containing top CpGs.  {[}default: ./interpretations/shapley\_explanations/shapley\_data.p{]}
+
+\end{fulllineitems}
+
+\index{methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}!-o, --output\_dir \textless{}output\_dir\textgreater{}@\spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}}\index{-o, --output\_dir \textless{}output\_dir\textgreater{}@\spxentry{-o, --output\_dir \textless{}output\_dir\textgreater{}}!methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-return-shap-values-o}}\pysigline{\sphinxbfcode{\sphinxupquote{-o}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}output\_dir}}\sphinxcode{\sphinxupquote{~\textless{}output\_dir\textgreater{}}}}
+Output directory for output plots.  {[}default: ./interpretations/shap\_outputs/{]}
+
+\end{fulllineitems}
+
+\index{methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}!-i, --individuals \textless{}individuals\textgreater{}@\spxentry{-i, --individuals \textless{}individuals\textgreater{}}}\index{-i, --individuals \textless{}individuals\textgreater{}@\spxentry{-i, --individuals \textless{}individuals\textgreater{}}!methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-return-shap-values-i}}\pysigline{\sphinxbfcode{\sphinxupquote{-i}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}individuals}}\sphinxcode{\sphinxupquote{~\textless{}individuals\textgreater{}}}}
+Individuals to evaluate.  {[}default: {]}
+
+\end{fulllineitems}
+
+\index{methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}!-c, --classes \textless{}classes\textgreater{}@\spxentry{-c, --classes \textless{}classes\textgreater{}}}\index{-c, --classes \textless{}classes\textgreater{}@\spxentry{-c, --classes \textless{}classes\textgreater{}}!methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-return-shap-values-c}}\pysigline{\sphinxbfcode{\sphinxupquote{-c}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}classes}}\sphinxcode{\sphinxupquote{~\textless{}classes\textgreater{}}}}
+Classes to evaluate.  {[}default: {]}
+
+\end{fulllineitems}
+
+\index{methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}!-hist, --output\_histogram@\spxentry{-hist, --output\_histogram}}\index{-hist, --output\_histogram@\spxentry{-hist, --output\_histogram}!methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-return-shap-values-hist}}\pysigline{\sphinxbfcode{\sphinxupquote{-hist}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}output\_histogram}}\sphinxcode{\sphinxupquote{}}}
+Whether to output a histogram for each class/individual of their SHAP scores.
+
+\end{fulllineitems}
+
+\index{methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}!-abs, --absolute@\spxentry{-abs, --absolute}}\index{-abs, --absolute@\spxentry{-abs, --absolute}!methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-return-shap-values-abs}}\pysigline{\sphinxbfcode{\sphinxupquote{-abs}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}absolute}}\sphinxcode{\sphinxupquote{}}}
+Use sums of absolute values in making computations.
+
+\end{fulllineitems}
+
+\index{methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}!-log, --log\_transform@\spxentry{-log, --log\_transform}}\index{-log, --log\_transform@\spxentry{-log, --log\_transform}!methylnet-interpret-return\_shap\_values command line option@\spxentry{methylnet-interpret-return\_shap\_values command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-return-shap-values-log}}\pysigline{\sphinxbfcode{\sphinxupquote{-log}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}log\_transform}}\sphinxcode{\sphinxupquote{}}}
+Log transform final results for plotting.
 
 \end{fulllineitems}
 
@@ -5656,6 +5980,14 @@ Output directory for hypo/hyper shap data.  {[}default: ./interpretations/shaple
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-split-hyper-hypo-methylation-t}}\pysigline{\sphinxbfcode{\sphinxupquote{-t}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}test\_pkl}}\sphinxcode{\sphinxupquote{~\textless{}test\_pkl\textgreater{}}}}
 Pickle containing testing set.  {[}default: ./train\_val\_test\_sets/test\_methyl\_array.pkl{]}
+
+\end{fulllineitems}
+
+\index{methylnet-interpret-split\_hyper\_hypo\_methylation command line option@\spxentry{methylnet-interpret-split\_hyper\_hypo\_methylation command line option}!-thr, --threshold \textless{}threshold\textgreater{}@\spxentry{-thr, --threshold \textless{}threshold\textgreater{}}}\index{-thr, --threshold \textless{}threshold\textgreater{}@\spxentry{-thr, --threshold \textless{}threshold\textgreater{}}!methylnet-interpret-split\_hyper\_hypo\_methylation command line option@\spxentry{methylnet-interpret-split\_hyper\_hypo\_methylation command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-interpret-split-hyper-hypo-methylation-thr}}\pysigline{\sphinxbfcode{\sphinxupquote{-thr}}\sphinxcode{\sphinxupquote{}}\sphinxcode{\sphinxupquote{,~}}\sphinxbfcode{\sphinxupquote{-{-}threshold}}\sphinxcode{\sphinxupquote{~\textless{}threshold\textgreater{}}}}
+Pickle containing testing set.  {[}default: original{]}
 
 \end{fulllineitems}
 
@@ -5859,6 +6191,29 @@ Number of gpus to request.  {[}default: 0{]}
 
 \end{fulllineitems}
 
+
+
+\chapter{methylnet-test}
+\label{\detokenize{index:methylnet-test}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+methylnet\PYGZhy{}test \PYG{o}{[}OPTIONS\PYG{o}{]} COMMAND \PYG{o}{[}ARGS\PYG{o}{]}...
+\end{sphinxVerbatim}
+\subsubsection*{Options}
+\index{methylnet-test command line option@\spxentry{methylnet-test command line option}!--version@\spxentry{--version}}\index{--version@\spxentry{--version}!methylnet-test command line option@\spxentry{methylnet-test command line option}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:cmdoption-methylnet-test-version}}\pysigline{\sphinxbfcode{\sphinxupquote{-{-}version}}\sphinxcode{\sphinxupquote{}}}
+Show the version and exit.
+
+\end{fulllineitems}
+
+
+
+\section{test\_pipeline}
+\label{\detokenize{index:methylnet-test-test-pipeline}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+methylnet\PYGZhy{}test test\PYGZus{}pipeline \PYG{o}{[}OPTIONS\PYG{o}{]}
+\end{sphinxVerbatim}
 
 
 \chapter{Example Usage}

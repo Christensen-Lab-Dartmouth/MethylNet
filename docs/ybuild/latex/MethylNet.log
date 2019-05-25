@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  21 APR 2019 17:48
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  20 MAY 2019 16:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -838,17 +838,17 @@ LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <10> not available
 \openout6 = `MethylNet.toc'.
 
  [2]
-<10.jpeg, id=241, 1027.84pt x 770.88pt>
+<10.jpeg, id=261, 1027.84pt x 770.88pt>
 File: 10.jpeg Graphic file (type jpg)
 <use 10.jpeg>
 Package pdftex.def Info: 10.jpeg  used on input line 84.
 (pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
-<11.jpeg, id=242, 1027.84pt x 770.88pt>
+<11.jpeg, id=262, 1027.84pt x 770.88pt>
 File: 11.jpeg Graphic file (type jpg)
 <use 11.jpeg>
 Package pdftex.def Info: 11.jpeg  used on input line 86.
 (pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
-<12.jpeg, id=243, 1027.84pt x 770.88pt>
+<12.jpeg, id=263, 1027.84pt x 770.88pt>
 File: 12.jpeg Graphic file (type jpg)
 <use 12.jpeg>
 Package pdftex.def Info: 12.jpeg  used on input line 88.
@@ -856,7 +856,7 @@ Package pdftex.def Info: 12.jpeg  used on input line 88.
  [1
 
  <./10.jpeg> <./11.jpeg>]
-<13.jpeg, id=249, 1027.84pt x 770.88pt>
+<13.jpeg, id=269, 1027.84pt x 770.88pt>
 File: 13.jpeg Graphic file (type jpg)
 <use 13.jpeg>
 Package pdftex.def Info: 13.jpeg  used on input line 90.
@@ -915,72 +915,67 @@ Underfull \hbox (badness 10000) in paragraph at lines 409--409
 Chapter 2.
 
 Underfull \hbox (badness 10000) in paragraph at lines 474--474
-[]\T1/ptm/m/it/10 hyperparameter_input_csv\T1/ptm/m/n/10 , \T1/ptm/m/it/10 hy-
+[]\T1/ptm/m/it/10 hyperparameter_input_csv\T1/ptm/m/n/10 , \T1/ptm/m/it/10 hy-p
+er-pa-
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 474--474
-\T1/ptm/m/it/10 per-pa-ram-e-ter_output_log\T1/ptm/m/n/10 , \T1/ptm/m/it/10 gen
--er-
+\T1/ptm/m/it/10 ram-e-ter_output_log\T1/ptm/m/n/10 , \T1/ptm/m/it/10 gen-er-ate
+_input\T1/ptm/m/n/10 ,
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 474--474
-\T1/ptm/m/it/10 ate_input\T1/ptm/m/n/10 , \T1/ptm/m/it/10 job_chunk_size\T1/ptm
-/m/n/10 , \T1/ptm/m/it/10 strat-
+\T1/ptm/m/it/10 job_chunk_size\T1/ptm/m/n/10 , \T1/ptm/m/it/10 strat-ify_column
+\T1/ptm/m/n/10 , \T1/ptm/m/it/10 re-
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 474--474
-\T1/ptm/m/it/10 ify_column\T1/ptm/m/n/10 , \T1/ptm/m/it/10 re-set_all\T1/ptm/m/
-n/10 , \T1/ptm/m/it/10 torque\T1/ptm/m/n/10 , \T1/ptm/m/it/10 gpu\T1/ptm/m/n/10
- ,
+\T1/ptm/m/it/10 set_all\T1/ptm/m/n/10 , \T1/ptm/m/it/10 torque\T1/ptm/m/n/10 , 
+\T1/ptm/m/it/10 gpu\T1/ptm/m/n/10 , \T1/ptm/m/it/10 gpu_node\T1/ptm/m/n/10 , \T
+1/ptm/m/it/10 no-
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 474--474
-\T1/ptm/m/it/10 gpu_node\T1/ptm/m/n/10 , \T1/ptm/m/it/10 no-hup\T1/ptm/m/n/10 ,
- \T1/ptm/m/it/10 mlp=False\T1/ptm/m/n/10 , \T1/ptm/m/it/10 cus-
- []
-
-
-Underfull \hbox (badness 6032) in paragraph at lines 474--474
-\T1/ptm/m/it/10 tom_jobs=[]\T1/ptm/m/n/10 , \T1/ptm/m/it/10 model_complexity_fa
-ctor=0.9\T1/ptm/m/n/10 ,
+\T1/ptm/m/it/10 hup\T1/ptm/m/n/10 , \T1/ptm/m/it/10 mlp=False\T1/ptm/m/n/10 , \
+T1/ptm/m/it/10 cus-tom_jobs=[]\T1/ptm/m/n/10 ,
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 474--474
-\T1/ptm/m/it/10 set_beta=-1.0\T1/ptm/m/n/10 , \T1/ptm/m/it/10 n_jobs=4\T1/ptm/m
-/n/10 , \T1/ptm/m/it/10 cat-e-gor-i-
+\T1/ptm/m/it/10 model_complexity_factor=0.9\T1/ptm/m/n/10 , \T1/ptm/m/it/10 set
+_beta=-
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 474--474
-\T1/ptm/m/it/10 cal=True\T1/ptm/m/n/10 , \T1/ptm/m/it/10 add_softmax=False\T1/p
-tm/m/n/10 , \T1/ptm/m/it/10 ad-di-
+\T1/ptm/m/it/10 1.0\T1/ptm/m/n/10 , \T1/ptm/m/it/10 n_jobs=4\T1/ptm/m/n/10 , \T
+1/ptm/m/it/10 cat-e-gor-i-cal=True\T1/ptm/m/n/10 ,
  []
 
 [7
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 538--538
+Underfull \hbox (badness 10000) in paragraph at lines 541--541
 []\T1/ptm/m/it/10 hyperparameter_input_csv\T1/ptm/m/n/10 ,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 538--538
+Underfull \hbox (badness 10000) in paragraph at lines 541--541
 \T1/ptm/m/it/10 hy-per-pa-ram-e-ter_output_log\T1/ptm/m/n/10 ,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 538--538
+Underfull \hbox (badness 10000) in paragraph at lines 541--541
 \T1/ptm/m/it/10 n_top_jobs\T1/ptm/m/n/10 , \T1/ptm/m/it/10 crossover_p=0\T1/ptm
 /m/n/10 ,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 572--572
+Underfull \hbox (badness 10000) in paragraph at lines 575--575
 []\T1/ptm/m/it/10 topology_grid\T1/ptm/m/n/10 , \T1/ptm/m/it/10 prob-a-bil-
  []
 
@@ -991,7 +986,7 @@ Chapter 3.
 ] [10]
 Chapter 4.
 
-Underfull \hbox (badness 10000) in paragraph at lines 745--746
+Underfull \hbox (badness 10000) in paragraph at lines 756--757
 []|[][]\T1/pcr/m/sl/10 get_nearby_cpg_shapleys[][]\T1/ptm/m/n/10 (self, all_cpg
 s,
  []
@@ -999,181 +994,199 @@ s,
 [11
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 828--828
+Underfull \hbox (badness 10000) in paragraph at lines 839--839
 []\T1/ptm/m/it/10 self\T1/ptm/m/n/10 , \T1/ptm/m/it/10 set_cpgs='IDOL'\T1/ptm/m
 /n/10 , \T1/ptm/m/it/10 plat-form='450k'\T1/ptm/m/n/10 , \T1/ptm/m/it/10 all_cp
 gs=[]\T1/ptm/m/n/10 , \T1/ptm/m/it/10 out-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 899--899
+Underfull \hbox (badness 10000) in paragraph at lines 910--910
 []\T1/ptm/m/it/10 prediction_function=None\T1/ptm/m/n/10 ,
  []
 
 [12]
-Underfull \hbox (badness 10000) in paragraph at lines 940--941
+Underfull \hbox (badness 10000) in paragraph at lines 951--952
 []|[][]\T1/pcr/m/sl/10 build_explainer[][]\T1/ptm/m/n/10 (self, train_methyl_ar
 ray[,
  []
 
 
-Overfull \hbox (32.49213pt too wide) in paragraph at lines 945--946
+Overfull \hbox (32.49213pt too wide) in paragraph at lines 956--957
 []|[][]\T1/pcr/m/sl/10 classifier_assign_scores_to_shap_data[][]\T1/ptm/m/n/10 
 (self,
  []
 
 
-Overfull \hbox (26.49213pt too wide) in paragraph at lines 960--961
+Overfull \hbox (26.49213pt too wide) in paragraph at lines 971--972
 []|[][]\T1/pcr/m/sl/10 regressor_assign_scores_to_shap_data[][]\T1/ptm/m/n/10 (
 self,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 965--966
+Underfull \hbox (badness 10000) in paragraph at lines 976--977
 []|[][]\T1/pcr/m/sl/10 return_shapley_predictions[][]\T1/ptm/m/n/10 (self, ...[
 ,
  []
 
 [13]
-Underfull \hbox (badness 10000) in paragraph at lines 1059--1059
+Underfull \hbox (badness 10000) in paragraph at lines 1070--1070
 []\T1/ptm/m/it/10 self\T1/ptm/m/n/10 , \T1/ptm/m/it/10 test_methyl_array\T1/ptm
 /m/n/10 , \T1/ptm/m/it/10 n_top_features\T1/ptm/m/n/10 ,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1081--1081
+Underfull \hbox (badness 10000) in paragraph at lines 1092--1092
 []\T1/ptm/m/it/10 self\T1/ptm/m/n/10 , \T1/ptm/m/it/10 test_methyl_array\T1/ptm
 /m/n/10 , \T1/ptm/m/it/10 sam-ple_name\T1/ptm/m/n/10 , \T1/ptm/m/it/10 in-ter-e
 st_col\T1/ptm/m/n/10 , \T1/ptm/m/it/10 en-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1089--1089
+Underfull \hbox (badness 10000) in paragraph at lines 1100--1100
 []\T1/ptm/m/it/10 self\T1/ptm/m/n/10 , \T1/ptm/m/it/10 test_methyl_array\T1/ptm
 /m/n/10 , \T1/ptm/m/it/10 n_samples\T1/ptm/m/n/10 , \T1/ptm/m/it/10 n_outputs\T
 1/ptm/m/n/10 ,
  []
 
+
+Underfull \hbox (badness 10000) in paragraph at lines 1139--1139
+[]\T1/ptm/m/it/10 methyl_array\T1/ptm/m/n/10 ,
+ []
+
 [14] [15]
-Underfull \hbox (badness 10000) in paragraph at lines 1394--1395
+Underfull \hbox (badness 10000) in paragraph at lines 1391--1391
+[]\T1/ptm/m/it/10 self\T1/ptm/m/n/10 , \T1/ptm/m/it/10 class_name\T1/ptm/m/n/10
+ , \T1/ptm/m/it/10 shap_df\T1/ptm/m/n/10 , \T1/ptm/m/it/10 cpgs\T1/ptm/m/n/10 ,
+ \T1/ptm/m/it/10 n_top_cpgs\T1/ptm/m/n/10 , \T1/ptm/m/it/10 add_top_negative=Fa
+lse\T1/ptm/m/n/10 ,
+ []
+
+[16]
+Underfull \hbox (badness 10000) in paragraph at lines 1533--1534
 []|[][]\T1/pcr/m/sl/10 extract_methylation_array[][]\T1/ptm/m/n/10 (self,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1399--1400
+Underfull \hbox (badness 10000) in paragraph at lines 1538--1539
 []|[][]\T1/pcr/m/sl/10 jaccard_similarity_top_cpgs[][]\T1/ptm/m/n/10 (self,
  []
 
 
-Overfull \hbox (8.49213pt too wide) in paragraph at lines 1419--1420
+Overfull \hbox (8.49213pt too wide) in paragraph at lines 1558--1559
 []|[][]\T1/pcr/m/sl/10 regenerate_individual_shap_values[][]\T1/ptm/m/n/10 (sel
 f,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1424--1425
+Underfull \hbox (badness 10000) in paragraph at lines 1563--1564
 []|[][]\T1/pcr/m/sl/10 return_binned_shapley_data[][]\T1/ptm/m/n/10 (self, ...[
 ,
  []
 
 
-Overfull \hbox (54.88235pt too wide) in paragraph at lines 1439--1440
+Overfull \hbox (54.88235pt too wide) in paragraph at lines 1578--1579
 []|[][]\T1/pcr/m/sl/10 return_shapley_data_by_methylation_status[][]\T1/ptm/m/n
 /10 (...)| 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1449--1450
+Underfull \hbox (badness 10000) in paragraph at lines 1588--1589
 []|[][]\T1/pcr/m/sl/10 view_methylation[][]\T1/ptm/m/n/10 (self, in-di-vid-ual,
 
  []
 
-[16]
-Underfull \hbox (badness 10000) in paragraph at lines 1521--1521
+
+Overfull \hbox (6.0pt too wide) in paragraph at lines 1604--1604
+[]| 
+ []
+
+[17]
+Underfull \hbox (badness 10000) in paragraph at lines 1673--1673
 []\T1/ptm/m/it/10 self\T1/ptm/m/n/10 , \T1/ptm/m/it/10 methyl_arr\T1/ptm/m/n/10
  , \T1/ptm/m/it/10 classes_only=True\T1/ptm/m/n/10 , \T1/ptm/m/it/10 global_val
 s=False\T1/ptm/m/n/10 ,
  []
 
-[17]
-Underfull \hbox (badness 10000) in paragraph at lines 1674--1674
+[18]
+Underfull \hbox (badness 10000) in paragraph at lines 1826--1826
 []\T1/ptm/m/it/10 self\T1/ptm/m/n/10 , \T1/ptm/m/it/10 orig-i-nal_class_name\T1
 /ptm/m/n/10 , \T1/ptm/m/it/10 out-come_col\T1/ptm/m/n/10 ,
  []
 
-[18]
-Underfull \hbox (badness 10000) in paragraph at lines 1757--1757
+[19]
+Underfull \hbox (badness 10000) in paragraph at lines 1909--1909
 []\T1/ptm/m/it/10 self\T1/ptm/m/n/10 , \T1/ptm/m/it/10 classes=[]\T1/ptm/m/n/10
  , \T1/ptm/m/it/10 in-di-vid-u-als=[]\T1/ptm/m/n/10 , \T1/ptm/m/it/10 class_int
 ersect=False\T1/ptm/m/n/10 ,
  []
 
-[19] [20]
-Underfull \hbox (badness 10000) in paragraph at lines 1919--1919
+[20]
+Underfull \hbox (badness 10000) in paragraph at lines 2071--2071
 []\T1/ptm/m/it/10 n_workers\T1/ptm/m/n/10 ,
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 1969--1969
+[21]
+Underfull \hbox (badness 10000) in paragraph at lines 2121--2121
 []\T1/ptm/m/it/10 test_arr\T1/ptm/m/n/10 , \T1/ptm/m/it/10 ex-plainer\T1/ptm/m/
 n/10 , \T1/ptm/m/it/10 method\T1/ptm/m/n/10 ,
  []
 
-[21] [22
-
-]
+[22]
 Chapter 5.
 
-Underfull \hbox (badness 10000) in paragraph at lines 2016--2016
+Underfull \hbox (badness 10000) in paragraph at lines 2168--2168
 []\T1/ptm/m/it/10 autoencoder_model\T1/ptm/m/n/10 , \T1/ptm/m/it/10 n_epochs\T1
 /ptm/m/n/10 , \T1/ptm/m/it/10 loss_fn\T1/ptm/m/n/10 , \T1/ptm/m/it/10 op-ti-miz
 er\T1/ptm/m/n/10 ,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2016--2016
+Underfull \hbox (badness 10000) in paragraph at lines 2168--2168
 \T1/ptm/m/it/10 cuda=True\T1/ptm/m/n/10 , \T1/ptm/m/it/10 kl_warm_up=0\T1/ptm/m
 /n/10 , \T1/ptm/m/it/10 beta=1.0\T1/ptm/m/n/10 , \T1/ptm/m/it/10 sched-
  []
 
-[23] [24]
-Underfull \hbox (badness 10000) in paragraph at lines 2219--2219
+[23
+
+] [24]
+Underfull \hbox (badness 10000) in paragraph at lines 2371--2371
 \T1/ptm/m/it/10 cat-e-gor-i-cal=False\T1/ptm/m/n/10 , \T1/ptm/m/it/10 sched-ule
 r_opts={}\T1/ptm/m/n/10 , \T1/ptm/m/it/10 out-
  []
 
 [25]
-Underfull \hbox (badness 10000) in paragraph at lines 2399--2399
+Underfull \hbox (badness 10000) in paragraph at lines 2551--2551
 []\T1/ptm/m/it/10 n_input, n_latent, hid-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2399--2399
+Underfull \hbox (badness 10000) in paragraph at lines 2551--2551
 \T1/ptm/m/it/10 den_layer_encoder_topology=[100, 100, 100],
  []
 
 [26] [27]
-Overfull \hbox (6.0pt too wide) in paragraph at lines 2662--2662
+Overfull \hbox (6.0pt too wide) in paragraph at lines 2814--2814
 []| 
  []
 
 [28]
-Underfull \hbox (badness 10000) in paragraph at lines 2781--2781
+Underfull \hbox (badness 10000) in paragraph at lines 2933--2933
 []\T1/ptm/m/it/10 vae_model, n_output, cat-e-gor-i-cal=False, hid-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2781--2781
+Underfull \hbox (badness 10000) in paragraph at lines 2933--2933
 \T1/ptm/m/it/10 den_layer_topology=[100, 100, 100], dropout_p=0.2,
  []
 
 [29]
-Overfull \hbox (6.0pt too wide) in paragraph at lines 3032--3032
+Overfull \hbox (6.0pt too wide) in paragraph at lines 3184--3184
 []| 
  []
 
 [30] [31] [32]
-Underfull \hbox (badness 10000) in paragraph at lines 3300--3300
+Underfull \hbox (badness 10000) in paragraph at lines 3452--3452
 []\T1/ptm/m/it/10 model\T1/ptm/m/n/10 , \T1/ptm/m/it/10 loader\T1/ptm/m/n/10 , 
 \T1/ptm/m/it/10 loss_func\T1/ptm/m/n/10 , \T1/ptm/m/it/10 op-ti-mizer\T1/ptm/m/
 n/10 , \T1/ptm/m/it/10 cuda=True\T1/ptm/m/n/10 , \T1/ptm/m/it/10 epoch=0\T1/ptm
@@ -1181,14 +1194,14 @@ n/10 , \T1/ptm/m/it/10 cuda=True\T1/ptm/m/n/10 , \T1/ptm/m/it/10 epoch=0\T1/ptm
  []
 
 [33]
-Underfull \hbox (badness 10000) in paragraph at lines 3429--3429
+Underfull \hbox (badness 10000) in paragraph at lines 3581--3581
 []\T1/ptm/m/it/10 model\T1/ptm/m/n/10 , \T1/ptm/m/it/10 loader\T1/ptm/m/n/10 , 
 \T1/ptm/m/it/10 loss_func\T1/ptm/m/n/10 , \T1/ptm/m/it/10 cuda=True\T1/ptm/m/n/
 10 , \T1/ptm/m/it/10 cat-e-gor-i-cal=False\T1/ptm/m/n/10 ,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3469--3469
+Underfull \hbox (badness 10000) in paragraph at lines 3621--3621
 []\T1/ptm/m/it/10 model\T1/ptm/m/n/10 , \T1/ptm/m/it/10 loader\T1/ptm/m/n/10 , 
 \T1/ptm/m/it/10 loss_func\T1/ptm/m/n/10 , \T1/ptm/m/it/10 op-ti-mizer\T1/ptm/m/
 n/10 , \T1/ptm/m/it/10 cuda=True\T1/ptm/m/n/10 , \T1/ptm/m/it/10 epoch=0\T1/ptm
@@ -1198,22 +1211,22 @@ n/10 , \T1/ptm/m/it/10 cuda=True\T1/ptm/m/n/10 , \T1/ptm/m/it/10 epoch=0\T1/ptm
 [34]
 Chapter 6.
 
-Overfull \hbox (6.0pt too wide) in paragraph at lines 3539--3539
+Overfull \hbox (6.0pt too wide) in paragraph at lines 3691--3691
 []| 
  []
 
 
-Overfull \hbox (6.0pt too wide) in paragraph at lines 3561--3561
+Overfull \hbox (6.0pt too wide) in paragraph at lines 3713--3713
 []| 
  []
 
 
-Overfull \hbox (6.0pt too wide) in paragraph at lines 3586--3586
+Overfull \hbox (6.0pt too wide) in paragraph at lines 3738--3738
 []| 
  []
 
 
-Overfull \hbox (6.0pt too wide) in paragraph at lines 3586--3586
+Overfull \hbox (6.0pt too wide) in paragraph at lines 3738--3738
 []| 
  []
 
@@ -1224,34 +1237,34 @@ Overfull \hbox (6.0pt too wide) in paragraph at lines 3586--3586
 ]
 Chapter 7.
 
-Underfull \hbox (badness 10000) in paragraph at lines 3600--3600
+Underfull \hbox (badness 10000) in paragraph at lines 3752--3752
 []\T1/ptm/m/it/10 optimizer\T1/ptm/m/n/10 , \T1/ptm/m/it/10 T_max\T1/ptm/m/n/10
  ,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3600--3600
+Underfull \hbox (badness 10000) in paragraph at lines 3752--3752
 \T1/ptm/m/it/10 1\T1/ptm/m/n/10 , \T1/ptm/m/it/10 T_mult=1.0\T1/ptm/m/n/10 , \T
 1/ptm/m/it/10 al-
  []
 
 
-Overfull \hbox (6.0pt too wide) in paragraph at lines 3685--3685
+Overfull \hbox (6.0pt too wide) in paragraph at lines 3837--3837
 []| 
  []
 
 
-Overfull \hbox (6.0pt too wide) in paragraph at lines 3685--3685
+Overfull \hbox (6.0pt too wide) in paragraph at lines 3837--3837
 []| 
  []
 
 
-Overfull \hbox (6.0pt too wide) in paragraph at lines 3685--3685
+Overfull \hbox (6.0pt too wide) in paragraph at lines 3837--3837
 []| 
  []
 
 
-Overfull \hbox (6.0pt too wide) in paragraph at lines 3685--3685
+Overfull \hbox (6.0pt too wide) in paragraph at lines 3837--3837
 []| 
  []
 
@@ -1268,58 +1281,58 @@ Chapter 9.
 ]
 Chapter 10.
 
-Underfull \hbox (badness 10000) in paragraph at lines 4779--4780
+Underfull \hbox (badness 10000) in paragraph at lines 4971--4972
 \T1/ptm/m/n/10 Pickle con-tain-ing top CpGs, binned phe-no-type. [de-fault: ./i
 n-ter-pre-ta-
  []
 
 [49]
-Overfull \hbox (29.93983pt too wide) in paragraph at lines 4813--4814
+Overfull \hbox (29.93983pt too wide) in paragraph at lines 5005--5006
 \T1/ptm/m/n/10 Output di-rec-tory for methy-la-tion ar-ray. [de-fault: ./in-ter
 -pre-ta-tions/shapley_explanations/top_cpgs_extracted_methylarr/] 
  []
 
-[50] [51]
-Overfull \hbox (36.64926pt too wide) in paragraph at lines 5095--5096
+[50] [51] [52]
+Overfull \hbox (36.64926pt too wide) in paragraph at lines 5345--5346
 \T1/ptm/m/n/10 Output di-rec-tory for cpg jac-card_stats. [de-fault: ./in-ter-p
 re-ta-tions/shapley_explanations/top_cpgs_jaccard/all_jaccard.csv] 
  []
 
 
-Overfull \hbox (66.08894pt too wide) in paragraph at lines 5119--5120
+Overfull \hbox (66.08894pt too wide) in paragraph at lines 5369--5370
 \T1/ptm/m/n/10 Output di-rec-tory for cpg jac-card_stats. [de-fault: ./in-ter-p
 re-ta-tions/shapley_explanations/top_cpgs_jaccard/all_jaccard_sorted.csv] 
  []
 
-[52] [53] [54]
-Underfull \hbox (badness 10000) in paragraph at lines 5508--5509
+[53] [54] [55]
+Underfull \hbox (badness 10000) in paragraph at lines 5766--5767
 \T1/ptm/m/n/10 Pickle con-tain-ing top CpGs, re-duced num-ber. [de-fault: ./in-
 ter-pre-ta-
  []
 
-[55]
-Underfull \hbox (badness 10000) in paragraph at lines 5542--5543
+
+Underfull \hbox (badness 10000) in paragraph at lines 5800--5801
 \T1/ptm/m/n/10 Pickle con-tain-ing top CpGs, re-duced num-ber. [de-fault: ./in-
 ter-pre-ta-
  []
 
-[56]
-Underfull \hbox (badness 10000) in paragraph at lines 5650--5651
+[56] [57]
+Underfull \hbox (badness 10000) in paragraph at lines 5974--5975
 \T1/ptm/m/n/10 Output di-rec-tory for hypo/hyper shap data. [de-fault: ./in-ter
 -pre-ta-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 5692--5693
+Underfull \hbox (badness 10000) in paragraph at lines 6024--6025
 \T1/ptm/m/n/10 Output di-rec-tory for cpg methy-la-tion shap. [de-fault: ./in-t
 er-pre-ta-
  []
 
-[57] [58
-
-]
+[58]
 Chapter 11.
-[59] [60]
+[59
+
+] [60]
 Chapter 12.
 [61
 
@@ -1327,70 +1340,74 @@ Chapter 12.
 
 ]
 Chapter 13.
-<1.jpeg, id=918, 1027.84pt x 770.88pt>
-File: 1.jpeg Graphic file (type jpg)
-<use 1.jpeg>
-Package pdftex.def Info: 1.jpeg  used on input line 5866.
-(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
-<2.jpeg, id=919, 1027.84pt x 770.88pt>
-File: 2.jpeg Graphic file (type jpg)
-<use 2.jpeg>
-Package pdftex.def Info: 2.jpeg  used on input line 5868.
-(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
-[63 <./1.jpeg>]
-<3.jpeg, id=925, 1027.84pt x 770.88pt>
-File: 3.jpeg Graphic file (type jpg)
-<use 3.jpeg>
-Package pdftex.def Info: 3.jpeg  used on input line 5870.
-(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
-<4.jpeg, id=926, 1027.84pt x 770.88pt>
-File: 4.jpeg Graphic file (type jpg)
-<use 4.jpeg>
-Package pdftex.def Info: 4.jpeg  used on input line 5872.
-(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
- [64 <./2.jpeg> <./3.jpeg>]
-<5.jpeg, id=931, 1027.84pt x 770.88pt>
-File: 5.jpeg Graphic file (type jpg)
-<use 5.jpeg>
-Package pdftex.def Info: 5.jpeg  used on input line 5874.
-(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
-<6.jpeg, id=932, 1027.84pt x 770.88pt>
-File: 6.jpeg Graphic file (type jpg)
-<use 6.jpeg>
-Package pdftex.def Info: 6.jpeg  used on input line 5876.
-(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
- [65 <./4.jpeg> <./5.jpeg>]
-<7.jpeg, id=937, 1027.84pt x 770.88pt>
-File: 7.jpeg Graphic file (type jpg)
-<use 7.jpeg>
-Package pdftex.def Info: 7.jpeg  used on input line 5878.
-(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
-<8.jpeg, id=938, 1027.84pt x 770.88pt>
-File: 8.jpeg Graphic file (type jpg)
-<use 8.jpeg>
-Package pdftex.def Info: 8.jpeg  used on input line 5880.
-(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
- [66 <./6.jpeg> <./7.jpeg>]
-<9.jpeg, id=943, 1027.84pt x 770.88pt>
-File: 9.jpeg Graphic file (type jpg)
-<use 9.jpeg>
-Package pdftex.def Info: 9.jpeg  used on input line 5882.
-(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
- [67 <./8.jpeg> <./9.jpeg>] [68
+[63] [64
 
 ]
 Chapter 14.
-LaTeX Font Info:    Try loading font information for TS1+ptm on input line 5887
+<1.jpeg, id=980, 1027.84pt x 770.88pt>
+File: 1.jpeg Graphic file (type jpg)
+<use 1.jpeg>
+Package pdftex.def Info: 1.jpeg  used on input line 6221.
+(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
+<2.jpeg, id=981, 1027.84pt x 770.88pt>
+File: 2.jpeg Graphic file (type jpg)
+<use 2.jpeg>
+Package pdftex.def Info: 2.jpeg  used on input line 6223.
+(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
+[65 <./1.jpeg>]
+<3.jpeg, id=986, 1027.84pt x 770.88pt>
+File: 3.jpeg Graphic file (type jpg)
+<use 3.jpeg>
+Package pdftex.def Info: 3.jpeg  used on input line 6225.
+(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
+<4.jpeg, id=987, 1027.84pt x 770.88pt>
+File: 4.jpeg Graphic file (type jpg)
+<use 4.jpeg>
+Package pdftex.def Info: 4.jpeg  used on input line 6227.
+(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
+ [66 <./2.jpeg> <./3.jpeg>]
+<5.jpeg, id=992, 1027.84pt x 770.88pt>
+File: 5.jpeg Graphic file (type jpg)
+<use 5.jpeg>
+Package pdftex.def Info: 5.jpeg  used on input line 6229.
+(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
+<6.jpeg, id=993, 1027.84pt x 770.88pt>
+File: 6.jpeg Graphic file (type jpg)
+<use 6.jpeg>
+Package pdftex.def Info: 6.jpeg  used on input line 6231.
+(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
+ [67 <./4.jpeg> <./5.jpeg>]
+<7.jpeg, id=998, 1027.84pt x 770.88pt>
+File: 7.jpeg Graphic file (type jpg)
+<use 7.jpeg>
+Package pdftex.def Info: 7.jpeg  used on input line 6233.
+(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
+<8.jpeg, id=999, 1027.84pt x 770.88pt>
+File: 8.jpeg Graphic file (type jpg)
+<use 8.jpeg>
+Package pdftex.def Info: 8.jpeg  used on input line 6235.
+(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
+ [68 <./6.jpeg> <./7.jpeg>]
+<9.jpeg, id=1004, 1027.84pt x 770.88pt>
+File: 9.jpeg Graphic file (type jpg)
+<use 9.jpeg>
+Package pdftex.def Info: 9.jpeg  used on input line 6237.
+(pdftex.def)             Requested size: 361.3491pt x 271.01184pt.
+ [69 <./8.jpeg> <./9.jpeg>] [70
+
+]
+Chapter 15.
+LaTeX Font Info:    Try loading font information for TS1+ptm on input line 6242
 .
 (/usr/local/texlive/2018/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
-) [69] [70
+) [71] [72
 
 ]
-[71
+[73
 
 
-] (./MethylNet.ind [72
+] (./MethylNet.ind [74
 
 
 ]
@@ -1410,57 +1427,62 @@ Underfull \hbox (badness 10000) in paragraph at lines 11--12
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 12--13
-[]| \T1/pcr/m/n/10 methylnet-torque command line
+[]| \T1/pcr/m/n/10 methylnet-test command line option\T1/ptm/m/n/10 ,
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 13--14
+[]| \T1/pcr/m/n/10 methylnet-torque command line
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 14--15
 []| \T1/pcr/m/n/10 methylnet-visualize command line
  []
 
 
-Overfull \hbox (24.1225pt too wide) in paragraph at lines 15--17
+Overfull \hbox (24.1225pt too wide) in paragraph at lines 16--18
 []| \T1/pcr/m/n/10 methylnet-interpret-regenerate_top_cpgs
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 17--18
+Underfull \hbox (badness 10000) in paragraph at lines 18--19
 []\T1/pcr/m/n/10 -a, --additional_command
  []
 
 
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 18--20
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 19--21
 []| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
  []
 
 
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 20--22
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 21--23
 []| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 23--24
+Underfull \hbox (badness 10000) in paragraph at lines 24--25
 []| \T1/pcr/m/n/10 methylnet-torque-run_torque_job
  []
 
 
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 25--26
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 26--27
 []| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 27--28
-[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+[]\T1/pcr/m/n/10 -a, --average_mechanism
  []
 
 
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 29--31
-[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
+Overfull \hbox (24.1225pt too wide) in paragraph at lines 28--30
+[]| \T1/pcr/m/n/10 methylnet-predict-classification_report
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 32--33
-[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 31--33
+[]| \T1/pcr/m/n/10 methylnet-interpret-return_shap_values
  []
 
 
@@ -1469,130 +1491,130 @@ Underfull \hbox (badness 10000) in paragraph at lines 34--35
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 35--37
-[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
- []
-
-
-Overfull \hbox (18.1225pt too wide) in paragraph at lines 37--39
-[]| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 36--38
+[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 39--40
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
- []
-
-
-Overfull \hbox (36.1225pt too wide) in paragraph at lines 41--43
-[]| \T1/pcr/m/n/10 methylnet-interpret-plot_all_lola_outputs
- []
-
-
-Overfull \hbox (6.1225pt too wide) in paragraph at lines 43--44
-[]| \T1/pcr/m/n/10 methylnet-interpret-plot_lola_output
- []
-
-
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 47--48
-[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 48--49
-[]| \T1/pcr/m/n/10 methylnet-interpret-plot_top_cpgs
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 50--52
-[]| \T1/pcr/m/n/10 methylnet-interpret-bin_regression_shaps
- []
-
-
-Overfull \hbox (60.1225pt too wide) in paragraph at lines 52--54
-[]| \T1/pcr/m/n/10 methylnet-interpret-extract_methylation_array
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 54--56
-[]| \T1/pcr/m/n/10 methylnet-interpret-order_results_by_col
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 57--58
-[]| \T1/pcr/m/n/10 methylnet-torque-run_torque_job
- []
-
-
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 59--61
-[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
- []
-
-
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 61--63
-[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 64--65
 []| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 65--67
+Underfull \hbox (badness 10000) in paragraph at lines 41--42
+[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 42--44
 []| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
  []
 
 
-Overfull \hbox (18.1225pt too wide) in paragraph at lines 67--69
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 44--46
 []| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 69--70
+Underfull \hbox (badness 10000) in paragraph at lines 46--47
 []| \T1/pcr/m/n/10 methylnet-predict-make_prediction
  []
 
 
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 71--73
+Overfull \hbox (36.1225pt too wide) in paragraph at lines 48--50
+[]| \T1/pcr/m/n/10 methylnet-interpret-plot_all_lola_outputs
+ []
+
+
+Overfull \hbox (6.1225pt too wide) in paragraph at lines 50--51
+[]| \T1/pcr/m/n/10 methylnet-interpret-plot_lola_output
+ []
+
+
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 54--55
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 55--56
+[]| \T1/pcr/m/n/10 methylnet-interpret-plot_top_cpgs
+ []
+
+
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 56--58
+[]| \T1/pcr/m/n/10 methylnet-interpret-return_shap_values
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 59--61
+[]| \T1/pcr/m/n/10 methylnet-interpret-bin_regression_shaps
+ []
+
+
+Overfull \hbox (60.1225pt too wide) in paragraph at lines 61--63
+[]| \T1/pcr/m/n/10 methylnet-interpret-extract_methylation_array
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 63--65
+[]| \T1/pcr/m/n/10 methylnet-interpret-order_results_by_col
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 66--67
+[]| \T1/pcr/m/n/10 methylnet-torque-run_torque_job
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 68--69
+[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 69--71
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 71--73
+[]| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
+ []
+
+[75
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 73--74
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 75--77
 []| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
  []
 
-[73
 
-]
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 73--75
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 77--79
 []| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
  []
 
 
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 76--78
+Overfull \hbox (72.1225pt too wide) in paragraph at lines 80--82
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_embedding_classes
+ []
+
+
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 83--85
 []| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
  []
 
 
-Overfull \hbox (18.1225pt too wide) in paragraph at lines 78--80
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 85--87
 []| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 80--81
+Underfull \hbox (badness 10000) in paragraph at lines 87--88
 []| \T1/pcr/m/n/10 methylnet-predict-make_prediction
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 82--84
-[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
- []
-
-
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 85--86
-[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
- []
-
-
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 87--88
-[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
@@ -1601,243 +1623,213 @@ Overfull \hbox (30.1225pt too wide) in paragraph at lines 89--91
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 92--94
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 92--93
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
+ []
+
+
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 94--95
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 96--98
 []| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
  []
 
 
-Overfull \hbox (60.1225pt too wide) in paragraph at lines 95--97
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 99--101
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+
+Overfull \hbox (60.1225pt too wide) in paragraph at lines 102--104
 []| \T1/pcr/m/n/10 methylnet-interpret-extract_methylation_array
  []
 
 
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 100--101
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 107--108
 []| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 102--104
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 109--111
 []| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 105--106
+Underfull \hbox (badness 10000) in paragraph at lines 112--113
 []| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 107--108
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 114--116
+[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
+ []
+
+
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 116--118
+[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
+ []
+
+
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 119--121
+[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
+ []
+
+
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 121--123
+[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 124--125
 []| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 108--109
+Underfull \hbox (badness 10000) in paragraph at lines 125--126
 []| \T1/pcr/m/n/10 methylnet-predict-make_prediction
  []
 
 
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 110--111
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 127--128
 []| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
-Overfull \hbox (36.1225pt too wide) in paragraph at lines 112--114
+Overfull \hbox (36.1225pt too wide) in paragraph at lines 129--131
 []| \T1/pcr/m/n/10 methylnet-interpret-plot_all_lola_outputs
  []
 
 
-Overfull \hbox (6.1225pt too wide) in paragraph at lines 114--115
+Overfull \hbox (6.1225pt too wide) in paragraph at lines 131--132
 []| \T1/pcr/m/n/10 methylnet-interpret-plot_lola_output
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 116--117
+Underfull \hbox (badness 10000) in paragraph at lines 133--134
 []| \T1/pcr/m/n/10 methylnet-predict-make_prediction
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 118--119
+Underfull \hbox (badness 10000) in paragraph at lines 135--136
 []| \T1/pcr/m/n/10 methylnet-predict-make_prediction
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 119--120
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 137--139
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 139--140
 []\T1/pcr/m/n/10 -e, --categorical_encoder
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 120--122
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 140--142
 []| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
  []
 
 
-Overfull \hbox (24.1225pt too wide) in paragraph at lines 122--124
+Overfull \hbox (24.1225pt too wide) in paragraph at lines 142--144
 []| \T1/pcr/m/n/10 methylnet-predict-classification_report
  []
 
 
-Overfull \hbox (18.1225pt too wide) in paragraph at lines 124--126
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 144--146
 []| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 127--128
+Underfull \hbox (badness 10000) in paragraph at lines 147--148
 []| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 128--129
+Underfull \hbox (badness 10000) in paragraph at lines 148--149
 []| \T1/pcr/m/n/10 methylnet-predict-make_prediction
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 130--131
+Underfull \hbox (badness 10000) in paragraph at lines 150--151
 []| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 131--132
+Underfull \hbox (badness 10000) in paragraph at lines 151--152
 []| \T1/pcr/m/n/10 methylnet-predict-make_prediction
  []
 
 
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 133--134
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 153--154
 []| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 135--137
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 155--157
 []| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
  []
 
 
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 138--140
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 158--160
 []| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
  []
 
 
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 140--142
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 160--162
 []| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
  []
 
-
-Overfull \hbox (60.1225pt too wide) in paragraph at lines 143--145
+[76]
+Overfull \hbox (60.1225pt too wide) in paragraph at lines 163--165
 []| \T1/pcr/m/n/10 methylnet-interpret-extract_methylation_array
  []
 
 
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 146--147
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 166--167
 []| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 148--150
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 168--170
 []| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
  []
 
 
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 150--152
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 170--172
 []| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
  []
 
 
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 153--155
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 173--175
 []| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
  []
 
 
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 155--157
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 175--177
 []| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 158--159
-[]| \T1/pcr/m/n/10 methylnet-torque-run_torque_job
- []
-
-
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 160--161
-[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
- []
-
-[74]
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 162--163
-[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 163--164
-[]\T1/pcr/m/n/10 -hcsv, --hyperparameter_input_csv
- []
-
-
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 164--166
-[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
- []
-
-
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 166--168
-[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 168--169
-[]\T1/pcr/m/n/10 -hl, --hyperparameter_log
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 169--170
-[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 170--171
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 171--172
-[]\T1/pcr/m/n/10 -hl, --hyperparameter_output_log
- []
-
-
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 172--174
-[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
- []
-
-
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 174--176
-[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 176--177
-[]\T1/pcr/m/n/10 -hlt, --hidden_layer_encoder_topology
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 177--178
-[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 178--179
-[]\T1/pcr/m/n/10 -hlt, --hidden_layer_topology
+[]| \T1/pcr/m/n/10 methylnet-torque-run_torque_job
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 179--180
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+[]\T1/pcr/m/n/10 -grid, --hyperparameter_yaml
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 180--181
-[]\T1/pcr/m/n/10 -hs, --height_kernel_sizes
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 180--182
+[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 181--182
-[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 182--184
+[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
  []
 
 
@@ -1846,58 +1838,83 @@ Overfull \hbox (12.1225pt too wide) in paragraph at lines 185--186
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 186--187
-[]| \T1/pcr/m/n/10 methylnet-interpret-plot_top_cpgs
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 187--188
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
-Overfull \hbox (60.1225pt too wide) in paragraph at lines 187--189
-[]| \T1/pcr/m/n/10 methylnet-interpret-view_methylation_top_cpgs
+Underfull \hbox (badness 10000) in paragraph at lines 188--189
+[]\T1/pcr/m/n/10 -hcsv, --hyperparameter_input_csv
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 190--192
-[]| \T1/pcr/m/n/10 methylnet-interpret-order_results_by_col
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 189--191
+[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 193--194
-[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 194--196
-[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 196--197
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
- []
-
-
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 198--200
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 191--193
 []| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
  []
 
 
-Overfull \hbox (18.1225pt too wide) in paragraph at lines 200--202
-[]| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 194--196
+[]| \T1/pcr/m/n/10 methylnet-interpret-return_shap_values
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 202--203
+Underfull \hbox (badness 10000) in paragraph at lines 196--197
+[]\T1/pcr/m/n/10 -hl, --hyperparameter_log
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 197--198
+[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 198--199
 []| \T1/pcr/m/n/10 methylnet-predict-make_prediction
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 204--206
-[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+Underfull \hbox (badness 10000) in paragraph at lines 199--200
+[]\T1/pcr/m/n/10 -hl, --hyperparameter_output_log
  []
 
 
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 207--208
-[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 200--202
+[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
+ []
+
+
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 202--204
+[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 204--205
+[]\T1/pcr/m/n/10 -hlt, --hidden_layer_encoder_topology
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 205--206
+[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 206--207
+[]\T1/pcr/m/n/10 -hlt, --hidden_layer_topology
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 207--208
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 208--209
+[]\T1/pcr/m/n/10 -hs, --height_kernel_sizes
  []
 
 
@@ -1907,37 +1924,37 @@ Underfull \hbox (badness 10000) in paragraph at lines 209--210
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 210--211
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+[]\T1/pcr/m/n/10 -i, --embedding_methyl_array_pkl
  []
 
 
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 212--214
-[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
+Overfull \hbox (72.1225pt too wide) in paragraph at lines 211--213
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_embedding_classes
  []
 
 
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 214--216
-[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 216--217
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 217--218
-[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+[]| \T1/pcr/m/n/10 methylnet-interpret-plot_top_cpgs
  []
 
 
-Overfull \hbox (36.1225pt too wide) in paragraph at lines 219--221
-[]| \T1/pcr/m/n/10 methylnet-interpret-plot_all_lola_outputs
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 218--220
+[]| \T1/pcr/m/n/10 methylnet-interpret-return_shap_values
  []
 
 
-Overfull \hbox (6.1225pt too wide) in paragraph at lines 222--223
-[]| \T1/pcr/m/n/10 methylnet-interpret-plot_lola_output
+Overfull \hbox (60.1225pt too wide) in paragraph at lines 220--222
+[]| \T1/pcr/m/n/10 methylnet-interpret-view_methylation_top_cpgs
  []
 
 
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 224--225
-[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 223--225
+[]| \T1/pcr/m/n/10 methylnet-interpret-order_results_by_col
  []
 
 
@@ -1946,33 +1963,23 @@ Underfull \hbox (badness 10000) in paragraph at lines 226--227
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 227--228
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 227--229
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 229--230
 []| \T1/pcr/m/n/10 methylnet-predict-make_prediction
  []
 
 
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 229--230
-[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 231--233
+[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 231--232
-[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 232--233
-[]\T1/pcr/m/n/10 -lr_mlp, --learning_rate_mlp
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 233--234
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 234--235
-[]\T1/pcr/m/n/10 -lr_vae, --learning_rate_vae
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 233--235
+[]| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
  []
 
 
@@ -1980,384 +1987,374 @@ Underfull \hbox (badness 10000) in paragraph at lines 235--236
 []| \T1/pcr/m/n/10 methylnet-predict-make_prediction
  []
 
-[75]
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 237--238
-[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
- []
 
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 239--241
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 237--239
 []| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
  []
 
 
-Overfull \hbox (18.1225pt too wide) in paragraph at lines 241--243
-[]| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 240--241
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 244--245
+Underfull \hbox (badness 10000) in paragraph at lines 242--243
 []| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 245--246
+Underfull \hbox (badness 10000) in paragraph at lines 243--244
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+[77]
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 245--247
+[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
+ []
+
+
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 247--249
+[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 250--251
+[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+ []
+
+
+Overfull \hbox (36.1225pt too wide) in paragraph at lines 252--254
+[]| \T1/pcr/m/n/10 methylnet-interpret-plot_all_lola_outputs
+ []
+
+
+Overfull \hbox (6.1225pt too wide) in paragraph at lines 255--256
+[]| \T1/pcr/m/n/10 methylnet-interpret-plot_lola_output
+ []
+
+
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 257--258
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 259--260
+[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 260--261
 []| \T1/pcr/m/n/10 methylnet-predict-make_prediction
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 246--247
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 262--263
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
+ []
+
+
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 264--266
+[]| \T1/pcr/m/n/10 methylnet-interpret-return_shap_values
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 267--268
+[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 268--269
+[]\T1/pcr/m/n/10 -lr_mlp, --learning_rate_mlp
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 269--270
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 270--271
+[]\T1/pcr/m/n/10 -lr_vae, --learning_rate_vae
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 271--272
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 273--274
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
+ []
+
+
+Overfull \hbox (72.1225pt too wide) in paragraph at lines 275--277
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_embedding_classes
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 278--280
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 280--282
+[]| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 283--284
+[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 284--285
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 285--286
 []\T1/pcr/m/n/10 -mc, --model_complexity_factor
  []
 
 
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 247--249
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 286--288
 []| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
  []
 
 
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 249--251
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 288--290
 []| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 252--254
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 291--293
 []| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 255--257
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 294--296
 []| \T1/pcr/m/n/10 methylnet-interpret-bin_regression_shaps
  []
 
 
-Overfull \hbox (60.1225pt too wide) in paragraph at lines 258--260
+Overfull \hbox (60.1225pt too wide) in paragraph at lines 297--299
 []| \T1/pcr/m/n/10 methylnet-interpret-extract_methylation_array
  []
 
 
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 261--263
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 300--302
 []| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
  []
 
 
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 263--265
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 302--304
 []| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 266--267
+Underfull \hbox (badness 10000) in paragraph at lines 305--306
 []| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
  []
 
 
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 268--269
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 307--308
 []| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
-Overfull \hbox (24.1225pt too wide) in paragraph at lines 270--272
+Overfull \hbox (24.1225pt too wide) in paragraph at lines 309--311
 []| \T1/pcr/m/n/10 methylnet-interpret-regenerate_top_cpgs
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 273--274
+Underfull \hbox (badness 10000) in paragraph at lines 312--313
 []| \T1/pcr/m/n/10 methylnet-torque-run_torque_job
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 275--277
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 314--316
 []| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
  []
 
 
-Overfull \hbox (24.1225pt too wide) in paragraph at lines 278--280
+Overfull \hbox (24.1225pt too wide) in paragraph at lines 317--319
 []| \T1/pcr/m/n/10 methylnet-interpret-regenerate_top_cpgs
  []
 
 
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 281--283
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 320--322
 []| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
  []
 
 
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 283--285
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 322--324
 []| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 286--288
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 325--327
 []| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 289--291
-[]| \T1/pcr/m/n/10 methylnet-interpret-order_results_by_col
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 292--293
-[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
- []
-
-
-Overfull \hbox (60.1225pt too wide) in paragraph at lines 293--295
-[]| \T1/pcr/m/n/10 methylnet-interpret-extract_methylation_array
- []
-
-
-Overfull \hbox (18.1225pt too wide) in paragraph at lines 295--297
-[]| \T1/pcr/m/n/10 methylnet-interpret-grab_lola_db_cache
- []
-
-
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 297--298
-[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 298--299
-[]| \T1/pcr/m/n/10 methylnet-interpret-plot_top_cpgs
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 299--301
-[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
- []
-
-
-Overfull \hbox (78.1225pt too wide) in paragraph at lines 302--304
-[]| \T1/pcr/m/n/10 methylnet-interpret-split_hyper_hypo_methylation
- []
-
-
-Overfull \hbox (60.1225pt too wide) in paragraph at lines 304--306
-[]| \T1/pcr/m/n/10 methylnet-interpret-view_methylation_top_cpgs
- []
-
-
-Overfull \hbox (24.1225pt too wide) in paragraph at lines 306--308
-[]| \T1/pcr/m/n/10 methylnet-predict-classification_report
- []
-
-
-Overfull \hbox (18.1225pt too wide) in paragraph at lines 308--310
-[]| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 310--311
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
- []
-
-
-Overfull \hbox (24.1225pt too wide) in paragraph at lines 314--316
-[]| \T1/pcr/m/n/10 methylnet-interpret-regenerate_top_cpgs
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 317--318
-[]| \T1/pcr/m/n/10 methylnet-visualize-plot_roc_curve
- []
-
-
-Overfull \hbox (24.1225pt too wide) in paragraph at lines 318--320
-[]| \T1/pcr/m/n/10 methylnet-visualize-plot_training_curve
- []
-
-
-Overfull \hbox (36.1225pt too wide) in paragraph at lines 321--323
-[]| \T1/pcr/m/n/10 methylnet-interpret-plot_all_lola_outputs
- []
-
-
-Overfull \hbox (6.1225pt too wide) in paragraph at lines 323--324
-[]| \T1/pcr/m/n/10 methylnet-interpret-plot_lola_output
- []
-
-[76]
-Underfull \hbox (badness 10000) in paragraph at lines 326--327
-[]\T1/pcr/m/n/10 -os, --output_shap_pkl
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 327--329
-[]| \T1/pcr/m/n/10 methylnet-interpret-bin_regression_shaps
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 329--330
-[]\T1/pcr/m/n/10 -ot, --output_test_pkl
+Overfull \hbox (72.1225pt too wide) in paragraph at lines 328--330
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_embedding_classes
  []
 
 
 Overfull \hbox (30.1225pt too wide) in paragraph at lines 330--332
-[]| \T1/pcr/m/n/10 methylnet-interpret-bin_regression_shaps
+[]| \T1/pcr/m/n/10 methylnet-interpret-order_results_by_col
  []
 
-
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 335--336
-[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
- []
-
-
-Overfull \hbox (36.1225pt too wide) in paragraph at lines 337--339
-[]| \T1/pcr/m/n/10 methylnet-interpret-plot_all_lola_outputs
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 340--341
-[]| \T1/pcr/m/n/10 methylnet-torque-run_torque_job
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 341--342
-[]\T1/pcr/m/n/10 -r, --n_random_representative
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 342--344
-[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
- []
-
-
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 345--347
-[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
- []
-
-
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 347--349
-[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 350--352
-[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
- []
-
-
-Overfull \hbox (24.1225pt too wide) in paragraph at lines 353--355
-[]| \T1/pcr/m/n/10 methylnet-predict-classification_report
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 357--358
-[]| \T1/pcr/m/n/10 methylnet-visualize-plot_roc_curve
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 358--359
-[]\T1/pcr/m/n/10 -rc, --residual_cutoff
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 359--361
-[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 361--362
-[]\T1/pcr/m/n/10 -rt, --n_random_representative_test
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 362--364
-[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 365--366
+[78]
+Underfull \hbox (badness 10000) in paragraph at lines 333--334
 []| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 366--367
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 368--370
-[]| \T1/pcr/m/n/10 methylnet-interpret-bin_regression_shaps
- []
-
-
-Overfull \hbox (60.1225pt too wide) in paragraph at lines 370--372
+Overfull \hbox (60.1225pt too wide) in paragraph at lines 334--336
 []| \T1/pcr/m/n/10 methylnet-interpret-extract_methylation_array
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 372--373
-[]| \T1/pcr/m/n/10 methylnet-interpret-list_classes
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 336--338
+[]| \T1/pcr/m/n/10 methylnet-interpret-grab_lola_db_cache
  []
 
 
-Overfull \hbox (6.1225pt too wide) in paragraph at lines 373--374
-[]| \T1/pcr/m/n/10 methylnet-interpret-list_individuals
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 338--339
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 374--375
+Underfull \hbox (badness 10000) in paragraph at lines 339--340
 []| \T1/pcr/m/n/10 methylnet-interpret-plot_top_cpgs
  []
 
 
-Overfull \hbox (24.1225pt too wide) in paragraph at lines 376--378
-[]| \T1/pcr/m/n/10 methylnet-interpret-regenerate_top_cpgs
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 340--342
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
  []
 
 
-Overfull \hbox (78.1225pt too wide) in paragraph at lines 379--381
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 342--344
+[]| \T1/pcr/m/n/10 methylnet-interpret-return_shap_values
+ []
+
+
+Overfull \hbox (78.1225pt too wide) in paragraph at lines 345--347
 []| \T1/pcr/m/n/10 methylnet-interpret-split_hyper_hypo_methylation
  []
 
 
-Overfull \hbox (60.1225pt too wide) in paragraph at lines 381--383
+Overfull \hbox (60.1225pt too wide) in paragraph at lines 347--349
 []| \T1/pcr/m/n/10 methylnet-interpret-view_methylation_top_cpgs
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 383--384
-[]\T1/pcr/m/n/10 -s, --shapley_data_list
+Overfull \hbox (24.1225pt too wide) in paragraph at lines 349--351
+[]| \T1/pcr/m/n/10 methylnet-predict-classification_report
  []
 
 
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 384--385
-[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 351--353
+[]| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 385--386
-[]\T1/pcr/m/n/10 -sc, --stratify_column
- []
-
-
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 386--388
-[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 388--389
-[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
- []
-
-
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 390--392
-[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 392--393
+Underfull \hbox (badness 10000) in paragraph at lines 353--354
 []| \T1/pcr/m/n/10 methylnet-predict-make_prediction
  []
 
 
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 394--395
+Overfull \hbox (24.1225pt too wide) in paragraph at lines 357--359
+[]| \T1/pcr/m/n/10 methylnet-interpret-regenerate_top_cpgs
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 360--361
+[]| \T1/pcr/m/n/10 methylnet-visualize-plot_roc_curve
+ []
+
+
+Overfull \hbox (24.1225pt too wide) in paragraph at lines 361--363
+[]| \T1/pcr/m/n/10 methylnet-visualize-plot_training_curve
+ []
+
+
+Overfull \hbox (36.1225pt too wide) in paragraph at lines 364--366
+[]| \T1/pcr/m/n/10 methylnet-interpret-plot_all_lola_outputs
+ []
+
+
+Overfull \hbox (6.1225pt too wide) in paragraph at lines 366--367
+[]| \T1/pcr/m/n/10 methylnet-interpret-plot_lola_output
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 367--368
+[]\T1/pcr/m/n/10 -op, --output_pval_csv
+ []
+
+
+Overfull \hbox (72.1225pt too wide) in paragraph at lines 368--370
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_embedding_classes
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 372--373
+[]\T1/pcr/m/n/10 -os, --output_shap_pkl
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 373--375
+[]| \T1/pcr/m/n/10 methylnet-interpret-bin_regression_shaps
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 375--376
+[]\T1/pcr/m/n/10 -ot, --output_test_pkl
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 376--378
+[]| \T1/pcr/m/n/10 methylnet-interpret-bin_regression_shaps
+ []
+
+
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 381--382
 []| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 395--396
-[]\T1/pcr/m/n/10 -ssbs, --shap_sample_batch_size
+Overfull \hbox (36.1225pt too wide) in paragraph at lines 383--385
+[]| \T1/pcr/m/n/10 methylnet-interpret-plot_all_lola_outputs
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 386--387
+[]| \T1/pcr/m/n/10 methylnet-torque-run_torque_job
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 387--388
+[]\T1/pcr/m/n/10 -r, --n_random_representative
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 388--390
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 391--393
+[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
+ []
+
+
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 393--395
+[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
  []
 
 
@@ -2366,1187 +2363,1419 @@ Overfull \hbox (30.1225pt too wide) in paragraph at lines 396--398
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 399--401
-[]| \T1/pcr/m/n/10 methylnet-interpret-order_results_by_col
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 402--403
-[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+Overfull \hbox (24.1225pt too wide) in paragraph at lines 399--401
+[]| \T1/pcr/m/n/10 methylnet-predict-classification_report
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 403--404
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+[]| \T1/pcr/m/n/10 methylnet-visualize-plot_roc_curve
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 404--405
+[]\T1/pcr/m/n/10 -rc, --residual_cutoff
  []
 
 
 Overfull \hbox (30.1225pt too wide) in paragraph at lines 405--407
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 407--408
+[]\T1/pcr/m/n/10 -rt, --n_random_representative_test
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 408--410
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 411--412
+[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 412--413
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 414--416
 []| \T1/pcr/m/n/10 methylnet-interpret-bin_regression_shaps
  []
 
 
-Overfull \hbox (60.1225pt too wide) in paragraph at lines 407--409
+Overfull \hbox (60.1225pt too wide) in paragraph at lines 416--418
 []| \T1/pcr/m/n/10 methylnet-interpret-extract_methylation_array
  []
 
-[77]
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 409--411
-[]| \T1/pcr/m/n/10 methylnet-interpret-order_results_by_col
+[79]
+Underfull \hbox (badness 10000) in paragraph at lines 418--419
+[]| \T1/pcr/m/n/10 methylnet-interpret-list_classes
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 411--413
-[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+Overfull \hbox (6.1225pt too wide) in paragraph at lines 419--420
+[]| \T1/pcr/m/n/10 methylnet-interpret-list_individuals
  []
 
 
-Overfull \hbox (78.1225pt too wide) in paragraph at lines 413--415
+Underfull \hbox (badness 10000) in paragraph at lines 420--421
+[]| \T1/pcr/m/n/10 methylnet-interpret-plot_top_cpgs
+ []
+
+
+Overfull \hbox (24.1225pt too wide) in paragraph at lines 422--424
+[]| \T1/pcr/m/n/10 methylnet-interpret-regenerate_top_cpgs
+ []
+
+
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 424--426
+[]| \T1/pcr/m/n/10 methylnet-interpret-return_shap_values
+ []
+
+
+Overfull \hbox (78.1225pt too wide) in paragraph at lines 427--429
 []| \T1/pcr/m/n/10 methylnet-interpret-split_hyper_hypo_methylation
  []
 
 
-Overfull \hbox (60.1225pt too wide) in paragraph at lines 415--417
+Overfull \hbox (60.1225pt too wide) in paragraph at lines 429--431
 []| \T1/pcr/m/n/10 methylnet-interpret-view_methylation_top_cpgs
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 418--419
-[]| \T1/pcr/m/n/10 methylnet-torque-run_torque_job
+Underfull \hbox (badness 10000) in paragraph at lines 431--432
+[]\T1/pcr/m/n/10 -s, --shapley_data_list
  []
 
 
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 420--422
-[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
- []
-
-
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 422--424
-[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 424--425
-[]\T1/pcr/m/n/10 -t, --training_curve_file
- []
-
-
-Overfull \hbox (24.1225pt too wide) in paragraph at lines 425--427
-[]| \T1/pcr/m/n/10 methylnet-visualize-plot_training_curve
- []
-
-
-Overfull \hbox (24.1225pt too wide) in paragraph at lines 428--430
-[]| \T1/pcr/m/n/10 methylnet-visualize-plot_training_curve
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 431--433
-[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
- []
-
-
-Overfull \hbox (18.1225pt too wide) in paragraph at lines 434--436
-[]| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 436--437
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 438--439
-[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 439--440
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
- []
-
-
-Overfull \hbox (42.1225pt too wide) in paragraph at lines 441--443
-[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
- []
-
-
-Overfull \hbox (54.1225pt too wide) in paragraph at lines 443--445
-[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 446--448
-[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 449--450
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
- []
-
-
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 451--453
-[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
- []
-
-
-Overfull \hbox (24.1225pt too wide) in paragraph at lines 454--456
-[]| \T1/pcr/m/n/10 methylnet-visualize-plot_training_curve
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 457--458
-[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 458--459
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
- []
-
-
-Overfull \hbox (12.1225pt too wide) in paragraph at lines 460--461
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 432--433
 []| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 462--463
+Underfull \hbox (badness 10000) in paragraph at lines 433--434
+[]\T1/pcr/m/n/10 -sc, --stratify_column
+ []
+
+
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 434--436
+[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 436--437
 []| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
  []
 
 
-Overfull \hbox (30.1225pt too wide) in paragraph at lines 463--465
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 438--440
+[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 440--441
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 442--443
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 443--444
+[]\T1/pcr/m/n/10 -ssbs, --shap_sample_batch_size
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 444--446
 []| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
  []
 
 
-Overfull \hbox (18.1225pt too wide) in paragraph at lines 465--467
-[]| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 447--449
+[]| \T1/pcr/m/n/10 methylnet-interpret-order_results_by_col
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 467--468
-[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 469--470
+Underfull \hbox (badness 10000) in paragraph at lines 450--451
 []| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 470--471
+Underfull \hbox (badness 10000) in paragraph at lines 451--452
 []| \T1/pcr/m/n/10 methylnet-predict-make_prediction
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 471--472
-[]\T1/pcr/m/n/10 -ws, --width_kernel_sizes
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 453--455
+[]| \T1/pcr/m/n/10 methylnet-interpret-bin_regression_shaps
+ []
+
+
+Overfull \hbox (60.1225pt too wide) in paragraph at lines 455--457
+[]| \T1/pcr/m/n/10 methylnet-interpret-extract_methylation_array
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 457--459
+[]| \T1/pcr/m/n/10 methylnet-interpret-order_results_by_col
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 459--461
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+
+Overfull \hbox (78.1225pt too wide) in paragraph at lines 461--463
+[]| \T1/pcr/m/n/10 methylnet-interpret-split_hyper_hypo_methylation
+ []
+
+
+Overfull \hbox (60.1225pt too wide) in paragraph at lines 463--465
+[]| \T1/pcr/m/n/10 methylnet-interpret-view_methylation_top_cpgs
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 466--467
+[]| \T1/pcr/m/n/10 methylnet-torque-run_torque_job
+ []
+
+
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 468--470
+[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
+ []
+
+
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 470--472
+[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 472--473
+[]\T1/pcr/m/n/10 -t, --training_curve_file
+ []
+
+
+Overfull \hbox (24.1225pt too wide) in paragraph at lines 473--475
+[]| \T1/pcr/m/n/10 methylnet-visualize-plot_training_curve
+ []
+
+
+Overfull \hbox (72.1225pt too wide) in paragraph at lines 476--478
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_embedding_classes
+ []
+
+
+Overfull \hbox (78.1225pt too wide) in paragraph at lines 479--481
+[]| \T1/pcr/m/n/10 methylnet-interpret-split_hyper_hypo_methylation
+ []
+
+
+Overfull \hbox (24.1225pt too wide) in paragraph at lines 481--483
+[]| \T1/pcr/m/n/10 methylnet-visualize-plot_training_curve
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 484--486
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 487--489
+[]| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 489--490
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 491--492
 []| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 476--478
+Underfull \hbox (badness 10000) in paragraph at lines 492--493
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Overfull \hbox (42.1225pt too wide) in paragraph at lines 494--496
+[]| \T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
+ []
+
+
+Overfull \hbox (54.1225pt too wide) in paragraph at lines 496--498
+[]| \T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 499--501
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 502--503
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 504--506
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+[80]
+Overfull \hbox (24.1225pt too wide) in paragraph at lines 507--509
+[]| \T1/pcr/m/n/10 methylnet-visualize-plot_training_curve
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 510--511
+[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 511--512
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Overfull \hbox (12.1225pt too wide) in paragraph at lines 513--514
+[]| \T1/pcr/m/n/10 methylnet-interpret-interpret_biology
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 515--516
+[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+ []
+
+
+Overfull \hbox (30.1225pt too wide) in paragraph at lines 516--518
+[]| \T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+
+Overfull \hbox (18.1225pt too wide) in paragraph at lines 518--520
+[]| \T1/pcr/m/n/10 methylnet-predict-make_new_predictions
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 520--521
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 522--523
+[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 523--524
+[]| \T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 524--525
+[]\T1/pcr/m/n/10 -ws, --width_kernel_sizes
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 525--526
+[]| \T1/pcr/m/n/10 methylnet-embed-perform_embedding
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 529--531
 []\T1/pcr/m/n/10 add_abs_value_classes() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl
 -
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 476--478
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 529--531
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 478--480
+Underfull \hbox (badness 10000) in paragraph at lines 531--533
 []\T1/pcr/m/n/10 add_bin_continuous_classes() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 m
 ethyl-
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 478--480
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 531--533
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 480--482
+Underfull \hbox (badness 10000) in paragraph at lines 533--535
 []\T1/pcr/m/n/10 add_class() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 480--482
+Underfull \hbox (badness 10000) in paragraph at lines 533--535
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyData
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 482--484
+Underfull \hbox (badness 10000) in paragraph at lines 535--537
 []\T1/pcr/m/n/10 add_global_importance() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl
 -
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 482--484
+Underfull \hbox (badness 10000) in paragraph at lines 535--537
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyData
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 484--486
+Underfull \hbox (badness 10000) in paragraph at lines 537--539
 []\T1/pcr/m/n/10 add_validation_set() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 486--488
+Underfull \hbox (badness 10000) in paragraph at lines 539--541
 []\T1/pcr/m/n/10 add_validation_set() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 490--492
+Underfull \hbox (badness 10000) in paragraph at lines 543--545
 []\T1/pcr/m/n/10 assemble_run_torque() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 in mod-u
 le methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 496--498
+Underfull \hbox (badness 10000) in paragraph at lines 549--551
 []\T1/pcr/m/n/10 BioInterpreter \T1/ptm/m/n/10 (\T1/ptm/m/it/10 class in methyl
 -
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 498--500
+Underfull \hbox (badness 10000) in paragraph at lines 551--553
 []\T1/pcr/m/n/10 build_explainer() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 498--500
+Underfull \hbox (badness 10000) in paragraph at lines 551--553
 \T1/ptm/m/it/10 net.interpretation_classes.CpGExplainer
  []
 
-[78]
-Overfull \hbox (4.1225pt too wide) in paragraph at lines 504--506
+
+Underfull \hbox (badness 10000) in paragraph at lines 556--558
+[]\T1/pcr/m/n/10 calculate_p_values() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
+ []
+
+
+Overfull \hbox (14.73973pt too wide) in paragraph at lines 556--558
+\T1/ptm/m/it/10 net.interpretation_classes.DistanceMatrixCompute
+ []
+
+
+Overfull \hbox (4.1225pt too wide) in paragraph at lines 559--561
 []\T1/pcr/m/n/10 classifier_assign_scores_to_shap_data()
  []
 
 
-Overfull \hbox (4.17993pt too wide) in paragraph at lines 504--506
+Overfull \hbox (4.17993pt too wide) in paragraph at lines 559--561
 \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.interpretation_classes.CpGExplainer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 506--508
+Underfull \hbox (badness 10000) in paragraph at lines 561--563
 []\T1/pcr/m/n/10 coarse_scan() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 in mod-ule methy
 l-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 508--510
+Underfull \hbox (badness 10000) in paragraph at lines 563--565
+[]\T1/pcr/m/n/10 compute_distances() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
+ []
+
+
+Overfull \hbox (14.73973pt too wide) in paragraph at lines 563--565
+\T1/ptm/m/it/10 net.interpretation_classes.DistanceMatrixCompute
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 565--567
 []\T1/pcr/m/n/10 cooccurrence_fn() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 in mod-ule m
 ethyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 510--512
+Underfull \hbox (badness 10000) in paragraph at lines 567--569
 []\T1/pcr/m/n/10 CosineAnnealingWithRestartsLR \T1/ptm/m/n/10 (\T1/ptm/m/it/10 
 class in
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 512--514
+Underfull \hbox (badness 10000) in paragraph at lines 569--571
 []\T1/pcr/m/n/10 CpGExplainer \T1/ptm/m/n/10 (\T1/ptm/m/it/10 class in methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 523--525
+Underfull \hbox (badness 10000) in paragraph at lines 576--578
+[]\T1/pcr/m/n/10 DistanceMatrixCompute \T1/ptm/m/n/10 (\T1/ptm/m/it/10 class in
+ methyl-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 582--584
 []\T1/pcr/m/n/10 extract_class() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 523--525
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 582--584
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 525--527
+Underfull \hbox (badness 10000) in paragraph at lines 584--586
 []\T1/pcr/m/n/10 extract_individual() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 525--527
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 584--586
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 527--529
+Underfull \hbox (badness 10000) in paragraph at lines 586--588
 []\T1/pcr/m/n/10 extract_methylation_array() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 me
 thyl-
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 527--529
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 586--588
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 532--534
+Underfull \hbox (badness 10000) in paragraph at lines 591--593
 []\T1/pcr/m/n/10 feature_select() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 532--534
+Underfull \hbox (badness 10000) in paragraph at lines 591--593
 \T1/ptm/m/it/10 net.interpretation_classes.CpGExplainer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 534--536
+Underfull \hbox (badness 10000) in paragraph at lines 593--595
 []\T1/pcr/m/n/10 find_top_jobs() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 in mod-ule met
 hyl-
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 538--539
+[81]
+Underfull \hbox (badness 10000) in paragraph at lines 597--598
 []\T1/pcr/m/n/10 fit_transform() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.mod
 els.AutoEncoder
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 539--540
+Underfull \hbox (badness 10000) in paragraph at lines 598--599
 []\T1/pcr/m/n/10 forward() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.models.Ty
 baltTitusVAE
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 541--542
+Underfull \hbox (badness 10000) in paragraph at lines 600--601
 []\T1/pcr/m/n/10 forward_embed() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.mod
 els.VAE_MLP
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 542--544
+Underfull \hbox (badness 10000) in paragraph at lines 601--603
 []\T1/pcr/m/n/10 forward_predict() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 544--545
+Underfull \hbox (badness 10000) in paragraph at lines 603--604
 []\T1/pcr/m/n/10 forward_predict() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.m
 odels.VAE_MLP
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 545--547
+Underfull \hbox (badness 10000) in paragraph at lines 604--606
 []\T1/pcr/m/n/10 from_explainer() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 545--547
+Underfull \hbox (badness 10000) in paragraph at lines 604--606
 \T1/ptm/m/it/10 net.interpretation_classes.CpGExplainer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 547--549
+Underfull \hbox (badness 10000) in paragraph at lines 606--608
 []\T1/pcr/m/n/10 from_pickle() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 547--549
+Underfull \hbox (badness 10000) in paragraph at lines 606--608
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyData class
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 553--555
+Underfull \hbox (badness 10000) in paragraph at lines 612--614
 []\T1/pcr/m/n/10 generate_topology() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 in mod-ule
  methyl-
  []
 
 
-Underfull \hbox (badness 5862) in paragraph at lines 555--557
+Underfull \hbox (badness 5862) in paragraph at lines 614--616
 []\T1/pcr/m/n/10 get_latent_z() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.mode
 ls.TybaltTitusVAE
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 560--562
+Underfull \hbox (badness 10000) in paragraph at lines 619--621
 []\T1/pcr/m/n/10 get_nearby_cpg_shapleys() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 meth
 yl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 560--562
+Underfull \hbox (badness 10000) in paragraph at lines 619--621
 \T1/ptm/m/it/10 net.interpretation_classes.BioInterpreter
  []
 
 
-Overfull \hbox (13.14963pt too wide) in paragraph at lines 562--564
+Overfull \hbox (13.14963pt too wide) in paragraph at lines 621--623
 []\T1/pcr/m/n/10 gometh() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.interpreta
 tion_classes.BioInterpreter
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 567--569
+Underfull \hbox (badness 10000) in paragraph at lines 626--628
 []\T1/pcr/m/n/10 jaccard_similarity() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 in mod-ul
 e methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 569--571
+Underfull \hbox (badness 10000) in paragraph at lines 628--630
 []\T1/pcr/m/n/10 jaccard_similarity_top_cpgs() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 
 methyl-
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 569--571
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 628--630
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 574--576
+Underfull \hbox (badness 10000) in paragraph at lines 633--635
 []\T1/pcr/m/n/10 limit_number_top_cpgs() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl
 -
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 574--576
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 633--635
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 576--578
+Underfull \hbox (badness 10000) in paragraph at lines 635--637
 []\T1/pcr/m/n/10 list_classes() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 576--578
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 635--637
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 578--580
+Underfull \hbox (badness 10000) in paragraph at lines 637--639
 []\T1/pcr/m/n/10 list_individuals() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 578--580
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 637--639
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 583--585
+Underfull \hbox (badness 10000) in paragraph at lines 642--644
 []\T1/pcr/m/n/10 main_prediction_function() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 in 
 mod-ule
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 586--588
+Underfull \hbox (badness 10000) in paragraph at lines 645--647
 []\T1/pcr/m/n/10 MethylationPredictionDataSet \T1/ptm/m/n/10 (\T1/ptm/m/it/10 c
 lass in
  []
 
 
-Overfull \hbox (22.1225pt too wide) in paragraph at lines 590--591
+Overfull \hbox (22.1225pt too wide) in paragraph at lines 649--650
 []\T1/pcr/m/n/10 methylnet-embed-launch_hyperparameter_scan
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 591--593
+Underfull \hbox (badness 10000) in paragraph at lines 650--652
 []| \T1/pcr/m/n/10 -a, --additional_command
  []
 
-[79]
-Underfull \hbox (badness 10000) in paragraph at lines 595--597
+
+Underfull \hbox (badness 10000) in paragraph at lines 653--655
 []| \T1/pcr/m/n/10 -c, --job_chunk_size
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 600--602
+Underfull \hbox (badness 10000) in paragraph at lines 660--662
+[]| \T1/pcr/m/n/10 -grid, --hyperparameter_yaml
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 662--664
 []| \T1/pcr/m/n/10 -hcsv, --hyperparameter_input_csv
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 602--604
+Underfull \hbox (badness 10000) in paragraph at lines 664--666
 []| \T1/pcr/m/n/10 -hl, --hyperparameter_output_log
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 605--607
+Underfull \hbox (badness 10000) in paragraph at lines 667--669
 []| \T1/pcr/m/n/10 -mc, --model_complexity_factor
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 607--609
+Underfull \hbox (badness 10000) in paragraph at lines 669--671
 []| \T1/pcr/m/n/10 -n, --n_jobs_relaunch
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 611--613
-[]| \T1/pcr/m/n/10 -sc, --stratify_column
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 614--616
-[]| \T1/pcr/m/n/10 -v, --val_loss_column
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 616--617
-[]\T1/pcr/m/n/10 methylnet-embed-perform_embedding
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 625--627
-[]| \T1/pcr/m/n/10 -hl, --hyperparameter_log
- []
-
-
-Overfull \hbox (6.1225pt too wide) in paragraph at lines 627--629
-[]| \T1/pcr/m/n/10 -hlt, --hidden_layer_encoder_topology
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 627--629
-\T1/pcr/m/n/10 <hidden_layer_encoder_topology>\T1/ptm/m/n/10 ,
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 629--631
-[]| \T1/pcr/m/n/10 -hs, --height_kernel_sizes
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 634--636
-[]| \T1/pcr/m/n/10 -l, --loss_reduction
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 636--638
-[]| \T1/pcr/m/n/10 -lr, --learning_rate
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 642--644
-[]| \T1/pcr/m/n/10 -sc, --stratify_column
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 648--649
-[]| \T1/pcr/m/n/10 -wd, --weight_decay <weight_decay>\T1/ptm/m/n/10 ,
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 649--651
-[]| \T1/pcr/m/n/10 -ws, --width_kernel_sizes
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 651--652
-[]\T1/pcr/m/n/10 methylnet-interpret command line
- []
-
-
-Overfull \hbox (10.1225pt too wide) in paragraph at lines 653--654
-[]\T1/pcr/m/n/10 methylnet-interpret-bin_regression_shaps
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 656--658
-[]| \T1/pcr/m/n/10 -os, --output_shap_pkl
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 658--660
-[]| \T1/pcr/m/n/10 -ot, --output_test_pkl
- []
-
-
-Overfull \hbox (40.1225pt too wide) in paragraph at lines 662--663
-[]\T1/pcr/m/n/10 methylnet-interpret-extract_methylation_array
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 670--671
-[]\T1/pcr/m/n/10 methylnet-interpret-grab_lola_db_cache
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 672--673
-[]\T1/pcr/m/n/10 methylnet-interpret-interpret_biology
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 673--675
-[]| \T1/pcr/m/n/10 -a, --all_cpgs_pickle
+[]| \T1/pcr/m/n/10 -sc, --stratify_column
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 682--684
-[]| \T1/pcr/m/n/10 -gsea, --gsea_analyses
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 688--690
-[]| \T1/pcr/m/n/10 -lo, --length_output
- []
-
-[80]
-Underfull \hbox (badness 10000) in paragraph at lines 694--696
-[]| \T1/pcr/m/n/10 -s, --shapley_data_list
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 698--699
-[]\T1/pcr/m/n/10 methylnet-interpret-list_classes
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 700--701
-[]\T1/pcr/m/n/10 methylnet-interpret-list_individuals
- []
-
-
-Overfull \hbox (10.1225pt too wide) in paragraph at lines 702--703
-[]\T1/pcr/m/n/10 methylnet-interpret-order_results_by_col
- []
-
-
-Overfull \hbox (16.1225pt too wide) in paragraph at lines 708--709
-[]\T1/pcr/m/n/10 methylnet-interpret-plot_all_lola_outputs
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 710--712
-[]| \T1/pcr/m/n/10 -d, --description_col
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 712--714
-[]| \T1/pcr/m/n/10 -l, --head_lola_dir <head_lola_dir>\T1/ptm/m/n/10 ,
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 714--716
-[]| \T1/pcr/m/n/10 -o, --plot_output_dir
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 717--718
-[]\T1/pcr/m/n/10 methylnet-interpret-plot_lola_output
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 719--721
-[]| \T1/pcr/m/n/10 -d, --description_col
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 722--724
-[]| \T1/pcr/m/n/10 -o, --plot_output_dir
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 724--725
-[]\T1/pcr/m/n/10 methylnet-interpret-plot_top_cpgs
- []
-
-
-Overfull \hbox (10.1225pt too wide) in paragraph at lines 729--730
-[]\T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 735--737
-[]| \T1/pcr/m/n/10 -col, --interest_col <interest_col>\T1/ptm/m/n/10 ,
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 737--739
-[]| \T1/pcr/m/n/10 -e, --categorical_encoder
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 744--746
-[]| \T1/pcr/m/n/10 -nf, --n_top_features
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 748--750
-[]| \T1/pcr/m/n/10 -r, --n_random_representative
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 751--753
-[]| \T1/pcr/m/n/10 -rc, --residual_cutoff
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 753--755
-[]| \T1/pcr/m/n/10 -rt, --n_random_representative_test
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 753--755
-\T1/pcr/m/n/10 <n_random_representative_test>\T1/ptm/m/n/10 ,
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 755--757
-[]| \T1/pcr/m/n/10 -ssbs, --shap_sample_batch_size
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 762--763
-[]\T1/pcr/m/n/10 methylnet-interpret-reduce_top_cpgs
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 763--765
-[]| \T1/pcr/m/n/10 -nf, --n_top_features
- []
-
-
-Overfull \hbox (4.1225pt too wide) in paragraph at lines 767--768
-[]\T1/pcr/m/n/10 methylnet-interpret-regenerate_top_cpgs
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 770--772
-[]| \T1/pcr/m/n/10 -nf, --n_top_features
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 774--775
-[]\T1/pcr/m/n/10 methylnet-interpret-shapley_jaccard
- []
-
-
-Overfull \hbox (58.1225pt too wide) in paragraph at lines 782--783
-[]\T1/pcr/m/n/10 methylnet-interpret-split_hyper_hypo_methylation
- []
-
-
-Overfull \hbox (40.1225pt too wide) in paragraph at lines 786--787
-[]\T1/pcr/m/n/10 methylnet-interpret-view_methylation_top_cpgs
- []
-
-[81]
-Overfull \hbox (4.1225pt too wide) in paragraph at lines 793--794
-[]\T1/pcr/m/n/10 methylnet-predict-classification_report
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 794--796
-[]| \T1/pcr/m/n/10 -e, --categorical_encoder
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 797--799
-[]| \T1/pcr/m/n/10 -r, --results_pickle
- []
-
-
-Overfull \hbox (34.1225pt too wide) in paragraph at lines 799--800
-[]\T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 800--802
-[]| \T1/pcr/m/n/10 -a, --additional_command
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 803--805
-[]| \T1/pcr/m/n/10 -c, --job_chunk_size
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 809--811
-[]| \T1/pcr/m/n/10 -hcsv, --hyperparameter_input_csv
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 811--813
-[]| \T1/pcr/m/n/10 -hl, --hyperparameter_output_log
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 813--815
-[]| \T1/pcr/m/n/10 -ic, --interest_cols
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 816--818
-[]| \T1/pcr/m/n/10 -mc, --model_complexity_factor
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 818--820
-[]| \T1/pcr/m/n/10 -n, --n_jobs_relaunch
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 824--826
+Underfull \hbox (badness 10000) in paragraph at lines 676--678
 []| \T1/pcr/m/n/10 -v, --val_loss_column
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 826--827
-[]\T1/pcr/m/n/10 methylnet-predict-make_new_predictions
+Underfull \hbox (badness 10000) in paragraph at lines 678--679
+[]\T1/pcr/m/n/10 methylnet-embed-perform_embedding
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 830--832
-[]| \T1/pcr/m/n/10 -e, --categorical_encoder
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 832--834
-[]| \T1/pcr/m/n/10 -ic, --interest_cols
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 838--839
-[]\T1/pcr/m/n/10 methylnet-predict-make_prediction
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 847--849
+Underfull \hbox (badness 10000) in paragraph at lines 687--689
 []| \T1/pcr/m/n/10 -hl, --hyperparameter_log
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 849--851
-[]| \T1/pcr/m/n/10 -hlt, --hidden_layer_topology
+Overfull \hbox (6.1225pt too wide) in paragraph at lines 689--691
+[]| \T1/pcr/m/n/10 -hlt, --hidden_layer_encoder_topology
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 852--854
-[]| \T1/pcr/m/n/10 -ic, --interest_cols
+Underfull \hbox (badness 10000) in paragraph at lines 689--691
+\T1/pcr/m/n/10 <hidden_layer_encoder_topology>\T1/ptm/m/n/10 ,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 855--857
+Underfull \hbox (badness 10000) in paragraph at lines 691--693
+[]| \T1/pcr/m/n/10 -hs, --height_kernel_sizes
+ []
+
+[82]
+Underfull \hbox (badness 10000) in paragraph at lines 696--698
 []| \T1/pcr/m/n/10 -l, --loss_reduction
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 857--859
-[]| \T1/pcr/m/n/10 -lr_mlp, --learning_rate_mlp
+Underfull \hbox (badness 10000) in paragraph at lines 698--700
+[]| \T1/pcr/m/n/10 -lr, --learning_rate
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 859--861
-[]| \T1/pcr/m/n/10 -lr_vae, --learning_rate_vae
+Underfull \hbox (badness 10000) in paragraph at lines 704--706
+[]| \T1/pcr/m/n/10 -sc, --stratify_column
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 868--870
-[]| \T1/pcr/m/n/10 -vae, --input_vae_pkl
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 872--873
+Underfull \hbox (badness 10000) in paragraph at lines 710--711
 []| \T1/pcr/m/n/10 -wd, --weight_decay <weight_decay>\T1/ptm/m/n/10 ,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 873--874
-[]\T1/pcr/m/n/10 methylnet-predict-regression_report
+Underfull \hbox (badness 10000) in paragraph at lines 711--713
+[]| \T1/pcr/m/n/10 -ws, --width_kernel_sizes
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 713--714
+[]\T1/pcr/m/n/10 methylnet-interpret command line
+ []
+
+
+Overfull \hbox (10.1225pt too wide) in paragraph at lines 715--716
+[]\T1/pcr/m/n/10 methylnet-interpret-bin_regression_shaps
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 718--720
+[]| \T1/pcr/m/n/10 -os, --output_shap_pkl
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 720--722
+[]| \T1/pcr/m/n/10 -ot, --output_test_pkl
+ []
+
+
+Overfull \hbox (40.1225pt too wide) in paragraph at lines 724--725
+[]\T1/pcr/m/n/10 methylnet-interpret-extract_methylation_array
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 732--733
+[]\T1/pcr/m/n/10 methylnet-interpret-grab_lola_db_cache
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 734--735
+[]\T1/pcr/m/n/10 methylnet-interpret-interpret_biology
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 735--737
+[]| \T1/pcr/m/n/10 -a, --all_cpgs_pickle
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 744--746
+[]| \T1/pcr/m/n/10 -gsea, --gsea_analyses
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 750--752
+[]| \T1/pcr/m/n/10 -lo, --length_output
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 756--758
+[]| \T1/pcr/m/n/10 -s, --shapley_data_list
+ []
+
+
+Overfull \hbox (52.1225pt too wide) in paragraph at lines 760--761
+[]\T1/pcr/m/n/10 methylnet-interpret-interpret_embedding_classes
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 762--764
+[]| \T1/pcr/m/n/10 -i, --embedding_methyl_array_pkl
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 766--768
+[]| \T1/pcr/m/n/10 -op, --output_pval_csv
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 769--770
+[]\T1/pcr/m/n/10 methylnet-interpret-list_classes
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 771--772
+[]\T1/pcr/m/n/10 methylnet-interpret-list_individuals
+ []
+
+
+Overfull \hbox (10.1225pt too wide) in paragraph at lines 773--774
+[]\T1/pcr/m/n/10 methylnet-interpret-order_results_by_col
+ []
+
+
+Overfull \hbox (16.1225pt too wide) in paragraph at lines 779--780
+[]\T1/pcr/m/n/10 methylnet-interpret-plot_all_lola_outputs
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 781--783
+[]| \T1/pcr/m/n/10 -d, --description_col
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 783--785
+[]| \T1/pcr/m/n/10 -l, --head_lola_dir <head_lola_dir>\T1/ptm/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 785--787
+[]| \T1/pcr/m/n/10 -o, --plot_output_dir
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 788--789
+[]\T1/pcr/m/n/10 methylnet-interpret-plot_lola_output
+ []
+
+[83]
+Underfull \hbox (badness 10000) in paragraph at lines 790--792
+[]| \T1/pcr/m/n/10 -d, --description_col
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 793--795
+[]| \T1/pcr/m/n/10 -o, --plot_output_dir
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 795--796
+[]\T1/pcr/m/n/10 methylnet-interpret-plot_top_cpgs
+ []
+
+
+Overfull \hbox (10.1225pt too wide) in paragraph at lines 800--801
+[]\T1/pcr/m/n/10 methylnet-interpret-produce_shapley_data
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 806--808
+[]| \T1/pcr/m/n/10 -col, --interest_col <interest_col>\T1/ptm/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 809--811
+[]| \T1/pcr/m/n/10 -e, --categorical_encoder
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 816--818
+[]| \T1/pcr/m/n/10 -nf, --n_top_features
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 820--822
+[]| \T1/pcr/m/n/10 -r, --n_random_representative
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 823--825
+[]| \T1/pcr/m/n/10 -rc, --residual_cutoff
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 825--827
+[]| \T1/pcr/m/n/10 -rt, --n_random_representative_test
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 825--827
+\T1/pcr/m/n/10 <n_random_representative_test>\T1/ptm/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 827--829
+[]| \T1/pcr/m/n/10 -ssbs, --shap_sample_batch_size
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 834--835
+[]\T1/pcr/m/n/10 methylnet-interpret-reduce_top_cpgs
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 835--837
+[]| \T1/pcr/m/n/10 -nf, --n_top_features
+ []
+
+
+Overfull \hbox (4.1225pt too wide) in paragraph at lines 839--840
+[]\T1/pcr/m/n/10 methylnet-interpret-regenerate_top_cpgs
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 842--844
+[]| \T1/pcr/m/n/10 -nf, --n_top_features
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 846--847
+[]\T1/pcr/m/n/10 methylnet-interpret-return_shap_values
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 854--855
+[]\T1/pcr/m/n/10 methylnet-interpret-shapley_jaccard
+ []
+
+
+Overfull \hbox (58.1225pt too wide) in paragraph at lines 862--863
+[]\T1/pcr/m/n/10 methylnet-interpret-split_hyper_hypo_methylation
+ []
+
+
+Overfull \hbox (40.1225pt too wide) in paragraph at lines 867--868
+[]\T1/pcr/m/n/10 methylnet-interpret-view_methylation_top_cpgs
+ []
+
+
+Overfull \hbox (4.1225pt too wide) in paragraph at lines 874--875
+[]\T1/pcr/m/n/10 methylnet-predict-classification_report
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 875--877
+[]| \T1/pcr/m/n/10 -a, --average_mechanism
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 877--879
+[]| \T1/pcr/m/n/10 -e, --categorical_encoder
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 880--882
 []| \T1/pcr/m/n/10 -r, --results_pickle
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 879--880
+Overfull \hbox (34.1225pt too wide) in paragraph at lines 882--883
+[]\T1/pcr/m/n/10 methylnet-predict-launch_hyperparameter_scan
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 883--885
+[]| \T1/pcr/m/n/10 -a, --additional_command
+ []
+
+[84]
+Underfull \hbox (badness 10000) in paragraph at lines 885--887
+[]| \T1/pcr/m/n/10 -c, --job_chunk_size
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 893--895
+[]| \T1/pcr/m/n/10 -grid, --hyperparameter_yaml
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 895--897
+[]| \T1/pcr/m/n/10 -hcsv, --hyperparameter_input_csv
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 897--899
+[]| \T1/pcr/m/n/10 -hl, --hyperparameter_output_log
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 899--901
+[]| \T1/pcr/m/n/10 -ic, --interest_cols
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 902--904
+[]| \T1/pcr/m/n/10 -mc, --model_complexity_factor
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 904--906
+[]| \T1/pcr/m/n/10 -n, --n_jobs_relaunch
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 910--912
+[]| \T1/pcr/m/n/10 -v, --val_loss_column
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 912--913
+[]\T1/pcr/m/n/10 methylnet-predict-make_new_predictions
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 916--918
+[]| \T1/pcr/m/n/10 -e, --categorical_encoder
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 918--920
+[]| \T1/pcr/m/n/10 -ic, --interest_cols
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 924--925
+[]\T1/pcr/m/n/10 methylnet-predict-make_prediction
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 933--935
+[]| \T1/pcr/m/n/10 -hl, --hyperparameter_log
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 935--937
+[]| \T1/pcr/m/n/10 -hlt, --hidden_layer_topology
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 938--940
+[]| \T1/pcr/m/n/10 -ic, --interest_cols
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 941--943
+[]| \T1/pcr/m/n/10 -l, --loss_reduction
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 943--945
+[]| \T1/pcr/m/n/10 -lr_mlp, --learning_rate_mlp
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 945--947
+[]| \T1/pcr/m/n/10 -lr_vae, --learning_rate_vae
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 954--956
+[]| \T1/pcr/m/n/10 -vae, --input_vae_pkl
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 958--959
+[]| \T1/pcr/m/n/10 -wd, --weight_decay <weight_decay>\T1/ptm/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 959--960
+[]\T1/pcr/m/n/10 methylnet-predict-regression_report
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 961--963
+[]| \T1/pcr/m/n/10 -r, --results_pickle
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 967--968
 []\T1/pcr/m/n/10 methylnet-torque-run_torque_job
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 886--887
+Underfull \hbox (badness 10000) in paragraph at lines 974--975
 []\T1/pcr/m/n/10 methylnet-visualize command line
  []
 
-[82]
-Underfull \hbox (badness 10000) in paragraph at lines 888--889
+
+Underfull \hbox (badness 10000) in paragraph at lines 976--977
 []\T1/pcr/m/n/10 methylnet-visualize-plot_roc_curve
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 889--891
+Underfull \hbox (badness 10000) in paragraph at lines 977--979
 []| \T1/pcr/m/n/10 -o, --outputfilename
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 891--893
+Underfull \hbox (badness 10000) in paragraph at lines 979--981
 []| \T1/pcr/m/n/10 -r, --roc_curve_csv <roc_curve_csv>\T1/ptm/m/n/10 ,
  []
 
 
-Overfull \hbox (4.1225pt too wide) in paragraph at lines 893--894
+Overfull \hbox (4.1225pt too wide) in paragraph at lines 981--982
 []\T1/pcr/m/n/10 methylnet-visualize-plot_training_curve
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 894--896
+Underfull \hbox (badness 10000) in paragraph at lines 982--984
 []| \T1/pcr/m/n/10 -o, --outputfilename
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 896--898
+[85]
+Underfull \hbox (badness 10000) in paragraph at lines 984--986
 []| \T1/pcr/m/n/10 -t, --training_curve_file
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 902--903
+Underfull \hbox (badness 10000) in paragraph at lines 990--991
 []\T1/pcr/m/n/10 methylnet.interpretation_classes \T1/ptm/m/n/10 (\T1/ptm/m/it/
 10 mod-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 912--914
+Underfull \hbox (badness 10000) in paragraph at lines 1000--1002
 []\T1/pcr/m/n/10 plot_cpgs() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 914--916
+Underfull \hbox (badness 10000) in paragraph at lines 1002--1004
 []\T1/pcr/m/n/10 plot_lola_output_() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 in mod-ule
  methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 916--917
+Underfull \hbox (badness 10000) in paragraph at lines 1004--1005
 []\T1/pcr/m/n/10 PlotCircos \T1/ptm/m/n/10 (\T1/ptm/m/it/10 class in methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 919--920
+Underfull \hbox (badness 10000) in paragraph at lines 1007--1008
 []\T1/pcr/m/n/10 predict() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.models.ML
 PFinetuneVAE
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 924--925
+Underfull \hbox (badness 10000) in paragraph at lines 1012--1013
 []\T1/pcr/m/n/10 RawBetaArrayDataSet \T1/ptm/m/n/10 (\T1/ptm/m/it/10 class in m
 ethyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 925--927
+Underfull \hbox (badness 10000) in paragraph at lines 1013--1015
 []\T1/pcr/m/n/10 regenerate_individual_shap_values()
  []
 
 
-Overfull \hbox (32.38972pt too wide) in paragraph at lines 925--927
+Overfull \hbox (32.38972pt too wide) in paragraph at lines 1013--1015
 \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.interpretation_classes.ShapleyDataEx
 plorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 927--929
+Underfull \hbox (badness 10000) in paragraph at lines 1015--1017
 []\T1/pcr/m/n/10 regressor_assign_scores_to_shap_data()
  []
 
 
-Overfull \hbox (4.17993pt too wide) in paragraph at lines 927--929
+Overfull \hbox (4.17993pt too wide) in paragraph at lines 1015--1017
 \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.interpretation_classes.CpGExplainer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 929--931
+Underfull \hbox (badness 10000) in paragraph at lines 1017--1019
+[]\T1/pcr/m/n/10 replace_grid() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 in mod-ule meth
+yl-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1019--1021
 []\T1/pcr/m/n/10 return_binned_shapley_data() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 m
 ethyl-
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 929--931
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 1019--1021
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 931--933
+Underfull \hbox (badness 10000) in paragraph at lines 1021--1023
 []\T1/pcr/m/n/10 return_cpg_sets() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 931--933
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 1021--1023
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 935--937
+Underfull \hbox (badness 10000) in paragraph at lines 1025--1027
+[]\T1/pcr/m/n/10 return_distances() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
+ []
+
+
+Overfull \hbox (14.73973pt too wide) in paragraph at lines 1025--1027
+\T1/ptm/m/it/10 net.interpretation_classes.DistanceMatrixCompute
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1027--1029
 []\T1/pcr/m/n/10 return_global_importance_cpgs() \T1/ptm/m/n/10 (\T1/ptm/m/it/1
 0 methyl-
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 935--937
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 1027--1029
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 937--939
+Underfull \hbox (badness 10000) in paragraph at lines 1029--1031
 []\T1/pcr/m/n/10 return_overlap_score() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 937--939
+Underfull \hbox (badness 10000) in paragraph at lines 1029--1031
 \T1/ptm/m/it/10 net.interpretation_classes.BioInterpreter
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 941--943
+Underfull \hbox (badness 10000) in paragraph at lines 1031--1033
+[]\T1/pcr/m/n/10 return_p_values() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
+ []
+
+
+Overfull \hbox (14.73973pt too wide) in paragraph at lines 1031--1033
+\T1/ptm/m/it/10 net.interpretation_classes.DistanceMatrixCompute
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1035--1037
 []\T1/pcr/m/n/10 return_shap_values() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 in mod-ul
 e methyl-
  []
 
 
-Overfull \hbox (28.1225pt too wide) in paragraph at lines 943--945
+Overfull \hbox (28.1225pt too wide) in paragraph at lines 1037--1039
 []\T1/pcr/m/n/10 return_shapley_data_by_methylation_status()
  []
 
 
-Overfull \hbox (32.38972pt too wide) in paragraph at lines 943--945
+Overfull \hbox (32.38972pt too wide) in paragraph at lines 1037--1039
 \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.interpretation_classes.ShapleyDataEx
 plorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 945--947
+Underfull \hbox (badness 10000) in paragraph at lines 1039--1041
 []\T1/pcr/m/n/10 return_shapley_predictions() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 m
 ethyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 945--947
+Underfull \hbox (badness 10000) in paragraph at lines 1039--1041
 \T1/ptm/m/it/10 net.interpretation_classes.CpGExplainer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 947--949
+Underfull \hbox (badness 10000) in paragraph at lines 1041--1043
 []\T1/pcr/m/n/10 return_shapley_scores() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl
 -
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 947--949
+Underfull \hbox (badness 10000) in paragraph at lines 1041--1043
 \T1/ptm/m/it/10 net.interpretation_classes.CpGExplainer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 949--951
+Underfull \hbox (badness 10000) in paragraph at lines 1043--1045
 []\T1/pcr/m/n/10 return_top_cpgs() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 949--951
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 1043--1045
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 951--953
+Underfull \hbox (badness 10000) in paragraph at lines 1045--1047
 []\T1/pcr/m/n/10 run_lola() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 951--953
+Underfull \hbox (badness 10000) in paragraph at lines 1045--1047
 \T1/ptm/m/it/10 net.interpretation_classes.BioInterpreter
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 953--954
+Underfull \hbox (badness 10000) in paragraph at lines 1047--1048
 []\T1/pcr/m/n/10 run_torque_job_() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 in mod-ule m
 ethyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 957--958
+Underfull \hbox (badness 10000) in paragraph at lines 1051--1052
 []\T1/pcr/m/n/10 sample_z() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.models.T
 ybaltTitusVAE
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 959--960
+Underfull \hbox (badness 10000) in paragraph at lines 1053--1054
 []\T1/pcr/m/n/10 ShapleyData \T1/ptm/m/n/10 (\T1/ptm/m/it/10 class in methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 960--962
+Underfull \hbox (badness 10000) in paragraph at lines 1054--1056
 []\T1/pcr/m/n/10 ShapleyDataExplorer \T1/ptm/m/n/10 (\T1/ptm/m/it/10 class in m
 ethyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 968--970
+Underfull \hbox (badness 10000) in paragraph at lines 1062--1064
 []\T1/pcr/m/n/10 to_methyl_array() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 968--970
+Underfull \hbox (badness 10000) in paragraph at lines 1062--1064
 \T1/ptm/m/it/10 net.datasets.MethylationDataSet method\T1/ptm/m/n/10 ),
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 970--972
+Underfull \hbox (badness 10000) in paragraph at lines 1064--1066
 []\T1/pcr/m/n/10 to_pickle() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 970--972
+Underfull \hbox (badness 10000) in paragraph at lines 1064--1066
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyData
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 972--974
+Underfull \hbox (badness 10000) in paragraph at lines 1066--1068
 []\T1/pcr/m/n/10 to_tensor() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 in mod-ule methyl-
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 974--975
+Underfull \hbox (badness 10000) in paragraph at lines 1068--1069
 []\T1/pcr/m/n/10 toggle_latent_z() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.m
 odels.VAE_MLP
  []
 
-[83]
-Underfull \hbox (badness 10000) in paragraph at lines 978--979
+[86]
+Underfull \hbox (badness 10000) in paragraph at lines 1072--1073
 []\T1/pcr/m/n/10 transform() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-net.models.
 AutoEncoder
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 989--991
+Underfull \hbox (badness 10000) in paragraph at lines 1083--1085
 []\T1/pcr/m/n/10 view_methylation() \T1/ptm/m/n/10 (\T1/ptm/m/it/10 methyl-
  []
 
 
-Overfull \hbox (2.40013pt too wide) in paragraph at lines 989--991
+Overfull \hbox (2.40013pt too wide) in paragraph at lines 1083--1085
 \T1/ptm/m/it/10 net.interpretation_classes.ShapleyDataExplorer
  []
 
-[84
+[87
 
 ])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 5914.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 5914.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 6269.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 6269.
  (./MethylNet.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 5914.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 5914.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 6269.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 6269.
 
 Package rerunfilecheck Info: File `MethylNet.out' has not changed.
-(rerunfilecheck)             Checksum: 5FEBECD1471ABC4E585D301F03DC1E4E;6027.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 5914.
+(rerunfilecheck)             Checksum: 73450040ED2A2A6E20A0B22A0027B7BC;6620.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 6269.
  ) 
 Here is how much of TeX's memory you used:
- 14242 strings out of 492649
- 212764 string characters out of 6129622
- 321397 words of memory out of 5000000
- 17343 multiletter control sequences out of 15000+600000
+ 14313 strings out of 492649
+ 215106 string characters out of 6129622
+ 323079 words of memory out of 5000000
+ 17379 multiletter control sequences out of 15000+600000
  51415 words of font info for 74 fonts, out of 8000000 for 9000
  1142 hyphenation exceptions out of 8191
- 37i,16n,49p,712b,671s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 37i,16n,51p,753b,671s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2018/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
 exlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/te
 xlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texl
@@ -3560,10 +3789,10 @@ rw/helvetic/uhvbo8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/urw/hel
 vetic/uhvr8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/urw/times/utmb
 8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></u
 sr/local/texlive/2018/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on MethylNet.pdf (88 pages, 3351944 bytes).
+Output written on MethylNet.pdf (91 pages, 3360223 bytes).
 PDF statistics:
- 1728 PDF objects out of 1728 (max. 8388607)
- 1591 compressed objects within 16 object streams
- 472 named destinations out of 1000 (max. 500000)
- 422 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1850 PDF objects out of 2073 (max. 8388607)
+ 1708 compressed objects within 18 object streams
+ 507 named destinations out of 1000 (max. 500000)
+ 454 words of extra memory for PDF output out of 10000 (max. 10000000)
 

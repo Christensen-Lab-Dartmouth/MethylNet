@@ -30,7 +30,12 @@ def train_predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols
     output_onehot_encoder = join(output_dir, 'one_hot_encoder.p')
 
     #input_dict = pickle.load(open(input_pkl,'rb'))
-    vae_model = torch.load(input_vae_pkl)
+    if cuda:
+        vae_model = torch.load(input_vae_pkl)
+        vae_model.cuda_on=True
+    else:
+        vae_model = torch.load(input_vae_pkl,map_location='cpu')
+        vae_model.cuda_on=False
 
     train_methyl_array, val_methyl_array, test_methyl_array = MethylationArray.from_pickle(train_pkl), MethylationArray.from_pickle(val_pkl), MethylationArray.from_pickle(test_pkl)#methyl_array.split_train_test(train_p=train_percent, stratified=(True if categorical else False), disease_only=disease_only, key=interest_cols[0], subtype_delimiter=',')
 
@@ -219,6 +224,7 @@ def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest
     test_methyl_array = MethylationArray.from_pickle(test_pkl) # generate results pickle to run through classification/regression report
     if cuda:
         model = torch.load(model_pickle)
+        model.vae.cuda_on=True
     else:
         model = torch.load(model_pickle,map_location='cpu')
         model.vae.cuda_on=False
@@ -275,26 +281,33 @@ def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest
 @click.option('-gn', '--gpu_node', default=-1, help='If torque submit, which gpu node to use.', show_default=True)
 @click.option('-nh', '--nohup', is_flag=True, help='Nohup launch jobs.')
 @click.option('-n', '--n_jobs_relaunch', default=0, help='Relaunch n top jobs from previous run.', show_default=True)
-@click.option('-c', '--crossover_p', default=0., help='Rate of crossover between hyperparameters.', show_default=True)
+@click.option('-cp', '--crossover_p', default=0., help='Rate of crossover between hyperparameters.', show_default=True)
 @click.option('-mc', '--model_complexity_factor', default=1., help='Degree of neural network model complexity for hyperparameter search. Search for less wide networks with a lower complexity value, bounded between 0 and infinity.', show_default=True)
 @click.option('-j', '--n_jobs', default=4, help='Number of jobs to generate.')
 @click.option('-v', '--val_loss_column', default="min_val_loss-batchsize_adj", help='Validation loss column.', type=click.Path(exists=False))
 @click.option('-sft', '--add_softmax', is_flag=True, help='Add softmax for predicting probability distributions.')
 @click.option('-a', '--additional_command', default='', help='Additional command to input for torque run.', type=click.Path(exists=False))
-def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column, add_softmax, additional_command):
+@click.option('-cu', '--cuda', is_flag=True, help='Use GPUs.')
+@click.option('-grid', '--hyperparameter_yaml', default='', help='YAML file with custom subset of hyperparameter grid.', type=click.Path(exists=False))
+def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column, add_softmax, additional_command, cuda, hyperparameter_yaml):
     """Run randomized hyperparameter scan of neural network hyperparameters."""
     from methylnet.hyperparameter_scans import coarse_scan, find_top_jobs
     custom_jobs=[]
     if n_jobs_relaunch:
         custom_jobs=find_top_jobs(hyperparameter_input_csv, hyperparameter_output_log,n_jobs_relaunch, crossover_p, val_loss_column)
-    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs, categorical=categorical,add_softmax=add_softmax, additional_command=additional_command)
+    if os.path.exists(hyperparameter_yaml):
+        from ruamel.yaml import safe_load as load
+        with open(hyperparameter_yaml) as f:
+            new_grid = load(f.read())
+    else:
+        new_grid = {}
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs, categorical=categorical,add_softmax=add_softmax, additional_command=additional_command, cuda=cuda, new_grid=new_grid)
 
 @prediction.command()
 @click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))
 @click.option('-o', '--output_dir', default='results/', show_default=True, help='Output directory.', type=click.Path(exists=False))
 def regression_report(results_pickle,output_dir):
     """Generate regression report that gives concise results from regression tasks."""
-
     # FIXME expand functionality
     import matplotlib
     matplotlib.use('Agg')
@@ -315,17 +328,17 @@ def regression_report(results_pickle,output_dir):
         sns.lmplot(x="y_pred", y="y_true", col="outcome_vars", hue="outcome_vars",data=df, col_wrap=2)
         plt.savefig(os.path.join(output_dir,'{}_regression_results.png'.format(k)),dpi=300)
 
-
-
 @prediction.command()
 @click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))
 @click.option('-o', '--output_dir', default='results/', show_default=True, help='Output directory.', type=click.Path(exists=False))
 @click.option('-e', '--categorical_encoder', default='./predictions/one_hot_encoder.p', help='One hot encoder if categorical model. If path exists, then return top positive controbutions per samples of that class. Encoded values must be of sample class as interest_col.', type=click.Path(exists=False), show_default=True)
-def classification_report(results_pickle,output_dir, categorical_encoder):
+@click.option('-a', '--average_mechanism', default='micro', show_default=True, help='Output directory.', type=click.Choice(['weighted','macro','micro','binary','samples']))
+def classification_report(results_pickle,output_dir, categorical_encoder, average_mechanism):
     """Generate classification report that gives results from classification tasks."""
     from mlxtend.evaluate import bootstrap
     from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, roc_curve, roc_auc_score, confusion_matrix
     os.makedirs(output_dir,exist_ok=True)
+
     def extract_ys(Y):
         return Y[:,0], Y[:,1:]
 
@@ -337,17 +350,17 @@ def classification_report(results_pickle,output_dir, categorical_encoder):
     def recall(Y):
         y_true, y_pred=extract_ys(Y)
         y_pred = np.argmax(y_pred,axis=1)
-        return recall_score(y_true, y_pred, average='weighted')
+        return recall_score(y_true, y_pred, average=average_mechanism)
 
     def precision(Y):
         y_true, y_pred=extract_ys(Y)
         y_pred = np.argmax(y_pred,axis=1)
-        return precision_score(y_true, y_pred, average='weighted')
+        return precision_score(y_true, y_pred, average=average_mechanism)
 
     def f1(Y):
         y_true, y_pred=extract_ys(Y)
         y_pred = np.argmax(y_pred,axis=1)
-        return f1_score(y_true, y_pred, average='weighted')
+        return f1_score(y_true, y_pred, average=average_mechanism)
 
     def auc(Y):
         y_true, y_pred=extract_ys(Y)
@@ -377,8 +390,9 @@ def classification_report(results_pickle,output_dir, categorical_encoder):
         y_pred_labels=np.argmax(y_pred,1).reshape((-1,1))
         #print(y_true_labels, y_pred_labels)
         out_classes = classes.astype(int)# if categorical_encoder == None else categorical_encoder.inverse_transform(classes.astype(int).reshape((-1,1)))
+        class_labels = out_classes if categorical_encoder == None else categorical_encoder.inverse_transform(out_classes)
         pd.DataFrame(confusion_matrix(y_true_labels.astype(int).flatten(),
-                                      y_pred_labels.astype(int).flatten(),labels=out_classes),index=out_classes,columns=out_classes).to_csv(join(output_dir,'{}_confusion_mat.csv'.format(k)))
+                                      y_pred_labels.astype(int).flatten(),labels=out_classes),index=class_labels,columns=class_labels).to_csv(join(output_dir,'{}_confusion_mat.csv'.format(k)))
         Y=np.hstack((y_true_labels,y_pred))
         supports={i:sum((y_pred_labels[np.squeeze(y_true_labels==i)]==i).astype(int)) for i in classes}
         fpr = dict()
