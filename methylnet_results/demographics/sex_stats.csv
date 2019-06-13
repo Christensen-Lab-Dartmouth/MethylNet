@@ -1,0 +1,3 @@
+,Train,Val,Test
+Pan-Cancer,2530:2360,355:346,713:686
+Age/Cell-Type,240:262,36:35,59:85

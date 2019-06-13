@@ -1,0 +1,7 @@
+,Cell-Type Deconvolution,Cell-Type Deconvolution,Cell-Type Deconvolution
+,CD8T,CD8T,CD8T
+,r2,mae,explained_variance
+MethylNet,0.7776±0.0402,0.0161±0.0012,0.7807±0.0378
+EpiDISH+RPC,0.7174±0.0612,0.0191±0.0013,0.7585±0.0521
+EpiDISH+Cibersort,0.6305±0.077,0.0226±0.0014,0.7472±0.0546
+EpiDISH+CP,0.7137±0.067,0.0186±0.0014,0.7241±0.0635

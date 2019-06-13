@@ -82,7 +82,6 @@ class Transformer:
 # methyl_train_df = methyl_df2.drop(methyl_test_df.index)
 # instead get beta keys and sample
 
-
 def get_methylation_dataset(methylation_array, outcome_col, convolutional=False, cpg_per_row=1200, predict=False, categorical=False, categorical_encoder=False):
     """Turn methylation array into pytorch dataset.
 

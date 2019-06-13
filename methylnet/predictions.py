@@ -1,5 +1,5 @@
 from pymethylprocess.MethylationDataTypes import MethylationArray, extract_pheno_beta_df_from_pickle_dict
-from methylnet.models import TybaltTitusVAE, VAE_MLP, MLPFinetuneVAE
+from methylnet.models import *
 from methylnet.datasets import get_methylation_dataset
 import torch
 from torch.utils.data import DataLoader

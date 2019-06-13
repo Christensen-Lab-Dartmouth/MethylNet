@@ -492,7 +492,7 @@ def plot_top_cpgs(shapley_data,output_dir,individuals,classes):
 @click.option('-i', '--embedding_methyl_array_pkl', default='./embeddings/vae_methyl_arr.pkl', help='Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_methyl_arr.pkl for vae interpretations.', type=click.Path(exists=False), show_default=True)
 @click.option('-c', '--pheno_col', default='disease', help='Column to separate on.', type=click.Path(exists=False), show_default=True)
 @click.option('-m', '--metric', default='cosine', help='Distance metric to compare classes.', type=click.Path(exists=False), show_default=True)
-@click.option('-t', '--trim', default=0.0, help='Trim outlier distances. Number 0-0.5.', type=click.Path(exists=False), show_default=True)
+@click.option('-t', '--trim', default=0.0, help='Trim outlier distances. Number 0-0.5.', show_default=True)
 @click.option('-o', '--output_csv', default='./results/class_embedding_differences.csv', help='Distances between classes.', type=click.Path(exists=False), show_default=True)
 @click.option('-op', '--output_pval_csv', default='', help='If specify a CSV file, outputs pairwise manova tests between embeddings for clusters.', type=click.Path(exists=False), show_default=True)
 def interpret_embedding_classes(embedding_methyl_array_pkl, pheno_col, metric, trim, output_csv, output_pval_csv):

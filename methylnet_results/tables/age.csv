@@ -1,0 +1,5 @@
+,Age Prediction,Age Prediction,Age Prediction
+,r2,mae,explained_variance
+MethylNet,0.956±0.0064,3.439±0.2381,0.9567±0.0063
+Hannum Clock,0.8995±0.0128,5.6241±0.2993,0.953±0.0065
+Horvath Clock,0.9427±0.0087,3.9356±0.2686,0.9494±0.0078

@@ -1,0 +1,841 @@
+,disease,age,Sex,race,ethnicity
+9283265012_R06C02,ACC,20106.0,F,white,not hispanic or latino
+9283265010_R06C01,ACC,21032.0,M,not reported,not reported
+9283265026_R02C02,ACC,19436.0,F,white,not reported
+9283265026_R04C02,ACC,14667.0,M,white,not reported
+9283265025_R03C01,ACC,8745.0,F,white,not hispanic or latino
+9283265025_R02C02,ACC,18214.0,M,white,not reported
+9283265025_R01C02,ACC,24266.0,M,white,hispanic or latino
+9305216091_R04C01,BLCA,24614.0,F,white,not hispanic or latino
+7800246126_R03C01,BLCA,32134.0,M,white,not hispanic or latino
+6285609006_R03C02,BLCA,24499.0,F,white,not hispanic or latino
+3999510108_R03C02,BLCA,27496.0,F,white,not hispanic or latino
+6929742075_R05C01,BLCA,29293.0,F,white,not hispanic or latino
+6164655053_R05C02,BLCA,30674.0,M,white,not hispanic or latino
+6929742075_R02C02,BLCA,27068.0,F,white,not hispanic or latino
+9806233110_R01C01,BLCA,17520.0,M,white,not hispanic or latino
+7796806095_R02C02,BLCA,25147.0,M,white,not hispanic or latino
+3999510091_R05C01,BLCA,25080.0,M,white,not hispanic or latino
+9422491111_R01C02,BLCA,32041.0,F,white,not reported
+6285609006_R01C02,BLCA,21093.0,M,white,not hispanic or latino
+9806233125_R02C01,BLCA,30205.0,M,white,not hispanic or latino
+7796806095_R01C01,BLCA,24124.0,M,white,not hispanic or latino
+9806233091_R01C02,BLCA,20683.0,M,white,not hispanic or latino
+9806233110_R04C01,BLCA,25642.0,M,white,not hispanic or latino
+3999510104_R03C02,BLCA,24019.0,M,white,not hispanic or latino
+9701417044_R01C02,BLCA,29457.0,M,white,not reported
+7796806101_R03C01,BLCA,24681.0,M,white,not hispanic or latino
+6929718034_R02C01,BLCA,20649.0,F,white,not hispanic or latino
+9701417044_R06C01,BLCA,25460.0,M,white,not hispanic or latino
+9305216005_R04C02,BLCA,25644.0,M,white,not hispanic or latino
+9630789147_R06C02,BLCA,30774.0,M,not reported,not reported
+9704031058_R01C02,BLCA,27537.0,M,white,not hispanic or latino
+9283265102_R01C01,BLCA,27686.0,F,white,not hispanic or latino
+6285633017_R05C02,BLCA,22716.0,M,asian,not hispanic or latino
+9422491074_R06C02,BLCA,21196.0,M,white,not hispanic or latino
+6264496109_R03C01,BLCA,27646.0,M,white,not hispanic or latino
+8795194084_R04C02,BLCA,17501.0,F,white,not hispanic or latino
+6285633017_R06C02,BLCA,24245.0,M,black or african american,not hispanic or latino
+9630789147_R01C01,BLCA,18051.0,M,white,not hispanic or latino
+9283265139_R05C02,BLCA,13867.0,M,asian,not hispanic or latino
+9305216005_R05C01,BLCA,27310.0,M,white,not hispanic or latino
+7796806075_R05C01,BLCA,21615.0,M,white,not hispanic or latino
+7786915031_R04C02,BLCA,15758.0,F,black or african american,not hispanic or latino
+9701417044_R02C01,BLCA,25484.0,F,white,not hispanic or latino
+6285633017_R05C01,BLCA,27458.0,M,asian,not hispanic or latino
+9806233091_R06C01,BLCA,30398.0,M,white,not hispanic or latino
+7800246126_R05C02,BLCA,20802.0,F,white,not hispanic or latino
+6005486021_R04C01,BRCA,22714.0,F,white,not reported
+9630789239_R02C01,BRCA,31932.0,F,white,not hispanic or latino
+7796806088_R03C02,BRCA,,F,asian,not hispanic or latino
+7786923105_R04C02,BRCA,15212.0,F,black or african american,not reported
+9426020160_R01C01,BRCA,20239.0,F,white,not hispanic or latino
+6929718030_R01C01,BRCA,25499.0,F,white,not hispanic or latino
+6005486023_R03C02,BRCA,21831.0,F,white,not hispanic or latino
+8784241059_R06C02,BRCA,27627.0,F,white,hispanic or latino
+6004791010_R05C02,BRCA,28644.0,F,white,not reported
+6042316072_R04C01,BRCA,23397.0,F,white,not hispanic or latino
+6042324048_R02C01,BRCA,,F,asian,not hispanic or latino
+6026818129_R05C02,BRCA,28444.0,F,white,not hispanic or latino
+6005486023_R01C02,BRCA,23404.0,F,not reported,not reported
+6929718014_R04C02,BRCA,16627.0,F,white,hispanic or latino
+6229009066_R03C02,BRCA,23576.0,F,white,not hispanic or latino
+6005486013_R03C01,BRCA,26466.0,F,black or african american,not hispanic or latino
+6057833141_R01C01,BRCA,17779.0,F,asian,not hispanic or latino
+7796806103_R01C02,BRCA,22643.0,F,white,not hispanic or latino
+6005486025_R01C02,BRCA,22380.0,F,black or african american,not hispanic or latino
+3999997079_R03C01,BRCA,23642.0,F,black or african american,not hispanic or latino
+6042316141_R06C02,BRCA,25693.0,F,white,not hispanic or latino
+8784241046_R05C01,BRCA,31173.0,F,white,not hispanic or latino
+9426020160_R03C01,BRCA,19169.0,F,black or african american,not hispanic or latino
+6042324006_R02C02,BRCA,14115.0,F,white,not hispanic or latino
+6026818111_R02C01,BRCA,27028.0,F,black or african american,not hispanic or latino
+6057833142_R06C01,BRCA,23224.0,F,white,not hispanic or latino
+6004791006_R03C02,BRCA,23883.0,F,white,not reported
+9305216132_R01C02,BRCA,27964.0,F,black or african american,not hispanic or latino
+6229009059_R05C02,BRCA,32872.0,F,asian,not hispanic or latino
+6005486005_R05C01,BRCA,18584.0,F,black or african american,not hispanic or latino
+6026818122_R04C01,BRCA,17597.0,F,asian,hispanic or latino
+8784241071_R04C01,BRCA,16178.0,F,black or african american,not hispanic or latino
+6005486013_R05C01,BRCA,22723.0,F,white,not hispanic or latino
+6057833155_R05C01,BRCA,19989.0,F,white,not hispanic or latino
+6004791004_R03C01,BRCA,18334.0,F,white,not hispanic or latino
+6005486005_R06C02,BRCA,30025.0,F,white,not hispanic or latino
+9283265077_R03C02,BRCA,26627.0,F,black or african american,not hispanic or latino
+6057833159_R05C02,BRCA,23851.0,F,white,not hispanic or latino
+6026818128_R05C01,BRCA,22332.0,F,white,hispanic or latino
+6929718030_R02C02,BRCA,18053.0,F,white,not hispanic or latino
+6042324071_R06C02,BRCA,29335.0,F,white,not hispanic or latino
+6042316072_R01C01,BRCA,23423.0,F,white,not hispanic or latino
+7796806103_R03C02,BRCA,23041.0,F,white,not hispanic or latino
+6042324072_R06C02,BRCA,27241.0,F,white,not hispanic or latino
+6026818135_R01C01,BRCA,28940.0,F,white,not hispanic or latino
+6229009066_R06C01,BRCA,19591.0,F,white,not hispanic or latino
+6026818129_R06C02,BRCA,14868.0,F,white,not hispanic or latino
+9283265014_R05C02,BRCA,27489.0,F,black or african american,not hispanic or latino
+8784241036_R04C01,BRCA,26883.0,F,white,not hispanic or latino
+8784241036_R01C02,BRCA,24788.0,F,white,not hispanic or latino
+9422491074_R04C01,BRCA,32208.0,F,white,not hispanic or latino
+6026818102_R01C01,BRCA,19731.0,F,white,not hispanic or latino
+6004791020_R04C02,BRCA,18263.0,F,white,not hispanic or latino
+6005486012_R04C01,BRCA,24577.0,F,white,not hispanic or latino
+6057833101_R01C01,BRCA,22279.0,F,white,not hispanic or latino
+6005486029_R03C02,BRCA,21479.0,F,black or african american,not hispanic or latino
+6285633051_R04C01,BRCA,17346.0,F,white,not hispanic or latino
+6042316157_R04C01,BRCA,32872.0,F,white,not hispanic or latino
+7796806088_R06C01,BRCA,18171.0,F,black or african american,not hispanic or latino
+6057833141_R02C01,BRCA,23948.0,F,white,not hispanic or latino
+6005486021_R01C01,BRCA,25289.0,F,white,not reported
+6005486021_R02C02,BRCA,19900.0,F,white,not reported
+6057833101_R04C01,BRCA,17699.0,F,white,not hispanic or latino
+6042316157_R01C01,BRCA,16887.0,F,white,not reported
+6005486023_R04C01,BRCA,24923.0,F,white,not hispanic or latino
+6026818108_R02C02,BRCA,25966.0,F,white,not hispanic or latino
+6929718030_R02C01,BRCA,26407.0,F,white,not hispanic or latino
+9298768134_R03C02,BRCA,30783.0,F,black or african american,not hispanic or latino
+7796806090_R01C01,BRCA,16022.0,F,black or african american,not hispanic or latino
+7786923105_R06C02,BRCA,26042.0,F,white,not hispanic or latino
+6005486013_R02C02,BRCA,20863.0,F,white,not hispanic or latino
+6042324037_R06C01,BRCA,23927.0,F,white,not hispanic or latino
+7796806090_R02C02,BRCA,27143.0,F,white,not hispanic or latino
+6005486012_R03C01,BRCA,22961.0,F,white,not hispanic or latino
+6005486023_R02C01,BRCA,13307.0,F,black or african american,not hispanic or latino
+9828653014_R04C02,CESC,15262.0,-2147483648,white,not hispanic or latino
+9422492089_R05C01,CESC,13601.0,-2147483648,not reported,hispanic or latino
+3999510096_R06C01,CESC,14255.0,-2147483648,black or african american,not reported
+7786923106_R03C01,CESC,14736.0,-2147483648,black or african american,not hispanic or latino
+9305216159_R05C01,CESC,13988.0,-2147483648,white,not hispanic or latino
+9630789197_R03C01,CESC,12977.0,-2147483648,white,not hispanic or latino
+8784225111_R06C01,CESC,14706.0,-2147483648,white,not hispanic or latino
+9630789197_R03C02,CESC,26542.0,-2147483648,black or african american,not hispanic or latino
+3999510100_R04C02,CESC,18792.0,-2147483648,white,not reported
+9630789197_R01C02,CESC,20286.0,-2147483648,white,not reported
+3999510081_R01C02,CESC,27897.0,-2147483648,not reported,not reported
+9305216147_R05C02,CESC,15965.0,-2147483648,black or african american,not hispanic or latino
+9422492029_R06C01,CESC,12775.0,-2147483648,black or african american,not hispanic or latino
+9829119060_R02C01,CESC,23277.0,-2147483648,not reported,not reported
+9630789197_R05C01,CESC,17156.0,-2147483648,white,not hispanic or latino
+9305216159_R01C02,CESC,18903.0,-2147483648,white,not hispanic or latino
+9482801015_R02C02,CESC,,-2147483648,white,not hispanic or latino
+9305216147_R05C01,CESC,11705.0,-2147483648,white,not hispanic or latino
+8784225111_R02C02,CESC,19079.0,-2147483648,asian,not hispanic or latino
+6285625095_R06C02,CESC,12611.0,-2147483648,white,not reported
+9305216159_R06C02,CESC,15466.0,-2147483648,black or african american,not hispanic or latino
+6929742050_R04C02,CESC,15909.0,-2147483648,white,not hispanic or latino
+3999510090_R03C02,CESC,11853.0,-2147483648,not reported,not reported
+7796806095_R06C02,CESC,16923.0,-2147483648,white,not hispanic or latino
+9828653016_R06C01,CESC,12959.0,-2147483648,black or african american,not hispanic or latino
+6285625106_R06C02,CESC,18067.0,-2147483648,white,not reported
+3999510096_R04C01,CESC,24497.0,-2147483648,not reported,not reported
+9305216149_R02C02,CESC,19868.0,-2147483648,asian,not hispanic or latino
+9305216149_R02C01,CESC,13109.0,-2147483648,american indian or alaska native,hispanic or latino
+9630789197_R02C02,CESC,20728.0,-2147483648,not reported,not reported
+9996247061_R03C02,CHOL,21743.0,F,black or african american,not hispanic or latino
+5775041088_R03C01,COAD,21519.0,M,black or african american,not hispanic or latino
+6042316015_R02C02,COAD,28367.0,M,not reported,not reported
+6042316015_R06C01,COAD,26543.0,M,white,not hispanic or latino
+6042316015_R05C02,COAD,20103.0,F,white,not hispanic or latino
+6057825020_R06C02,COAD,24237.0,M,white,not hispanic or latino
+9702496157_R03C01,COAD,16416.0,F,black or african american,not hispanic or latino
+5775041065_R05C01,COAD,22409.0,M,white,not hispanic or latino
+6042316008_R03C02,COAD,30142.0,M,white,not hispanic or latino
+6929718053_R03C02,COAD,30012.0,M,white,not hispanic or latino
+6042316011_R04C01,COAD,19591.0,M,white,not hispanic or latino
+6929718053_R03C01,COAD,32052.0,F,white,not hispanic or latino
+6285625057_R04C02,COAD,24564.0,M,black or african american,not hispanic or latino
+6042308165_R03C02,COAD,22344.0,M,white,not hispanic or latino
+6285625037_R02C02,COAD,26024.0,F,white,not hispanic or latino
+6042316015_R01C01,COAD,29194.0,F,white,not hispanic or latino
+6057825002_R03C01,COAD,32871.0,M,white,not hispanic or latino
+6929718065_R04C02,COAD,28772.0,M,white,not hispanic or latino
+6929718079_R06C01,COAD,13755.0,M,white,not hispanic or latino
+9305216012_R01C02,COAD,25143.0,F,white,not hispanic or latino
+9296931074_R03C01,COAD,25089.0,F,black or african american,not hispanic or latino
+6042308165_R01C02,COAD,24453.0,F,black or african american,not hispanic or latino
+6285625037_R05C02,COAD,16344.0,M,white,not hispanic or latino
+6929718079_R01C01,COAD,21241.0,F,white,not hispanic or latino
+6929718065_R01C02,COAD,29704.0,M,white,not hispanic or latino
+5775041065_R06C02,COAD,25506.0,M,white,not hispanic or latino
+6285625068_R05C01,COAD,22219.0,M,white,not hispanic or latino
+9828653044_R05C01,DLBC,10075.0,F,white,hispanic or latino
+7786923062_R05C01,DLBC,21272.0,M,white,not hispanic or latino
+9828653043_R04C01,DLBC,13708.0,M,white,hispanic or latino
+7786915146_R05C01,DLBC,15750.0,F,black or african american,not hispanic or latino
+7786915146_R05C02,DLBC,21021.0,F,white,not hispanic or latino
+8784225110_R02C01,ESCA,22933.0,M,asian,not hispanic or latino
+8784225115_R03C01,ESCA,24829.0,F,white,not reported
+9630789160_R03C02,ESCA,26143.0,F,white,not reported
+9701417132_R04C02,ESCA,21917.0,M,white,not hispanic or latino
+9283265015_R05C02,ESCA,18944.0,M,white,not hispanic or latino
+9630789160_R02C01,ESCA,18123.0,M,white,not reported
+8795194017_R06C02,ESCA,17109.0,M,asian,not hispanic or latino
+8784241035_R04C01,ESCA,21122.0,M,asian,not hispanic or latino
+9934398135_R02C01,ESCA,23517.0,M,white,not reported
+9630789160_R01C01,ESCA,19523.0,M,white,not hispanic or latino
+9422492098_R02C01,ESCA,26348.0,F,white,not hispanic or latino
+9701417063_R05C02,ESCA,19991.0,M,white,not reported
+9701417002_R04C01,ESCA,29730.0,F,not reported,not reported
+8784225116_R06C02,ESCA,29105.0,F,white,not reported
+9422492119_R06C01,ESCA,18348.0,M,white,not reported
+9305216166_R01C01,ESCA,16990.0,M,asian,not hispanic or latino
+9482801003_R01C02,ESCA,17931.0,M,asian,not hispanic or latino
+6929718029_R05C02,GBM,21093.0,M,white,not hispanic or latino
+6929671059_R06C01,GBM,18659.0,M,white,not hispanic or latino
+6929671047_R05C02,GBM,23343.0,F,white,not hispanic or latino
+6042324082_R04C02,GBM,16572.0,F,white,not hispanic or latino
+6042324049_R06C02,GBM,20463.0,F,white,not hispanic or latino
+6929718033_R01C02,GBM,20960.0,F,black or african american,not reported
+6042316122_R02C01,GBM,23567.0,M,white,not reported
+6042316092_R02C02,GBM,18832.0,M,white,not hispanic or latino
+9422493021_R01C01,GBM,20302.0,M,black or african american,not hispanic or latino
+6929718029_R06C02,GBM,22179.0,M,white,not reported
+6042316093_R03C02,GBM,23674.0,F,white,not reported
+9422493021_R03C02,GBM,29037.0,M,black or african american,not hispanic or latino
+6929671059_R01C02,GBM,26600.0,F,white,not hispanic or latino
+6929718035_R02C01,GBM,24265.0,M,black or african american,not hispanic or latino
+6285650039_R04C01,HNSC,21016.0,M,white,not hispanic or latino
+6285633073_R02C02,HNSC,23696.0,F,white,not hispanic or latino
+8795194127_R02C02,HNSC,16567.0,F,asian,not hispanic or latino
+6285650033_R02C02,HNSC,25006.0,M,white,not hispanic or latino
+8795194127_R03C02,HNSC,20868.0,M,white,not hispanic or latino
+5775446051_R04C02,HNSC,26953.0,M,white,hispanic or latino
+6264496125_R03C02,HNSC,22125.0,M,black or african american,not hispanic or latino
+6264496115_R03C02,HNSC,22741.0,M,black or african american,not hispanic or latino
+9422492114_R05C01,HNSC,20314.0,F,white,not hispanic or latino
+6285650039_R01C02,HNSC,21803.0,M,white,not hispanic or latino
+8784241048_R05C01,HNSC,28402.0,M,white,not hispanic or latino
+6929742068_R05C01,HNSC,21897.0,M,white,not hispanic or latino
+6285650033_R03C01,HNSC,21232.0,M,black or african american,not hispanic or latino
+8784241047_R05C01,HNSC,24285.0,M,white,not hispanic or latino
+6285633035_R05C01,HNSC,29527.0,F,white,not hispanic or latino
+8784241002_R02C01,HNSC,22340.0,F,white,not hispanic or latino
+6285633014_R03C02,HNSC,19447.0,M,white,not hispanic or latino
+6285633071_R06C02,HNSC,26975.0,F,white,not hispanic or latino
+6929671022_R04C02,HNSC,26976.0,M,white,not hispanic or latino
+6285650023_R02C02,HNSC,21890.0,M,white,hispanic or latino
+6929806064_R04C01,HNSC,28466.0,M,white,not hispanic or latino
+9305216058_R05C01,HNSC,27990.0,M,white,hispanic or latino
+6285633048_R06C02,HNSC,17810.0,M,black or african american,not hispanic or latino
+6264496115_R04C02,HNSC,22765.0,M,white,not hispanic or latino
+6929742016_R01C01,HNSC,19876.0,M,white,not hispanic or latino
+6285633071_R05C01,HNSC,24775.0,M,asian,not hispanic or latino
+9305216058_R06C02,HNSC,27928.0,F,white,not hispanic or latino
+8795194093_R01C02,HNSC,23310.0,M,not reported,not hispanic or latino
+6929671027_R01C02,HNSC,18611.0,M,white,not hispanic or latino
+9704031168_R04C01,HNSC,20471.0,M,black or african american,not hispanic or latino
+6264496115_R05C02,HNSC,17203.0,M,white,not hispanic or latino
+6285633035_R02C02,HNSC,19116.0,M,white,not hispanic or latino
+6929671086_R03C02,HNSC,22577.0,M,white,hispanic or latino
+6264496113_R06C01,HNSC,21791.0,M,white,not hispanic or latino
+6929671086_R03C01,HNSC,26769.0,M,white,not hispanic or latino
+8795194127_R05C01,HNSC,26592.0,F,asian,not hispanic or latino
+6264488077_R03C01,HNSC,20563.0,M,white,not hispanic or latino
+9422492084_R02C02,HNSC,20109.0,M,black or african american,not hispanic or latino
+6285650023_R06C02,HNSC,24115.0,M,white,not hispanic or latino
+8795194059_R04C02,HNSC,17464.0,M,white,not hispanic or latino
+9422492126_R06C02,HNSC,24121.0,F,white,not reported
+5775446051_R02C02,HNSC,17177.0,M,white,not hispanic or latino
+9422492106_R02C01,HNSC,23848.0,M,white,not hispanic or latino
+8784241047_R03C01,HNSC,23955.0,M,white,not hispanic or latino
+5775446049_R06C01,HNSC,23287.0,M,black or african american,not hispanic or latino
+6285633071_R03C01,HNSC,25365.0,M,white,not hispanic or latino
+8795194070_R06C01,HNSC,22455.0,M,white,not hispanic or latino
+9305216036_R04C02,HNSC,22201.0,M,white,not hispanic or latino
+8795194127_R01C01,HNSC,21995.0,M,white,not hispanic or latino
+6929671030_R06C02,HNSC,23326.0,M,white,not hispanic or latino
+5775446049_R05C01,HNSC,21444.0,F,white,not hispanic or latino
+7786923021_R02C01,KICH,11139.0,F,white,not hispanic or latino
+7786915164_R04C01,KICH,17121.0,F,white,not reported
+7786923021_R05C01,KICH,22997.0,M,white,not hispanic or latino
+7786923081_R02C02,KICH,16395.0,F,white,hispanic or latino
+7786923021_R04C01,KICH,18345.0,M,white,not reported
+6042324027_R01C01,KIRC,26478.0,M,black or african american,not hispanic or latino
+6285650106_R01C01,KIRC,14642.0,F,black or african american,not hispanic or latino
+6929671144_R02C01,KIRC,24729.0,F,white,not hispanic or latino
+6042308135_R04C01,KIRC,14551.0,M,white,not reported
+6042308152_R02C02,KIRC,22424.0,M,white,not hispanic or latino
+6285650094_R03C01,KIRC,25937.0,M,white,not hispanic or latino
+6285650093_R02C01,KIRC,26060.0,M,white,not hispanic or latino
+6042308132_R05C01,KIRC,25463.0,M,white,not reported
+6042316163_R05C02,KIRC,22607.0,F,white,not hispanic or latino
+6929671144_R03C01,KIRC,17177.0,F,white,not hispanic or latino
+6929718088_R06C02,KIRC,21713.0,M,white,not hispanic or latino
+6042308129_R06C01,KIRC,22864.0,F,white,not hispanic or latino
+9701417173_R03C02,KIRC,23998.0,F,black or african american,not hispanic or latino
+6042324009_R06C01,KIRC,27225.0,M,white,not hispanic or latino
+9422492127_R02C01,KIRC,17722.0,M,black or african american,not hispanic or latino
+6929718088_R04C01,KIRC,11701.0,M,white,not reported
+6285617026_R04C01,KIRC,19647.0,M,white,not hispanic or latino
+6042324004_R06C01,KIRC,24912.0,M,white,not hispanic or latino
+6042308129_R03C01,KIRC,14226.0,M,white,not hispanic or latino
+6929718091_R02C02,KIRC,26909.0,M,white,not hispanic or latino
+6055424116_R06C01,KIRC,19611.0,F,white,not hispanic or latino
+6042308104_R06C01,KIRC,21842.0,F,white,not reported
+6042324009_R01C02,KIRC,21088.0,M,white,not hispanic or latino
+6285617026_R06C02,KIRC,23915.0,M,white,not hispanic or latino
+6042308135_R01C02,KIRC,28727.0,F,white,not reported
+6042316038_R05C01,KIRC,17145.0,M,white,not hispanic or latino
+6929718090_R01C01,KIRC,15063.0,F,white,not hispanic or latino
+6055424116_R01C01,KIRC,32872.0,F,white,not hispanic or latino
+6285617068_R04C02,KIRC,23746.0,F,white,not hispanic or latino
+6929718088_R01C01,KIRC,21928.0,M,white,not hispanic or latino
+6055424037_R06C02,KIRC,15898.0,M,white,not hispanic or latino
+7786923102_R01C02,KIRP,30346.0,M,white,not hispanic or latino
+8784225052_R04C01,KIRP,21996.0,F,white,not hispanic or latino
+6285633034_R05C02,KIRP,19593.0,F,white,not hispanic or latino
+6285633052_R06C02,KIRP,26136.0,M,white,not hispanic or latino
+3999510144_R03C01,KIRP,23384.0,M,white,not hispanic or latino
+6929671163_R05C02,KIRP,27670.0,M,white,not reported
+9630789214_R05C02,KIRP,13523.0,F,asian,not hispanic or latino
+7800246206_R06C01,KIRP,13628.0,F,asian,not hispanic or latino
+9296931055_R01C01,KIRP,16779.0,F,white,not hispanic or latino
+8784225052_R03C02,KIRP,18239.0,F,black or african american,not hispanic or latino
+3999510119_R04C02,KIRP,21829.0,M,white,not hispanic or latino
+7786923102_R05C02,KIRP,24486.0,M,white,not hispanic or latino
+7800246206_R05C01,KIRP,22879.0,M,white,not hispanic or latino
+9305216203_R05C01,KIRP,20933.0,M,black or african american,not hispanic or latino
+6264496102_R03C02,KIRP,17275.0,F,white,not reported
+6285633061_R01C01,KIRP,20837.0,F,black or african american,hispanic or latino
+9828653052_R04C02,KIRP,26244.0,M,white,not hispanic or latino
+6285609019_R03C02,KIRP,26820.0,M,white,not hispanic or latino
+9305216028_R02C02,KIRP,25545.0,M,black or african american,not hispanic or latino
+9828653052_R02C02,KIRP,29156.0,M,asian,not hispanic or latino
+6285633053_R06C02,KIRP,,M,not reported,not reported
+3999510102_R05C02,KIRP,27434.0,M,white,not hispanic or latino
+5775446078_R02C02,LAML,25141.0,F,white,not hispanic or latino
+5771955042_R03C02,LAML,22311.0,F,white,not hispanic or latino
+5771955069_R03C01,LAML,20485.0,M,white,not hispanic or latino
+5775446062_R05C01,LAML,23679.0,F,black or african american,not hispanic or latino
+5775446018_R02C01,LAML,11262.0,F,white,not hispanic or latino
+5771955068_R06C02,LAML,26512.0,M,white,not hispanic or latino
+5771955042_R02C02,LAML,21214.0,M,white,not hispanic or latino
+5775446017_R02C02,LAML,22980.0,M,white,not hispanic or latino
+5775446014_R02C01,LAML,11384.0,F,white,not hispanic or latino
+5775446018_R01C01,LAML,10774.0,M,white,not hispanic or latino
+5775446078_R01C01,LAML,20211.0,F,white,not hispanic or latino
+5775446070_R05C01,LAML,13728.0,F,white,not hispanic or latino
+5771955069_R06C02,LAML,11626.0,M,white,not hispanic or latino
+5775446072_R01C02,LAML,12266.0,F,black or african american,not hispanic or latino
+5775446017_R03C02,LAML,20057.0,M,black or african american,not hispanic or latino
+5771955082_R03C01,LAML,9162.0,F,white,not hispanic or latino
+5771955046_R04C02,LAML,23984.0,F,white,not hispanic or latino
+5775446078_R05C02,LAML,28308.0,M,white,not hispanic or latino
+8784241059_R01C01,LGG,13145.0,M,white,not hispanic or latino
+9426020029_R04C01,LGG,17465.0,F,white,not hispanic or latino
+9305216114_R02C02,LGG,22948.0,M,white,not hispanic or latino
+9297949122_R01C02,LGG,12809.0,F,white,not hispanic or latino
+9426020012_R02C01,LGG,14022.0,M,white,hispanic or latino
+6929806068_R01C02,LGG,13892.0,M,white,not hispanic or latino
+9297949111_R04C01,LGG,17258.0,M,white,not hispanic or latino
+9297949047_R05C02,LGG,7913.0,M,white,not hispanic or latino
+6285633006_R04C02,LGG,11357.0,M,white,not hispanic or latino
+9296931022_R04C01,LGG,12445.0,F,white,not hispanic or latino
+9701417108_R04C01,LGG,11668.0,M,white,not hispanic or latino
+6285633061_R03C02,LGG,5267.0,M,white,not hispanic or latino
+6164655051_R06C02,LGG,18494.0,M,white,not reported
+8784241059_R04C01,LGG,14910.0,F,white,not hispanic or latino
+6285633075_R01C02,LGG,21199.0,F,white,not hispanic or latino
+6164655052_R03C01,LGG,13943.0,F,white,not hispanic or latino
+9285451132_R01C01,LGG,15513.0,F,white,not reported
+6042316122_R02C02,LGG,11427.0,F,white,not hispanic or latino
+9701417180_R01C02,LGG,16911.0,F,white,not hispanic or latino
+9305216110_R06C02,LGG,9575.0,M,white,not hispanic or latino
+9283265074_R03C01,LGG,12580.0,F,white,not hispanic or latino
+9296931022_R04C02,LGG,13892.0,F,white,not hispanic or latino
+6164655052_R04C01,LGG,12152.0,M,white,not hispanic or latino
+9426020012_R05C02,LGG,16560.0,F,white,not hispanic or latino
+6285633061_R02C02,LGG,14201.0,M,white,not hispanic or latino
+9305216114_R04C02,LGG,16945.0,F,white,not hispanic or latino
+9297949122_R03C02,LGG,16300.0,F,white,not hispanic or latino
+6042316122_R05C02,LGG,11595.0,F,white,not hispanic or latino
+6929806068_R04C01,LGG,12607.0,M,white,not hispanic or latino
+8784241041_R01C02,LGG,10422.0,M,white,not hispanic or latino
+7310440001_R04C02,LGG,17656.0,F,white,not hispanic or latino
+8784241056_R01C02,LGG,11474.0,M,white,not hispanic or latino
+9297949122_R02C01,LGG,19823.0,M,white,not hispanic or latino
+6042316122_R01C02,LGG,21634.0,F,white,not hispanic or latino
+9422491144_R01C02,LGG,11823.0,M,white,hispanic or latino
+9426020034_R03C01,LGG,20394.0,M,black or african american,not hispanic or latino
+9426020029_R03C01,LGG,10933.0,M,white,not hispanic or latino
+9426020029_R06C02,LGG,16275.0,F,white,not hispanic or latino
+6164655047_R04C02,LGG,10678.0,M,white,not hispanic or latino
+6285633003_R04C01,LGG,22596.0,F,white,not hispanic or latino
+9297949111_R05C01,LGG,27232.0,F,white,not hispanic or latino
+6285633075_R03C02,LGG,13546.0,M,white,not hispanic or latino
+9422491144_R01C01,LGG,21803.0,F,white,not hispanic or latino
+9296931022_R01C02,LGG,20625.0,F,white,not hispanic or latino
+6042316079_R03C02,LGG,12764.0,F,white,not hispanic or latino
+6929806068_R06C01,LGG,18206.0,F,white,not hispanic or latino
+9701417179_R05C02,LGG,14082.0,F,white,not hispanic or latino
+6285633003_R02C02,LGG,21331.0,F,white,not hispanic or latino
+9305216110_R05C02,LGG,22811.0,F,white,not hispanic or latino
+8784241059_R05C01,LGG,23486.0,M,white,hispanic or latino
+9305216081_R04C02,LIHC,25503.0,M,white,not hispanic or latino
+9422493013_R03C01,LIHC,23441.0,M,white,not hispanic or latino
+9422492129_R01C02,LIHC,24853.0,M,white,not hispanic or latino
+3999492067_R02C01,LIHC,18757.0,M,asian,not hispanic or latino
+9704031081_R05C01,LIHC,22639.0,M,white,not hispanic or latino
+7796806009_R03C02,LIHC,27524.0,M,white,not hispanic or latino
+9721366062_R05C01,LIHC,21318.0,M,white,hispanic or latino
+9704031058_R06C02,LIHC,25892.0,M,white,not hispanic or latino
+3999492067_R01C01,LIHC,17833.0,M,asian,not hispanic or latino
+9934987028_R02C02,LIHC,25188.0,M,white,hispanic or latino
+6929718042_R02C01,LIHC,19214.0,F,white,not hispanic or latino
+3999492055_R02C01,LIHC,21349.0,M,asian,not hispanic or latino
+3999492031_R01C01,LIHC,24027.0,M,asian,not hispanic or latino
+9721366044_R05C02,LIHC,14229.0,M,asian,not hispanic or latino
+9934987023_R05C02,LIHC,18572.0,F,asian,not hispanic or latino
+6285633076_R04C02,LIHC,10699.0,F,white,not hispanic or latino
+9721366037_R02C01,LIHC,20985.0,M,asian,not hispanic or latino
+3999492009_R01C02,LIHC,27528.0,M,asian,not hispanic or latino
+6285617025_R01C01,LIHC,24274.0,F,white,not hispanic or latino
+3999492067_R04C01,LIHC,25451.0,M,asian,not hispanic or latino
+9305216203_R05C02,LIHC,9809.0,F,white,hispanic or latino
+3999492040_R02C01,LIHC,15928.0,F,asian,not hispanic or latino
+9305216038_R05C02,LIHC,20548.0,F,white,not hispanic or latino
+3999492055_R02C02,LIHC,23230.0,F,asian,not hispanic or latino
+9934987023_R01C01,LIHC,27145.0,M,white,hispanic or latino
+3999492055_R04C01,LIHC,23614.0,F,asian,not hispanic or latino
+9721366044_R05C01,LIHC,20187.0,F,white,not hispanic or latino
+3999492031_R06C01,LIHC,24329.0,M,asian,not hispanic or latino
+6285633107_R05C01,LIHC,25489.0,M,white,not reported
+7796806032_R05C01,LIHC,13739.0,M,white,not hispanic or latino
+9426021127_R03C02,LIHC,25588.0,M,white,not hispanic or latino
+6285633076_R03C01,LIHC,24046.0,M,not reported,not reported
+9305216038_R03C02,LIHC,23557.0,M,white,not hispanic or latino
+9422493013_R02C01,LIHC,24377.0,M,white,not hispanic or latino
+6285633107_R03C02,LIHC,28528.0,F,white,not hispanic or latino
+6929671122_R01C01,LUAD,19301.0,M,white,not hispanic or latino
+6042316106_R06C01,LUAD,21766.0,M,white,not hispanic or latino
+6042308099_R02C02,LUAD,28988.0,F,white,not hispanic or latino
+6285633063_R06C02,LUAD,27891.0,F,white,not hispanic or latino
+6929671122_R06C01,LUAD,27733.0,F,white,not hispanic or latino
+6285625087_R01C02,LUAD,,M,not reported,not reported
+8795194076_R02C02,LUAD,28495.0,F,white,not hispanic or latino
+6285633063_R06C01,LUAD,22619.0,F,black or african american,not hispanic or latino
+9305216009_R06C01,LUAD,22236.0,F,white,not hispanic or latino
+6285650106_R01C02,LUAD,,F,not reported,not reported
+8795194104_R01C01,LUAD,22414.0,F,white,not hispanic or latino
+3999510111_R04C01,LUAD,15162.0,M,black or african american,not hispanic or latino
+7786923075_R03C01,LUAD,26003.0,M,white,not hispanic or latino
+6264488026_R04C01,LUAD,18542.0,F,black or african american,not hispanic or latino
+8784241063_R01C02,LUAD,27924.0,M,white,not hispanic or latino
+8784241132_R03C02,LUAD,31867.0,F,white,not reported
+9828653011_R03C02,LUAD,24903.0,F,black or african american,not hispanic or latino
+8784241071_R05C02,LUAD,24820.0,F,white,not hispanic or latino
+6285625064_R01C02,LUAD,25440.0,F,white,not reported
+6285633020_R05C02,LUAD,20206.0,F,white,not hispanic or latino
+6285633063_R01C01,LUAD,25746.0,F,white,not hispanic or latino
+7310440042_R06C01,LUAD,26272.0,F,white,not reported
+6285625090_R06C01,LUAD,27332.0,F,white,not hispanic or latino
+6285633036_R03C01,LUAD,21648.0,F,white,not hispanic or latino
+8795194104_R05C01,LUAD,28728.0,M,white,not hispanic or latino
+6929742045_R04C01,LUAD,27946.0,F,white,not hispanic or latino
+8784241084_R06C01,LUAD,22448.0,M,white,not hispanic or latino
+6264488070_R01C02,LUAD,22326.0,F,black or african american,not hispanic or latino
+8795194076_R06C02,LUAD,20063.0,F,white,not hispanic or latino
+6929671032_R01C02,LUAD,24713.0,M,white,not reported
+3999510111_R01C02,LUAD,18893.0,F,black or african american,not hispanic or latino
+6264488067_R01C02,LUAD,26716.0,F,white,not hispanic or latino
+7310440042_R05C01,LUAD,21742.0,F,white,not reported
+6285650107_R06C01,LUAD,,M,white,not reported
+6285625068_R03C02,LUAD,25870.0,M,white,not hispanic or latino
+6285625076_R05C02,LUAD,23107.0,M,white,not reported
+8795194104_R06C01,LUAD,27024.0,F,black or african american,not hispanic or latino
+6929671122_R03C01,LUAD,22745.0,F,white,not hispanic or latino
+9305216009_R06C02,LUAD,23378.0,M,white,not hispanic or latino
+6285633036_R01C02,LUAD,23117.0,F,white,not hispanic or latino
+6285625068_R02C02,LUAD,29807.0,F,white,not reported
+6929671031_R05C01,LUAD,25730.0,M,white,not hispanic or latino
+9305216011_R01C01,LUAD,24631.0,F,white,not hispanic or latino
+6929742041_R02C02,LUAD,24809.0,F,white,not reported
+6055424084_R03C01,LUSC,,M,not reported,not reported
+6929742075_R04C01,LUSC,27233.0,M,white,not hispanic or latino
+6264488076_R01C01,LUSC,26533.0,M,not reported,not reported
+6042308087_R05C02,LUSC,27118.0,M,white,not hispanic or latino
+8784225109_R02C01,LUSC,26231.0,M,white,not hispanic or latino
+8784225109_R03C01,LUSC,28253.0,F,not reported,not reported
+6055424054_R04C01,LUSC,26722.0,F,white,not reported
+9305216133_R04C01,LUSC,21531.0,F,white,not reported
+8784241036_R02C01,LUSC,24286.0,M,white,not hispanic or latino
+6929742068_R05C02,LUSC,17921.0,M,white,not hispanic or latino
+6042308078_R04C02,LUSC,24245.0,F,white,not hispanic or latino
+8784241001_R04C02,LUSC,20301.0,M,white,not hispanic or latino
+6929742070_R01C02,LUSC,25042.0,F,white,not hispanic or latino
+6264488071_R02C01,LUSC,20509.0,F,black or african american,not hispanic or latino
+7786923103_R01C01,LUSC,26803.0,F,white,not reported
+8784241001_R03C02,LUSC,20490.0,F,white,not hispanic or latino
+9283265144_R01C02,LUSC,25921.0,M,not reported,not reported
+8784241130_R02C02,LUSC,23502.0,M,white,not hispanic or latino
+6055424076_R02C01,LUSC,27707.0,M,white,not hispanic or latino
+6929742070_R04C02,LUSC,20534.0,M,white,not hispanic or latino
+6042308078_R03C02,LUSC,27749.0,M,white,not reported
+6055424086_R01C02,LUSC,29098.0,M,white,not hispanic or latino
+6285633040_R06C01,LUSC,27455.0,M,not reported,not reported
+6285633083_R05C01,LUSC,24065.0,M,white,not reported
+6285633054_R05C02,LUSC,23227.0,M,white,not hispanic or latino
+6929742073_R04C01,LUSC,26965.0,M,white,not hispanic or latino
+9305216121_R03C02,LUSC,25286.0,M,white,not reported
+7786923103_R02C02,LUSC,21102.0,F,white,not hispanic or latino
+8784241020_R02C02,LUSC,26232.0,M,white,not hispanic or latino
+9305216133_R03C01,LUSC,22420.0,F,white,not hispanic or latino
+9305216133_R06C02,LUSC,25781.0,M,white,not reported
+8784241020_R02C01,LUSC,25991.0,F,white,not hispanic or latino
+6055424084_R06C01,LUSC,25788.0,F,white,not hispanic or latino
+7786923103_R06C02,LUSC,25710.0,M,white,not hispanic or latino
+8784241130_R01C01,LUSC,27516.0,F,white,not hispanic or latino
+9970497105_R06C01,MESO,26220.0,M,white,not reported
+9630789014_R04C01,MESO,15656.0,M,white,not reported
+9970497105_R04C01,MESO,26926.0,M,white,not hispanic or latino
+9970497099_R05C01,MESO,26264.0,F,white,not hispanic or latino
+9970497103_R02C02,MESO,29905.0,F,white,not hispanic or latino
+9970497104_R01C02,MESO,19746.0,M,white,not hispanic or latino
+9970497113_R03C01,MESO,22670.0,M,white,not hispanic or latino
+9630789013_R01C02,MESO,28590.0,M,white,not hispanic or latino
+9630789001_R03C02,MESO,22822.0,M,white,not hispanic or latino
+9993943047_R01C01,PAAD,27082.0,M,white,not reported
+8795194085_R06C02,PAAD,26635.0,F,white,not hispanic or latino
+6285633049_R02C01,PAAD,21024.0,M,black or african american,not hispanic or latino
+7786923102_R04C01,PAAD,29674.0,M,white,not hispanic or latino
+9828653028_R02C01,PAAD,15807.0,M,white,not hispanic or latino
+7786923093_R03C02,PAAD,26167.0,M,white,not hispanic or latino
+8795194038_R03C02,PAAD,25214.0,F,white,not hispanic or latino
+8795194085_R02C02,PAAD,22329.0,F,asian,not reported
+7786923102_R05C01,PAAD,16126.0,F,not reported,not reported
+6055424077_R02C01,PAAD,29633.0,M,white,not hispanic or latino
+6285633049_R05C01,PAAD,15188.0,M,white,not hispanic or latino
+9806233125_R04C02,PAAD,28239.0,M,white,not reported
+9993943059_R01C01,PAAD,21484.0,F,white,not reported
+9829118148_R02C01,PAAD,27128.0,F,white,not hispanic or latino
+9993943049_R02C01,PAAD,14729.0,M,white,not hispanic or latino
+8795194086_R05C01,PAAD,24025.0,F,asian,not reported
+9482801041_R05C01,PCPG,16489.0,F,white,not hispanic or latino
+9482801167_R06C02,PCPG,29241.0,M,white,not hispanic or latino
+9482801167_R02C02,PCPG,16506.0,M,white,not hispanic or latino
+9482801087_R01C01,PCPG,11572.0,M,white,not hispanic or latino
+9611519077_R02C02,PCPG,24859.0,F,white,not hispanic or latino
+9482801087_R02C01,PCPG,14091.0,M,white,not reported
+9482801026_R06C02,PCPG,12729.0,M,white,not hispanic or latino
+9482801087_R02C02,PCPG,11089.0,F,white,not reported
+9482801041_R03C02,PCPG,9241.0,F,white,not hispanic or latino
+9482801087_R03C01,PCPG,23440.0,F,white,not reported
+9611519077_R04C01,PCPG,21711.0,M,white,not hispanic or latino
+9482801036_R06C01,PCPG,16139.0,F,white,not reported
+9482801005_R06C02,PCPG,19914.0,M,black or african american,not hispanic or latino
+9482801005_R03C01,PCPG,14613.0,M,white,not hispanic or latino
+9482801026_R06C01,PCPG,22621.0,F,asian,not hispanic or latino
+9482801094_R02C01,PCPG,18073.0,F,white,not hispanic or latino
+9482801095_R02C01,PCPG,23254.0,F,white,not hispanic or latino
+9482801142_R06C02,PCPG,23154.0,F,black or african american,not hispanic or latino
+6264496047_R04C02,PRAD,23529.0,-2147483648,white,not hispanic or latino
+3999543014_R02C01,PRAD,20805.0,-2147483648,not reported,not reported
+7310440073_R01C01,PRAD,22766.0,-2147483648,white,not hispanic or latino
+9305216142_R04C01,PRAD,21681.0,-2147483648,not reported,not reported
+9305216096_R04C01,PRAD,23618.0,-2147483648,not reported,not reported
+6264496027_R06C02,PRAD,23194.0,-2147483648,white,not hispanic or latino
+3999547132_R04C01,PRAD,22388.0,-2147483648,not reported,not reported
+6929718002_R01C02,PRAD,22602.0,-2147483648,white,not hispanic or latino
+9630789138_R04C01,PRAD,21916.0,-2147483648,not reported,not reported
+7310440073_R02C01,PRAD,17065.0,-2147483648,white,not hispanic or latino
+6285609054_R02C02,PRAD,,-2147483648,white,not hispanic or latino
+6264496045_R01C02,PRAD,26329.0,-2147483648,white,not hispanic or latino
+9630789138_R03C01,PRAD,,-2147483648,not reported,not reported
+9305216142_R03C02,PRAD,21063.0,-2147483648,not reported,not reported
+8784241045_R05C01,PRAD,21054.0,-2147483648,not reported,not reported
+9630789125_R02C02,PRAD,25799.0,-2147483648,not reported,not reported
+9934625049_R04C02,PRAD,21249.0,-2147483648,not reported,not reported
+3999543026_R04C02,PRAD,23360.0,-2147483648,not reported,not reported
+9630789138_R04C02,PRAD,22338.0,-2147483648,not reported,not reported
+9934625168_R04C01,PRAD,,-2147483648,not reported,not reported
+9934625147_R03C01,PRAD,23204.0,-2147483648,not reported,not reported
+6929718008_R01C02,PRAD,21365.0,-2147483648,white,not hispanic or latino
+9283265090_R05C01,PRAD,28197.0,-2147483648,not reported,not reported
+6264496046_R04C01,PRAD,18596.0,-2147483648,white,not hispanic or latino
+9296931048_R06C01,PRAD,23767.0,-2147483648,not reported,not reported
+9630789122_R02C01,PRAD,20157.0,-2147483648,not reported,not reported
+6929718002_R03C02,PRAD,21149.0,-2147483648,white,not hispanic or latino
+9422491154_R02C02,PRAD,20734.0,-2147483648,not reported,not reported
+9283265160_R05C02,PRAD,23598.0,-2147483648,not reported,not reported
+9422493015_R04C01,PRAD,22185.0,-2147483648,not reported,not reported
+6929793020_R02C01,PRAD,22472.0,-2147483648,white,not hispanic or latino
+9934625093_R05C01,PRAD,27033.0,-2147483648,not reported,not reported
+6264496046_R02C02,PRAD,20409.0,-2147483648,black or african american,not hispanic or latino
+3999543013_R01C02,PRAD,26162.0,-2147483648,not reported,not reported
+6285609054_R06C01,PRAD,22419.0,-2147483648,white,not hispanic or latino
+9630789125_R06C02,PRAD,21748.0,-2147483648,not reported,not reported
+7310440059_R04C02,PRAD,22475.0,-2147483648,white,not hispanic or latino
+9630789122_R01C02,PRAD,22087.0,-2147483648,not reported,not reported
+9934625034_R03C02,PRAD,23472.0,-2147483648,not reported,not reported
+9630789138_R05C02,PRAD,24299.0,-2147483648,not reported,not reported
+9630789125_R05C01,PRAD,20841.0,-2147483648,not reported,not reported
+9934625042_R01C01,PRAD,20594.0,-2147483648,not reported,not reported
+3999543026_R02C01,PRAD,22965.0,-2147483648,not reported,not reported
+9934625093_R04C02,PRAD,20683.0,-2147483648,not reported,not reported
+9422491154_R06C01,PRAD,22731.0,-2147483648,not reported,not reported
+9283265090_R02C01,PRAD,19564.0,-2147483648,not reported,not reported
+9934625152_R06C01,PRAD,25395.0,-2147483648,not reported,not reported
+8784241045_R02C02,PRAD,20368.0,-2147483648,not reported,not reported
+3999543025_R04C01,PRAD,24820.0,-2147483648,not reported,not reported
+6055424075_R02C01,READ,21618.0,F,white,not hispanic or latino
+6055424097_R03C01,READ,22176.0,M,white,not hispanic or latino
+6929718113_R04C02,READ,13566.0,F,white,not hispanic or latino
+6929718081_R02C02,READ,24490.0,M,white,not hispanic or latino
+5775041086_R03C02,READ,24687.0,M,not reported,not reported
+6929718081_R02C01,READ,24417.0,M,white,not hispanic or latino
+6929718114_R02C01,READ,17030.0,M,white,not hispanic or latino
+6929718042_R03C02,READ,11381.0,F,white,not hispanic or latino
+6929718113_R06C02,READ,20828.0,M,white,not hispanic or latino
+9482801004_R05C02,SARC,23341.0,F,white,not hispanic or latino
+9283265150_R06C02,SARC,30071.0,F,white,not hispanic or latino
+7786915033_R01C01,SARC,19903.0,M,white,not hispanic or latino
+7796806136_R04C02,SARC,15607.0,M,white,not hispanic or latino
+9701417161_R06C01,SARC,21470.0,M,white,not reported
+8795194107_R02C01,SARC,23910.0,F,white,not hispanic or latino
+7786915033_R03C01,SARC,19707.0,M,white,not hispanic or latino
+9283265150_R05C01,SARC,21105.0,F,black or african american,not hispanic or latino
+9828653004_R06C01,SARC,24433.0,M,white,not hispanic or latino
+8795194080_R06C02,SARC,30054.0,M,white,not hispanic or latino
+9630789197_R06C02,SARC,28796.0,F,white,not reported
+9296931074_R03C02,SARC,24723.0,M,white,not hispanic or latino
+8795194107_R04C01,SARC,24663.0,F,white,not hispanic or latino
+9296931074_R01C02,SARC,25505.0,F,black or african american,not hispanic or latino
+9828653002_R01C02,SARC,19708.0,F,white,hispanic or latino
+9806233138_R04C01,SARC,29136.0,M,white,not hispanic or latino
+9828653014_R02C01,SARC,24984.0,M,white,not hispanic or latino
+9296930141_R03C01,SARC,23115.0,M,white,not hispanic or latino
+9701417153_R06C02,SARC,20985.0,F,white,not hispanic or latino
+3999547163_R04C02,SARC,18233.0,F,white,not hispanic or latino
+9482801004_R03C02,SARC,11633.0,F,white,not hispanic or latino
+9828653004_R02C01,SARC,18528.0,F,white,not hispanic or latino
+9482801004_R03C01,SARC,21467.0,F,white,not hispanic or latino
+9630789198_R02C01,SARC,20507.0,M,white,not hispanic or latino
+6929671096_R06C02,SKCM,27124.0,F,white,not reported
+6929671037_R04C01,SKCM,25583.0,M,white,not hispanic or latino
+8784241122_R06C02,SKCM,21359.0,F,white,not hispanic or latino
+6929671103_R03C02,SKCM,19961.0,M,white,not hispanic or latino
+9934625087_R01C01,SKCM,24872.0,M,white,not hispanic or latino
+3999492082_R02C01,SKCM,22734.0,M,white,not hispanic or latino
+9828653018_R05C02,SKCM,27498.0,M,white,not hispanic or latino
+6929671096_R05C02,SKCM,18841.0,M,white,not hispanic or latino
+6929671152_R02C01,SKCM,21209.0,M,white,not hispanic or latino
+6929671067_R06C01,SKCM,23288.0,F,white,not hispanic or latino
+6929671103_R02C01,SKCM,19333.0,M,white,not hispanic or latino
+7796806006_R01C02,SKCM,15695.0,M,white,not hispanic or latino
+9934625087_R01C02,SKCM,17871.0,M,white,not hispanic or latino
+8784241119_R03C01,SKCM,25537.0,M,white,not hispanic or latino
+9305216028_R03C01,SKCM,18226.0,M,white,not hispanic or latino
+6285633012_R06C01,SKCM,27463.0,M,white,not hispanic or latino
+9934625029_R04C01,SKCM,15342.0,F,white,not hispanic or latino
+9422491152_R02C01,SKCM,19936.0,F,white,not hispanic or latino
+9283265066_R04C02,SKCM,28092.0,F,white,not hispanic or latino
+9422491152_R03C01,SKCM,17910.0,M,white,not hispanic or latino
+9422491113_R06C01,SKCM,26216.0,M,white,not hispanic or latino
+9934625087_R05C02,SKCM,25083.0,M,white,not hispanic or latino
+9283265167_R06C02,SKCM,26965.0,M,white,not hispanic or latino
+6929671067_R05C02,SKCM,26494.0,F,white,not hispanic or latino
+6929671098_R02C01,SKCM,31092.0,M,white,not hispanic or latino
+9934625033_R05C01,SKCM,23837.0,M,white,not hispanic or latino
+6929671037_R01C02,SKCM,20539.0,M,white,not hispanic or latino
+8784241038_R05C02,SKCM,18971.0,M,white,hispanic or latino
+6285633037_R01C02,SKCM,25711.0,F,white,not hispanic or latino
+9934625087_R03C01,SKCM,20782.0,F,white,not hispanic or latino
+6929671110_R04C01,SKCM,16910.0,F,not reported,not reported
+9283265066_R05C01,SKCM,21379.0,M,white,not hispanic or latino
+6929671103_R02C02,SKCM,26197.0,M,white,not hispanic or latino
+9305216006_R05C01,SKCM,28772.0,F,white,not hispanic or latino
+6929671152_R01C01,SKCM,19808.0,F,white,not hispanic or latino
+6929671067_R02C01,SKCM,28175.0,M,white,not hispanic or latino
+9305216006_R02C01,SKCM,22731.0,F,white,not hispanic or latino
+9305216006_R01C02,SKCM,24450.0,F,white,not hispanic or latino
+6929671126_R01C02,SKCM,31790.0,M,white,not hispanic or latino
+9426020036_R05C02,SKCM,25850.0,F,asian,not hispanic or latino
+9283265066_R05C02,SKCM,20486.0,F,white,not hispanic or latino
+8795194104_R04C02,SKCM,32872.0,M,white,not hispanic or latino
+6285633037_R06C02,SKCM,19712.0,M,white,not hispanic or latino
+6285633037_R03C01,SKCM,14805.0,M,white,not hispanic or latino
+8795194061_R02C02,STAD,25669.0,F,white,not hispanic or latino
+8795194014_R03C02,STAD,20790.0,F,asian,not hispanic or latino
+8795194016_R04C01,STAD,26334.0,F,white,not hispanic or latino
+9422491112_R03C01,STAD,19765.0,F,not reported,not reported
+6285609043_R04C02,STAD,19966.0,F,not reported,not reported
+7796806073_R03C02,STAD,18171.0,M,white,not hispanic or latino
+8784241057_R02C02,STAD,20727.0,M,white,not hispanic or latino
+3999492096_R05C02,STAD,24670.0,M,white,not reported
+6929718102_R04C01,STAD,19391.0,M,white,not hispanic or latino
+6929718093_R06C02,STAD,23053.0,M,white,not hispanic or latino
+8795194061_R02C01,STAD,25577.0,M,white,not hispanic or latino
+3999492099_R01C02,STAD,21753.0,F,not reported,not reported
+7796806056_R03C02,STAD,20963.0,M,white,not hispanic or latino
+3999492096_R04C02,STAD,27314.0,M,white,not reported
+3999492115_R05C01,STAD,18902.0,M,not reported,not reported
+9630789217_R04C01,STAD,25129.0,M,white,not reported
+9283265072_R04C01,STAD,18750.0,M,white,not hispanic or latino
+9630789215_R06C02,STAD,25863.0,M,black or african american,not reported
+7796806061_R03C01,STAD,20870.0,M,white,not hispanic or latino
+9630789109_R05C02,STAD,23908.0,F,black or african american,not hispanic or latino
+7786923091_R05C02,STAD,21569.0,M,white,not hispanic or latino
+3999492115_R01C02,STAD,25351.0,M,not reported,not reported
+8795194093_R03C01,STAD,20064.0,M,asian,not hispanic or latino
+7796806013_R03C01,STAD,20157.0,M,white,not hispanic or latino
+6285609051_R04C02,STAD,26176.0,M,not reported,not reported
+6929718093_R01C02,STAD,23142.0,M,white,not hispanic or latino
+7796806056_R06C01,STAD,26095.0,F,white,not hispanic or latino
+9630789227_R03C01,STAD,15937.0,M,not reported,not reported
+3999492115_R04C01,STAD,23187.0,M,black or african american,not reported
+8795194010_R06C02,STAD,27668.0,F,white,not hispanic or latino
+9283265072_R06C02,STAD,24425.0,M,white,not hispanic or latino
+8795194014_R03C01,STAD,26048.0,F,white,not hispanic or latino
+6285617033_R04C02,STAD,21069.0,F,white,not hispanic or latino
+3999492087_R01C02,STAD,25925.0,M,white,not reported
+9630789217_R05C02,STAD,21324.0,F,white,not hispanic or latino
+9828653017_R05C02,STAD,28376.0,M,white,not hispanic or latino
+8784241024_R03C02,STAD,23084.0,F,white,not hispanic or latino
+9630789227_R02C01,STAD,26590.0,M,white,not hispanic or latino
+9934625124_R03C02,TGCT,14120.0,-2147483648,white,not hispanic or latino
+9934625146_R02C01,TGCT,6822.0,-2147483648,white,not hispanic or latino
+9934987098_R05C01,TGCT,9679.0,-2147483648,white,not hispanic or latino
+9934625112_R05C01,TGCT,15371.0,-2147483648,white,not hispanic or latino
+9934625156_R05C02,TGCT,9902.0,-2147483648,black or african american,not reported
+9934625156_R03C02,TGCT,18490.0,-2147483648,asian,not hispanic or latino
+9934398118_R04C01,TGCT,18696.0,-2147483648,white,not hispanic or latino
+9934625112_R06C01,TGCT,10598.0,-2147483648,white,not hispanic or latino
+9934625118_R02C02,TGCT,15300.0,-2147483648,white,not hispanic or latino
+9934398104_R03C01,TGCT,13964.0,-2147483648,white,not hispanic or latino
+9934987098_R04C02,TGCT,8728.0,-2147483648,white,not hispanic or latino
+9934625112_R05C02,TGCT,17417.0,-2147483648,white,not hispanic or latino
+9934625137_R03C01,TGCT,11761.0,-2147483648,white,not hispanic or latino
+7310440037_R05C02,THCA,15871.0,F,white,not hispanic or latino
+6229009053_R06C02,THCA,24528.0,F,white,not hispanic or latino
+7310440016_R02C02,THCA,8344.0,F,white,hispanic or latino
+7310440012_R05C02,THCA,16371.0,F,white,not hispanic or latino
+8784241118_R06C02,THCA,12138.0,M,white,not hispanic or latino
+6285633085_R06C02,THCA,10034.0,F,white,not hispanic or latino
+6285633002_R05C02,THCA,16895.0,F,white,not hispanic or latino
+6285633011_R01C01,THCA,18714.0,F,asian,not hispanic or latino
+7796806154_R02C01,THCA,20496.0,M,not reported,not hispanic or latino
+6929718113_R01C02,THCA,10229.0,F,white,not hispanic or latino
+7310440012_R06C02,THCA,7869.0,F,white,not hispanic or latino
+7310440016_R01C02,THCA,7636.0,F,not reported,not hispanic or latino
+6285650045_R02C01,THCA,12092.0,F,not reported,not reported
+7310440037_R04C01,THCA,8828.0,F,white,hispanic or latino
+8784241003_R01C01,THCA,25500.0,M,not reported,not reported
+7796806058_R04C01,THCA,23292.0,M,white,not hispanic or latino
+6929806069_R02C01,THCA,17789.0,F,white,not hispanic or latino
+7796806093_R03C01,THCA,18808.0,F,white,not hispanic or latino
+6929718112_R02C01,THCA,20472.0,F,white,not hispanic or latino
+8795194024_R01C02,THCA,13335.0,M,white,not hispanic or latino
+6929718098_R02C01,THCA,17137.0,F,black or african american,not hispanic or latino
+6285650032_R02C01,THCA,16890.0,F,not reported,not reported
+6285609006_R04C02,THCA,21519.0,M,white,not hispanic or latino
+8795194024_R06C01,THCA,8523.0,F,asian,not hispanic or latino
+6229009052_R02C02,THCA,16558.0,F,white,not hispanic or latino
+6929806069_R06C02,THCA,14785.0,M,white,hispanic or latino
+7796806070_R05C01,THCA,17124.0,F,white,not hispanic or latino
+6285650032_R04C02,THCA,14776.0,F,not reported,not reported
+7310440037_R01C01,THCA,25690.0,F,white,not hispanic or latino
+6285609037_R05C01,THCA,27944.0,M,not reported,not reported
+8784241118_R05C02,THCA,16541.0,M,white,not hispanic or latino
+7800246190_R05C02,THCA,22234.0,F,white,not hispanic or latino
+7310440012_R02C01,THCA,12904.0,F,white,not hispanic or latino
+8784241062_R04C01,THCA,27306.0,M,white,not hispanic or latino
+6929718089_R05C01,THCA,20816.0,F,white,not hispanic or latino
+6042316071_R04C01,THCA,22859.0,M,white,not hispanic or latino
+7800246147_R05C01,THCA,20492.0,F,asian,not hispanic or latino
+8784241118_R02C02,THCA,18767.0,F,white,not hispanic or latino
+6285633083_R04C02,THCA,11598.0,F,white,not hispanic or latino
+6285650032_R05C02,THCA,25803.0,M,white,not hispanic or latino
+7800246203_R03C02,THCA,13909.0,F,asian,not hispanic or latino
+6285650045_R06C02,THCA,17231.0,F,not reported,not reported
+6285633002_R03C02,THCA,11399.0,M,asian,not hispanic or latino
+7796806141_R04C02,THCA,14470.0,M,white,not reported
+7796806093_R06C01,THCA,12004.0,F,white,not hispanic or latino
+7796806107_R02C01,THCA,15068.0,F,white,not hispanic or latino
+6285609024_R03C01,THCA,11932.0,F,not reported,not reported
+7310440016_R06C01,THCA,14245.0,M,asian,not hispanic or latino
+6285633002_R04C01,THCA,13542.0,F,white,hispanic or latino
+6285633085_R05C01,THCA,11822.0,F,white,hispanic or latino
+9934625157_R04C02,THYM,13977.0,M,white,not hispanic or latino
+9934987126_R04C01,THYM,15756.0,M,white,not hispanic or latino
+9934625004_R04C01,THYM,30893.0,F,white,not hispanic or latino
+9934625155_R04C01,THYM,27896.0,F,white,not hispanic or latino
+9934987148_R01C01,THYM,23461.0,M,white,not hispanic or latino
+9934625004_R01C01,THYM,19276.0,F,asian,not hispanic or latino
+9934625151_R06C02,THYM,23053.0,M,white,hispanic or latino
+9934625157_R03C01,THYM,27099.0,F,white,not hispanic or latino
+9934625026_R03C01,THYM,25402.0,F,white,not hispanic or latino
+9934625026_R04C01,THYM,25042.0,M,not reported,hispanic or latino
+9934625157_R04C01,THYM,27617.0,F,white,not hispanic or latino
+9934625026_R06C02,THYM,17771.0,F,white,not hispanic or latino
+6164655025_R03C02,UCEC,26602.0,-2147483648,white,not hispanic or latino
+7796806104_R04C01,UCEC,22068.0,-2147483648,white,not hispanic or latino
+6929718101_R04C01,UCEC,20398.0,-2147483648,white,not hispanic or latino
+6042316057_R01C02,UCEC,12458.0,-2147483648,white,not hispanic or latino
+6164655025_R06C02,UCEC,17933.0,-2147483648,white,not hispanic or latino
+6929718105_R01C01,UCEC,22624.0,-2147483648,black or african american,not hispanic or latino
+6042316100_R06C02,UCEC,32750.0,-2147483648,white,not hispanic or latino
+6042308137_R06C02,UCEC,19117.0,-2147483648,white,not hispanic or latino
+7786923099_R05C01,UCEC,28003.0,-2147483648,white,not hispanic or latino
+6055424121_R04C02,UCEC,27077.0,-2147483648,white,not hispanic or latino
+6929671046_R05C01,UCEC,27317.0,-2147483648,white,not hispanic or latino
+9422492134_R02C02,UCEC,26044.0,-2147483648,black or african american,not hispanic or latino
+6929718099_R03C02,UCEC,28456.0,-2147483648,white,not hispanic or latino
+6929718086_R03C01,UCEC,14980.0,-2147483648,not reported,hispanic or latino
+6055424121_R01C02,UCEC,22720.0,-2147483648,white,not reported
+6264496133_R04C02,UCEC,30926.0,-2147483648,white,not reported
+6042316057_R04C02,UCEC,21374.0,-2147483648,white,not hispanic or latino
+6164647035_R01C02,UCEC,24586.0,-2147483648,white,not hispanic or latino
+6042308077_R02C02,UCEC,27450.0,-2147483648,black or african american,not hispanic or latino
+9285451179_R03C01,UCEC,20669.0,-2147483648,black or african american,not hispanic or latino
+6057825002_R04C02,UCEC,18220.0,-2147483648,white,not hispanic or latino
+6042316102_R03C02,UCEC,21200.0,-2147483648,white,not hispanic or latino
+6264496133_R02C01,UCEC,23853.0,-2147483648,white,not hispanic or latino
+7786923094_R04C02,UCEC,22092.0,-2147483648,white,not hispanic or latino
+6042316142_R01C01,UCEC,20998.0,-2147483648,white,not reported
+6164655045_R02C02,UCEC,24652.0,-2147483648,white,not hispanic or latino
+6042316100_R04C02,UCEC,23547.0,-2147483648,white,not hispanic or latino
+6042316100_R02C01,UCEC,22834.0,-2147483648,white,not reported
+9934398119_R05C02,UCEC,22289.0,-2147483648,black or african american,not hispanic or latino
+6929671039_R06C01,UCEC,18835.0,-2147483648,american indian or alaska native,hispanic or latino
+6042308077_R02C01,UCEC,24667.0,-2147483648,white,not hispanic or latino
+6164655045_R02C01,UCEC,27065.0,-2147483648,white,not hispanic or latino
+6164647035_R05C01,UCEC,23238.0,-2147483648,white,not hispanic or latino
+6264496133_R05C02,UCEC,32047.0,-2147483648,white,not reported
+6042316102_R06C02,UCEC,30737.0,-2147483648,white,not hispanic or latino
+6055424122_R01C01,UCEC,28383.0,-2147483648,white,not hispanic or latino
+6929718101_R05C02,UCEC,13142.0,-2147483648,white,not reported
+7786923099_R03C01,UCEC,20115.0,-2147483648,white,not hispanic or latino
+6055432008_R06C02,UCEC,28078.0,-2147483648,white,not hispanic or latino
+7786923092_R06C02,UCEC,22538.0,-2147483648,white,not hispanic or latino
+9285451158_R01C02,UCEC,15536.0,-2147483648,black or african american,not hispanic or latino
+6055432008_R03C01,UCEC,22270.0,-2147483648,american indian or alaska native,not hispanic or latino
+9305216029_R05C01,UCS,22575.0,-2147483648,black or african american,not hispanic or latino
+9305216002_R04C01,UCS,22407.0,-2147483648,not reported,not reported
+9305216029_R04C01,UCS,26270.0,-2147483648,white,not hispanic or latino
+9298768127_R05C02,UCS,28428.0,-2147483648,white,not hispanic or latino
+9305216021_R03C02,UCS,32058.0,-2147483648,white,not reported
+9934398111_R02C02,UVM,13958.0,M,white,not hispanic or latino
+9682764062_R05C01,UVM,19958.0,M,not reported,not reported
+9682764063_R05C02,UVM,30409.0,F,white,not hispanic or latino
+9682764062_R06C01,UVM,28250.0,M,not reported,not reported
+9934398111_R05C02,UVM,16140.0,F,white,not hispanic or latino
+9682764062_R01C01,UVM,24047.0,M,not reported,not reported

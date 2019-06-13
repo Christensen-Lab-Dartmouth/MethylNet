@@ -61,6 +61,13 @@ methylnet-predict launch_hyperparameter_scan -ic Bcell -ic CD4T -ic CD8T -ic Mon
 **Plot Embedding and Prediction Results**
 ```
 pymethyl-visualize plot_cell_type_results -i predictions/results.csv -o cell_types_pred_vs_true.png
+
+nohup pymethyl-visualize transform_plot -o results/mlp_embed_CD4T.html -i predictions/vae_mlp_methyl_arr.pkl -c CD4T -nn 8 &
+nohup pymethyl-visualize transform_plot -o results/mlp_embed_CD8T.html -i predictions/vae_mlp_methyl_arr.pkl -c CD8T -nn 8 &
+nohup pymethyl-visualize transform_plot -o results/mlp_embed_NK.html -i predictions/vae_mlp_methyl_arr.pkl -c NK -nn 8 &
+nohup pymethyl-visualize transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o results/mlp_embed_Bcell.html -c Bcell -nn 8 &
+nohup pymethyl-visualize transform_plot -o results/mlp_embed_Neu.html -i predictions/vae_mlp_methyl_arr.pkl -c Neu -nn 8 &
+
 ```
 
 **Plot results:**

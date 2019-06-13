@@ -36,7 +36,7 @@ methylnet-visualize plot_roc_curve
 
 **H-Cluster Subtypes by Average Cosine Distance Between Embeddings:**
 ```
-methylnet-interpret interpret_embedding_classes -i ./predictions/vae_mlp_methyl_arr.pkl
+methylnet-interpret interpret_embedding_classes -i ./predictions/vae_mlp_methyl_arr.pkl -op results/class_embedding_differences_p_val.csv
 ```
 
 **Shapley Attributions**

@@ -891,7 +891,7 @@ class MLPFinetuneVAE:
             self.scheduler_mlp = Scheduler(self.optimizer_mlp,scheduler_opts) if scheduler_opts else Scheduler(self.optimizer_mlp)
         else:
             self.scheduler_vae = None
-            self.scheduler_vae = None
+            self.scheduler_mlp = None
         self.loss_plt_fname='loss.png'
         self.embed_interval=200
         self.validation_set = False
@@ -899,6 +899,9 @@ class MLPFinetuneVAE:
         self.categorical = categorical
         self.output_latent = output_latent
         self.train_decoder = train_decoder # FIXME add loss for decoder if selecting this option and freeze other weights when updating decoder, also change forward function to include reconstruction, change back when done
+        self.train_fn = train_mlp
+        self.val_fn = val_mlp
+        self.test_fn = test_mlp
 
     def fit(self, train_data):
         """Fit MLP to training data to make predictions.
@@ -920,13 +923,13 @@ class MLPFinetuneVAE:
         plt_data={'loss':[],'lr_vae':[],'lr_mlp':[], 'val_loss':[]}
         for epoch in range(self.n_epochs):
             print(epoch)
-            model, loss = train_mlp(model, train_data, self.loss_fn, self.optimizer_vae, self.optimizer_mlp, self.cuda,categorical=self.categorical, train_decoder=self.train_decoder)
+            model, loss = self.train_fn(model, train_data, self.loss_fn, self.optimizer_vae, self.optimizer_mlp, self.cuda,categorical=self.categorical, train_decoder=self.train_decoder)
             self.scheduler_vae.step()
             self.scheduler_mlp.step()
             plt_data['loss'].append(loss)
             print("Epoch {}: Loss {}".format(epoch,loss))
             if self.validation_set:
-                model, val_loss = val_mlp(model, self.validation_set, self.loss_fn, self.cuda,categorical=self.categorical, train_decoder=self.train_decoder)
+                model, val_loss = self.val_fn(model, self.validation_set, self.loss_fn, self.cuda,categorical=self.categorical, train_decoder=self.train_decoder)
                 plt_data['val_loss'].append(val_loss)
                 print("Epoch {}: Val-Loss {}".format(epoch,val_loss))
             plt_data['lr_vae'].append(self.scheduler_vae.get_lr())
@@ -982,7 +985,7 @@ class MLPFinetuneVAE:
             Sample names.
 
         """
-        return test_mlp(self.model, test_data, self.categorical, self.cuda, self.output_latent)
+        return self.test_fn(self.model, test_data, self.categorical, self.cuda, self.output_latent)
 
 class VAE_MLP(nn.Module):
     """VAE_MLP, pytorch module used to both finetune VAE embeddings and simultaneously train downstream MLP layers for classification/regression tasks.
