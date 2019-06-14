@@ -82,7 +82,7 @@ class Transformer:
 # methyl_train_df = methyl_df2.drop(methyl_test_df.index)
 # instead get beta keys and sample
 
-def get_methylation_dataset(methylation_array, outcome_col, convolutional=False, cpg_per_row=1200, predict=False, categorical=False, categorical_encoder=False):
+def get_methylation_dataset(methylation_array, outcome_col, convolutional=False, cpg_per_row=1200, predict=False, categorical=False, categorical_encoder=False, generate=False):
     """Turn methylation array into pytorch dataset.
 
     Parameters
@@ -107,7 +107,9 @@ def get_methylation_dataset(methylation_array, outcome_col, convolutional=False,
     Pytorch Dataset
 
     """
-    if predict:
+    if generate:
+        return MethylationGenerationDataSet(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col, categorical=categorical, categorical_encoder=categorical_encoder)
+    elif predict:
         return MethylationPredictionDataSet(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col, categorical=categorical, categorical_encoder=categorical_encoder)
     else:
         return MethylationDataSet(methylation_array, Transformer(convolutional, cpg_per_row, methylation_array.beta.shape), outcome_col)
@@ -168,7 +170,7 @@ class MethylationDataSet(Dataset):
         self.transform = transform
         self.new_shape = self.transform.shape
         self.length = self.methylation_array.beta.shape[0]
-        print(self.outcome_col)
+        #print(self.outcome_col)
         print(self.outcome_col.shape)
 
     def to_methyl_array(self):
@@ -236,10 +238,53 @@ class MethylationPredictionDataSet(MethylationDataSet):
     """
     def __init__(self, methylation_array, transform, outcome_col='', categorical=False, categorical_encoder=False):
         super().__init__(methylation_array, transform, outcome_col, categorical, categorical_encoder=categorical_encoder)
-        print(self.outcome_col)
+        #print(self.outcome_col)
 
     def __getitem__(self,index):
         return self.transform.generate()(self.methylation_array.beta[index,:]),self.samples[index],torch.FloatTensor(self.outcome_col[index,:])
+
+class MethylationGenerationDataSet(MethylationPredictionDataSet):
+    """MethylationArray Torch Dataset that contains instances of methylation array samples to be loaded, specifically targetted for prediction.
+
+    Parameters
+    ----------
+    methylation_array : MethylationArray
+        Methylation Array input.
+    transform : Transformer
+        Transforms data into torch tensor.
+    outcome_col : str
+        Pheno column(s) to train on.
+    categorical : bool
+        Whether predicting categorical/classification.
+    categorical_encoder : encoder
+        Encoder used to binarize categorical column.
+
+    Attributes
+    ----------
+    samples : np.array
+        Samples of MethylationArray
+    features : np.array
+        List CpGs.
+    encoder :
+        Encoder used to binarize categorical column.
+    new_shape :
+        Shape of torch tensors.
+    length :
+        Number CpGs.
+    methylation_array
+    outcome_col
+    transform
+
+    """
+    def __init__(self, methylation_array, transform, outcome_col='', categorical=False, categorical_encoder=False):
+        super().__init__(methylation_array, transform, outcome_col, categorical, categorical_encoder=categorical_encoder)
+
+    def __getitem__(self,index):
+        #print(index)
+        y=self.outcome_col[index]
+        if not np.shape(y):
+            y=np.array([y])
+        return self.transform.generate()(self.methylation_array.beta[index,:]),torch.FloatTensor(y)
 
 class RawBetaArrayDataSet(Dataset):
     """Torch Dataset just for beta matrix in numpy format.
