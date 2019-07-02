@@ -5,6 +5,7 @@ Wraps and runs your commands through torque.
 """
 
 import os
+
 def assemble_replace_dict(command, use_gpu, additions, queue, time, ngpu):
     """Create dictionary to update BASH submission script for torque.
 
@@ -33,7 +34,7 @@ def assemble_replace_dict(command, use_gpu, additions, queue, time, ngpu):
                 'GPU_SETUP':"""gpuNum=`cat $PBS_GPUFILE | sed -e 's/.*-gpu//g'`
 unset CUDA_VISIBLE_DEVICES
 export CUDA_DEVICE=$gpuNum""" if use_gpu else '',
-                'NGPU':'#PBS -l gpus={}'.format(ngpu) if ngpu else '',
+                'NGPU':'#PBS -l gpus={}'.format(ngpu) if (use_gpu and ngpu) else '',
                 'USE_GPU':"#PBS -l feature=gpu" if use_gpu else '',
                 'TIME':str(time),'QUEUE':queue,'ADDITIONS':additions}
     return replace_dict

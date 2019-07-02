@@ -6,8 +6,7 @@ See README.md
 **Preprocessing**
 Run commands from: https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess/blob/master/example_scripts/GSE87571.md
 
-**Reference-Based Estimation of Cell Type Proportions**
-
+**Reference-Based Estimation of Cell Type Proportions**  
 ```
 pymethyl-utils ref_estimate_cell_counts -ro geo_idats/ -a IDOL
 ```
@@ -73,8 +72,8 @@ nohup pymethyl-visualize transform_plot -o results/mlp_embed_Neu.html -i predict
 **Plot results:**
 ```
 methylnet-predict regression_report
-methylnet-visualize plot_training_curve -t embeddings/training_val_curve.p -vae -o results/embed_training_curve.png -thr 2e8
-methylnet-visualize plot_training_curve -thr 2e6
+methylnet-visualize plot_training_curve -t embeddings/training_val_curve.p -vae -o results/embed_training_curve.png -thr 2e8 &
+methylnet-visualize plot_training_curve -thr 2e6 &
 ```
 
 **MethylNet Interpretations**
@@ -89,8 +88,8 @@ CUDA_VISIBLE_DEVICES=0 methylnet-interpret produce_shapley_data produce_shapley_
 
 Extract spreadsheet of top overall CpGs:
 ```
-methylnet-interpret return_shap_values -c all -hist  -o  interpretations/shap_results/ -s interpretations/shapley_explanations/shapley_data.pkl -log &
-methylnet-interpret return_shap_values -c all -hist -abs -o interpretations/abs_shap_results/ -log -s interpretations/shapley_explanations/shapley_data.pkl &
+methylnet-interpret return_shap_values -c all -hist  -o  interpretations/shap_results/ -s interpretations/shapley_explanations/shapley_data.p -log &
+methylnet-interpret return_shap_values -c all -hist -abs -o interpretations/abs_shap_results/ -log -s interpretations/shapley_explanations/shapley_data.p &
 ```
 
 Plot bar chart of top CpGs:
@@ -105,15 +104,7 @@ pymethyl-visualize plot_heatmap -m distance -fs .6 -i interpretations/shap_resul
 pymethyl-visualize plot_heatmap -m distance -fs .6 -i interpretations/abs_shap_results/returned_shap_values_corr_dist.csv -o ./interpretations/abs_shap_results/distance_cpgs.png -x -y -c &
 ```
 
-**Creation Test Data for Test Pipeline:**
+Overlap with IDOL CpGs:
 ```
-from pymethylprocess.MethylationDataTypes import MethylationArray
-sample_p = 0.35
-methyl_array=MethylationArray.from_pickle("train_methyl_array.pkl")
-methyl_array.subsample("Age",frac=None,n_samples=int(methyl_array.pheno.shape[0]*sample_p)).write_pickle("train_methyl_array_subsampled.pkl")
-methyl_array=MethylationArray.from_pickle("val_methyl_array.pkl")
-methyl_array.subsample("Age",frac=None,n_samples=int(methyl_array.pheno.shape[0]*sample_p)).write_pickle("val_methyl_array_subsampled.pkl")
-methyl_array=MethylationArray.from_pickle("test_methyl_array.pkl")
-methyl_array.subsample("Age",frac=None,n_samples=int(methyl_array.pheno.shape[0]*sample_p)).write_pickle("test_methyl_array_subsampled.pkl")
-pymethyl-utils feature_select_train_val_test -n 25000
+methylnet-interpret interpret_biology -ov -c all -cgs IDOL
 ```

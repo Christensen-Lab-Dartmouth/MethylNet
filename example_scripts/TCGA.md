@@ -15,6 +15,10 @@ Rerun top performing run to get final embeddings:
 ```
 methylnet-embed launch_hyperparameter_scan -cu -sc disease -t -g -n 1 -b 1. -a "module load python/3-Anaconda && source activate methylnet_pro2"
 ```
+Visualize VAE-Embedding:
+```
+pymethyl-visualize transform_plot -i embeddings/vae_methyl_arr.pkl -nn 8 -c disease
+```
 
 **Predictions using Transfer Learning**
 Run 200 job hyperparameter scan for learning predictions on torque:
@@ -24,6 +28,10 @@ methylnet-predict launch_hyperparameter_scan -cu -ic disease -cat -t -g -mc 0.70
 Rerun top performing run to get final predictions:
 ```
 methylnet-predict launch_hyperparameter_scan -cu -ic disease -cat -t -g -n 1 -a "module load python/3-Anaconda && source activate methylnet_pro2"
+```
+Visualize embeddings after training prediction model:
+```
+pymethyl-visualize transform_plot -i predictions/vae_mlp_methyl_arr.pkl -nn 8 -c disease
 ```
 
 **Plot Embedding and Prediction Results**

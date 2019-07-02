@@ -149,6 +149,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
+
 <div class="viewcode-block" id="assemble_replace_dict"><a class="viewcode-back" href="../../index.html#methylnet.torque_jobs.assemble_replace_dict">[docs]</a><span class="k">def</span> <span class="nf">assemble_replace_dict</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">use_gpu</span><span class="p">,</span> <span class="n">additions</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">ngpu</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Create dictionary to update BASH submission script for torque.</span>
 
@@ -177,7 +178,7 @@
                 <span class="s1">&#39;GPU_SETUP&#39;</span><span class="p">:</span><span class="s2">&quot;&quot;&quot;gpuNum=`cat $PBS_GPUFILE | sed -e &#39;s/.*-gpu//g&#39;`</span>
 <span class="s2">unset CUDA_VISIBLE_DEVICES</span>
 <span class="s2">export CUDA_DEVICE=$gpuNum&quot;&quot;&quot;</span> <span class="k">if</span> <span class="n">use_gpu</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;NGPU&#39;</span><span class="p">:</span><span class="s1">&#39;#PBS -l gpus=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ngpu</span><span class="p">)</span> <span class="k">if</span> <span class="n">ngpu</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;NGPU&#39;</span><span class="p">:</span><span class="s1">&#39;#PBS -l gpus=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ngpu</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">use_gpu</span> <span class="ow">and</span> <span class="n">ngpu</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
                 <span class="s1">&#39;USE_GPU&#39;</span><span class="p">:</span><span class="s2">&quot;#PBS -l feature=gpu&quot;</span> <span class="k">if</span> <span class="n">use_gpu</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
                 <span class="s1">&#39;TIME&#39;</span><span class="p">:</span><span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="p">),</span><span class="s1">&#39;QUEUE&#39;</span><span class="p">:</span><span class="n">queue</span><span class="p">,</span><span class="s1">&#39;ADDITIONS&#39;</span><span class="p">:</span><span class="n">additions</span><span class="p">}</span>
     <span class="k">return</span> <span class="n">replace_dict</span></div>

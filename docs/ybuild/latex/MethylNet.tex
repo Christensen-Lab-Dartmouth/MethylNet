@@ -59,7 +59,7 @@
 
 
 \title{MethylNet Documentation}
-\date{May 20, 2019}
+\date{Jul 02, 2019}
 \release{0.1}
 \author{Joshua Levy}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -179,6 +179,81 @@ Convert torch dataset back into methylation array, useful because turning into t
 
 \end{fulllineitems}
 
+
+\end{fulllineitems}
+
+\index{MethylationGenerationDataSet (class in methylnet.datasets)@\spxentry{MethylationGenerationDataSet}\spxextra{class in methylnet.datasets}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{index:methylnet.datasets.MethylationGenerationDataSet}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{methylnet.datasets.}}\sphinxbfcode{\sphinxupquote{MethylationGenerationDataSet}}}{\emph{methylation\_array}, \emph{transform}, \emph{outcome\_col=''}, \emph{categorical=False}, \emph{categorical\_encoder=False}}{}
+MethylationArray Torch Dataset that contains instances of methylation array samples to be loaded, specifically targetted for prediction.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{description}
+\item[{\sphinxstylestrong{methylation\_array}}] \leavevmode{[}MethylationArray{]}
+Methylation Array input.
+
+\item[{\sphinxstylestrong{transform}}] \leavevmode{[}Transformer{]}
+Transforms data into torch tensor.
+
+\item[{\sphinxstylestrong{outcome\_col}}] \leavevmode{[}str{]}
+Pheno column(s) to train on.
+
+\item[{\sphinxstylestrong{categorical}}] \leavevmode{[}bool{]}
+Whether predicting categorical/classification.
+
+\item[{\sphinxstylestrong{categorical\_encoder}}] \leavevmode{[}encoder{]}
+Encoder used to binarize categorical column.
+
+\end{description}
+
+\item[{Attributes}] \leavevmode\begin{description}
+\item[{\sphinxstylestrong{samples}}] \leavevmode{[}np.array{]}
+Samples of MethylationArray
+
+\item[{\sphinxstylestrong{features}}] \leavevmode{[}np.array{]}
+List CpGs.
+
+\item[{\sphinxstylestrong{encoder :}}] \leavevmode
+Encoder used to binarize categorical column.
+
+\item[{\sphinxstylestrong{new\_shape :}}] \leavevmode
+Shape of torch tensors.
+
+\item[{\sphinxstylestrong{length :}}] \leavevmode
+Number CpGs.
+
+\item[{\sphinxstylestrong{methylation\_array}}] \leavevmode
+\item[{\sphinxstylestrong{outcome\_col}}] \leavevmode
+\item[{\sphinxstylestrong{transform}}] \leavevmode
+\end{description}
+
+\end{description}\end{quote}
+\subsubsection*{Methods}
+
+
+\begin{savenotes}\sphinxatlongtablestart\begin{longtable}{\X{1}{2}\X{1}{2}}
+\hline
+
+\endfirsthead
+
+\multicolumn{2}{c}%
+{\makebox[0pt]{\sphinxtablecontinued{\tablename\ \thetable{} -- continued from previous page}}}\\
+\hline
+
+\endhead
+
+\hline
+\multicolumn{2}{r}{\makebox[0pt][r]{\sphinxtablecontinued{Continued on next page}}}\\
+\endfoot
+
+\endlastfoot
+
+\sphinxcode{\sphinxupquote{to\_methyl\_array}}(self)
+&
+Convert torch dataset back into methylation array, useful because turning into torch dataset can cause the original MethylationArray beta matrix to turn into numpy array, when needs turn back into pandas dataframe.
+\\
+\hline
+\end{longtable}\sphinxatlongtableend\end{savenotes}
 
 \end{fulllineitems}
 
@@ -406,7 +481,7 @@ Example:
 \index{get\_methylation\_dataset() (in module methylnet.datasets)@\spxentry{get\_methylation\_dataset()}\spxextra{in module methylnet.datasets}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{index:methylnet.datasets.get_methylation_dataset}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{methylnet.datasets.}}\sphinxbfcode{\sphinxupquote{get\_methylation\_dataset}}}{\emph{methylation\_array}, \emph{outcome\_col}, \emph{convolutional=False}, \emph{cpg\_per\_row=1200}, \emph{predict=False}, \emph{categorical=False}, \emph{categorical\_encoder=False}}{}
+\phantomsection\label{\detokenize{index:methylnet.datasets.get_methylation_dataset}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{methylnet.datasets.}}\sphinxbfcode{\sphinxupquote{get\_methylation\_dataset}}}{\emph{methylation\_array}, \emph{outcome\_col}, \emph{convolutional=False}, \emph{cpg\_per\_row=1200}, \emph{predict=False}, \emph{categorical=False}, \emph{categorical\_encoder=False}, \emph{generate=False}}{}
 Turn methylation array into pytorch dataset.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{description}

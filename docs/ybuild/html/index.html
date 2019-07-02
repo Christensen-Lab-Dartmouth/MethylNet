@@ -115,6 +115,7 @@
 <li><a class="reference internal" href="#methylnet-interpret-extract-methylation-array">extract_methylation_array</a></li>
 <li><a class="reference internal" href="#methylnet-interpret-grab-lola-db-cache">grab_lola_db_cache</a></li>
 <li><a class="reference internal" href="#methylnet-interpret-interpret-biology">interpret_biology</a></li>
+<li><a class="reference internal" href="#methylnet-interpret-interpret-embedding-classes">interpret_embedding_classes</a></li>
 <li><a class="reference internal" href="#methylnet-interpret-list-classes">list_classes</a></li>
 <li><a class="reference internal" href="#methylnet-interpret-list-individuals">list_individuals</a></li>
 <li><a class="reference internal" href="#methylnet-interpret-order-results-by-col">order_results_by_col</a></li>
@@ -124,6 +125,7 @@
 <li><a class="reference internal" href="#methylnet-interpret-produce-shapley-data">produce_shapley_data</a></li>
 <li><a class="reference internal" href="#methylnet-interpret-reduce-top-cpgs">reduce_top_cpgs</a></li>
 <li><a class="reference internal" href="#methylnet-interpret-regenerate-top-cpgs">regenerate_top_cpgs</a></li>
+<li><a class="reference internal" href="#methylnet-interpret-return-shap-values">return_shap_values</a></li>
 <li><a class="reference internal" href="#methylnet-interpret-shapley-jaccard">shapley_jaccard</a></li>
 <li><a class="reference internal" href="#methylnet-interpret-split-hyper-hypo-methylation">split_hyper_hypo_methylation</a></li>
 <li><a class="reference internal" href="#methylnet-interpret-view-methylation-top-cpgs">view_methylation_top_cpgs</a></li>
@@ -136,6 +138,10 @@
 </li>
 <li><a class="reference internal" href="#methylnet-torque">methylnet-torque</a><ul>
 <li><a class="reference internal" href="#methylnet-torque-run-torque-job">run_torque_job</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#methylnet-test">methylnet-test</a><ul>
+<li><a class="reference internal" href="#methylnet-test-test-pipeline">test_pipeline</a></li>
 </ul>
 </li>
 </ul>
@@ -304,6 +310,74 @@
 </table>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="methylnet.datasets.MethylationGenerationDataSet">
+<em class="property">class </em><code class="descclassname">methylnet.datasets.</code><code class="descname">MethylationGenerationDataSet</code><span class="sig-paren">(</span><em>methylation_array</em>, <em>transform</em>, <em>outcome_col=''</em>, <em>categorical=False</em>, <em>categorical_encoder=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/datasets.html#MethylationGenerationDataSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.datasets.MethylationGenerationDataSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>MethylationArray Torch Dataset that contains instances of methylation array samples to be loaded, specifically targetted for prediction.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>methylation_array</strong> <span class="classifier-delimiter">:</span> <span class="classifier">MethylationArray</span></dt>
+<dd><p class="first last">Methylation Array input.</p>
+</dd>
+<dt><strong>transform</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Transformer</span></dt>
+<dd><p class="first last">Transforms data into torch tensor.</p>
+</dd>
+<dt><strong>outcome_col</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">Pheno column(s) to train on.</p>
+</dd>
+<dt><strong>categorical</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">Whether predicting categorical/classification.</p>
+</dd>
+<dt><strong>categorical_encoder</strong> <span class="classifier-delimiter">:</span> <span class="classifier">encoder</span></dt>
+<dd><p class="first last">Encoder used to binarize categorical column.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>samples</strong> <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
+<dd><p class="first last">Samples of MethylationArray</p>
+</dd>
+<dt><strong>features</strong> <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
+<dd><p class="first last">List CpGs.</p>
+</dd>
+<dt><strong>encoder :</strong></dt>
+<dd><p class="first last">Encoder used to binarize categorical column.</p>
+</dd>
+<dt><strong>new_shape :</strong></dt>
+<dd><p class="first last">Shape of torch tensors.</p>
+</dd>
+<dt><strong>length :</strong></dt>
+<dd><p class="first last">Number CpGs.</p>
+</dd>
+<dt><strong>methylation_array</strong></dt>
+<dd></dd>
+<dt><strong>outcome_col</strong></dt>
+<dd></dd>
+<dt><strong>transform</strong></dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_methyl_array</span></code>(self)</td>
+<td>Convert torch dataset back into methylation array, useful because turning into torch dataset can cause the original MethylationArray beta matrix to turn into numpy array, when needs turn back into pandas dataframe.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="class">
@@ -518,7 +592,7 @@ out (Tensor, optional): the output tensor</p>
 
 <dl class="function">
 <dt id="methylnet.datasets.get_methylation_dataset">
-<code class="descclassname">methylnet.datasets.</code><code class="descname">get_methylation_dataset</code><span class="sig-paren">(</span><em>methylation_array</em>, <em>outcome_col</em>, <em>convolutional=False</em>, <em>cpg_per_row=1200</em>, <em>predict=False</em>, <em>categorical=False</em>, <em>categorical_encoder=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/datasets.html#get_methylation_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.datasets.get_methylation_dataset" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">methylnet.datasets.</code><code class="descname">get_methylation_dataset</code><span class="sig-paren">(</span><em>methylation_array</em>, <em>outcome_col</em>, <em>convolutional=False</em>, <em>cpg_per_row=1200</em>, <em>predict=False</em>, <em>categorical=False</em>, <em>categorical_encoder=False</em>, <em>generate=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/datasets.html#get_methylation_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.datasets.get_methylation_dataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Turn methylation array into pytorch dataset.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -581,7 +655,7 @@ dim (int): dimension to insert. Has to be between 0 and the number</p>
 <p>Run randomized grid search to find ideal model hyperparameters, with possible deployments to batch system for scalability.</p>
 <dl class="function">
 <dt id="methylnet.hyperparameter_scans.coarse_scan">
-<code class="descclassname">methylnet.hyperparameter_scans.</code><code class="descname">coarse_scan</code><span class="sig-paren">(</span><em>hyperparameter_input_csv</em>, <em>hyperparameter_output_log</em>, <em>generate_input</em>, <em>job_chunk_size</em>, <em>stratify_column</em>, <em>reset_all</em>, <em>torque</em>, <em>gpu</em>, <em>gpu_node</em>, <em>nohup</em>, <em>mlp=False</em>, <em>custom_jobs=[]</em>, <em>model_complexity_factor=0.9</em>, <em>set_beta=-1.0</em>, <em>n_jobs=4</em>, <em>categorical=True</em>, <em>add_softmax=False</em>, <em>additional_command=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/hyperparameter_scans.html#coarse_scan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.hyperparameter_scans.coarse_scan" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">methylnet.hyperparameter_scans.</code><code class="descname">coarse_scan</code><span class="sig-paren">(</span><em>hyperparameter_input_csv</em>, <em>hyperparameter_output_log</em>, <em>generate_input</em>, <em>job_chunk_size</em>, <em>stratify_column</em>, <em>reset_all</em>, <em>torque</em>, <em>gpu</em>, <em>gpu_node</em>, <em>nohup</em>, <em>mlp=False</em>, <em>custom_jobs=[]</em>, <em>model_complexity_factor=0.9</em>, <em>set_beta=-1.0</em>, <em>n_jobs=4</em>, <em>categorical=True</em>, <em>add_softmax=False</em>, <em>additional_command=''</em>, <em>cuda=True</em>, <em>new_grid={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/hyperparameter_scans.html#coarse_scan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.hyperparameter_scans.coarse_scan" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform randomized hyperparameter grid search</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -638,6 +712,9 @@ dim (int): dimension to insert. Has to be between 0 and the number</p>
 </dd>
 <dt><strong>add_softmax</strong> <span class="classifier-delimiter">:</span> <span class="classifier">type</span></dt>
 <dd><p class="first last">Add softmax layer at end of neural network.</p>
+</dd>
+<dt><strong>cuda</strong> <span class="classifier-delimiter">:</span> <span class="classifier">type</span></dt>
+<dd><p class="first last">Whether to use GPU?</p>
 </dd>
 </dl>
 </td>
@@ -711,6 +788,12 @@ dim (int): dimension to insert. Has to be between 0 and the number</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="function">
+<dt id="methylnet.hyperparameter_scans.replace_grid">
+<code class="descclassname">methylnet.hyperparameter_scans.</code><code class="descname">replace_grid</code><span class="sig-paren">(</span><em>old_grid</em>, <em>new_grid</em>, <em>topology_grid</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/hyperparameter_scans.html#replace_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.hyperparameter_scans.replace_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replaces old hyperparameter search grid with one supplied by YAML.</p>
 </dd></dl>
 
 </div>
@@ -1248,6 +1331,125 @@ For multiclass/multivariate outcomes, scores are generated for each outcome clas
 </dd></dl>
 
 <dl class="class">
+<dt id="methylnet.interpretation_classes.DistanceMatrixCompute">
+<em class="property">class </em><code class="descclassname">methylnet.interpretation_classes.</code><code class="descname">DistanceMatrixCompute</code><span class="sig-paren">(</span><em>methyl_array</em>, <em>pheno_col</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#DistanceMatrixCompute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.DistanceMatrixCompute" title="Permalink to this definition">¶</a></dt>
+<dd><p>From any embeddings, calculate pairwise distances between classes that label embeddings.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>methyl_array</strong> <span class="classifier-delimiter">:</span> <span class="classifier">MethylationArray</span></dt>
+<dd><p class="first last">Methylation array storing beta and pheno data.</p>
+</dd>
+<dt><strong>pheno_col</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">Column name from which to extract sample names from and group by class.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>col</strong> <span class="classifier-delimiter">:</span> <span class="classifier">pd.DataFrame</span></dt>
+<dd><p class="first last">Column of pheno array.</p>
+</dd>
+<dt><strong>classes</strong> <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
+<dd><p class="first last">Unique classes of pheno column.</p>
+</dd>
+<dt><strong>embeddings</strong> <span class="classifier-delimiter">:</span> <span class="classifier">pd.DataFrame</span></dt>
+<dd><p class="first last">Embeddings of beta values.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#methylnet.interpretation_classes.DistanceMatrixCompute.calculate_p_values" title="methylnet.interpretation_classes.DistanceMatrixCompute.calculate_p_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_p_values</span></code></a>(self)</td>
+<td>Compute pairwise p-values between different clusters using manova.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#methylnet.interpretation_classes.DistanceMatrixCompute.compute_distances" title="methylnet.interpretation_classes.DistanceMatrixCompute.compute_distances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distances</span></code></a>(self[,&nbsp;metric,&nbsp;trim])</td>
+<td>Compute distance matrix between classes by average distances between points of classes.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#methylnet.interpretation_classes.DistanceMatrixCompute.return_distances" title="methylnet.interpretation_classes.DistanceMatrixCompute.return_distances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">return_distances</span></code></a>(self)</td>
+<td>Return the distance matrix</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#methylnet.interpretation_classes.DistanceMatrixCompute.return_p_values" title="methylnet.interpretation_classes.DistanceMatrixCompute.return_p_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">return_p_values</span></code></a>(self)</td>
+<td>Return the distance matrix</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="methylnet.interpretation_classes.DistanceMatrixCompute.calculate_p_values">
+<code class="descname">calculate_p_values</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#DistanceMatrixCompute.calculate_p_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.DistanceMatrixCompute.calculate_p_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute pairwise p-values between different clusters using manova.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="methylnet.interpretation_classes.DistanceMatrixCompute.compute_distances">
+<code class="descname">compute_distances</code><span class="sig-paren">(</span><em>self</em>, <em>metric='cosine'</em>, <em>trim=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#DistanceMatrixCompute.compute_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.DistanceMatrixCompute.compute_distances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute distance matrix between classes by average distances between points of classes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>metric</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">Scikit-learn distance metric.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="methylnet.interpretation_classes.DistanceMatrixCompute.return_distances">
+<code class="descname">return_distances</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#DistanceMatrixCompute.return_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.DistanceMatrixCompute.return_distances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the distance matrix</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt>pd.DataFrame</dt>
+<dd><p class="first last">Distance matrix between classes.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="methylnet.interpretation_classes.DistanceMatrixCompute.return_p_values">
+<code class="descname">return_p_values</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#DistanceMatrixCompute.return_p_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.DistanceMatrixCompute.return_p_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the distance matrix</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt>pd.DataFrame</dt>
+<dd><p class="first last">MANOVA values between classes.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="methylnet.interpretation_classes.PlotCircos">
 <em class="property">class </em><code class="descclassname">methylnet.interpretation_classes.</code><code class="descname">PlotCircos</code><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#PlotCircos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.PlotCircos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot Circos Diagram using ggbio (regular circos software may be better)</p>
@@ -1339,17 +1541,17 @@ For multiclass/multivariate outcomes, scores are generated for each outcome clas
 <tr class="row-even"><td><a class="reference internal" href="#methylnet.interpretation_classes.ShapleyData.add_global_importance" title="methylnet.interpretation_classes.ShapleyData.add_global_importance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_global_importance</span></code></a>(self,&nbsp;…)</td>
 <td>Add overall feature importances, globally across all samples.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#methylnet.interpretation_classes.ShapleyData.from_pickle" title="methylnet.interpretation_classes.ShapleyData.from_pickle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_pickle</span></code></a>(input_pkl)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#methylnet.interpretation_classes.ShapleyData.from_pickle" title="methylnet.interpretation_classes.ShapleyData.from_pickle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_pickle</span></code></a>(input_pkl[,&nbsp;from_dict])</td>
 <td>Load SHAPley data from pickle.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#methylnet.interpretation_classes.ShapleyData.to_pickle" title="methylnet.interpretation_classes.ShapleyData.to_pickle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_pickle</span></code></a>(self,&nbsp;output_pkl)</td>
+<tr class="row-even"><td><a class="reference internal" href="#methylnet.interpretation_classes.ShapleyData.to_pickle" title="methylnet.interpretation_classes.ShapleyData.to_pickle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_pickle</span></code></a>(self,&nbsp;output_pkl[,&nbsp;output_dict])</td>
 <td>Export Shapley data to pickle.</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="methylnet.interpretation_classes.ShapleyData.add_class">
-<code class="descname">add_class</code><span class="sig-paren">(</span><em>self</em>, <em>class_name</em>, <em>shap_df</em>, <em>cpgs</em>, <em>n_top_cpgs</em>, <em>add_top_negative=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#ShapleyData.add_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.ShapleyData.add_class" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add_class</code><span class="sig-paren">(</span><em>self</em>, <em>class_name</em>, <em>shap_df</em>, <em>cpgs</em>, <em>n_top_cpgs</em>, <em>add_top_negative=False</em>, <em>add_top_abs=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#ShapleyData.add_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.ShapleyData.add_class" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store SHAP scores for particular class to Shapley_Data class. Save feature importances on granular level, explanations for individual and aggregate predictions.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1405,7 +1607,7 @@ For multiclass/multivariate outcomes, scores are generated for each outcome clas
 
 <dl class="classmethod">
 <dt id="methylnet.interpretation_classes.ShapleyData.from_pickle">
-<em class="property">classmethod </em><code class="descname">from_pickle</code><span class="sig-paren">(</span><em>input_pkl</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#ShapleyData.from_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.ShapleyData.from_pickle" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">from_pickle</code><span class="sig-paren">(</span><em>input_pkl</em>, <em>from_dict=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#ShapleyData.from_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.ShapleyData.from_pickle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load SHAPley data from pickle.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1424,7 +1626,7 @@ For multiclass/multivariate outcomes, scores are generated for each outcome clas
 
 <dl class="method">
 <dt id="methylnet.interpretation_classes.ShapleyData.to_pickle">
-<code class="descname">to_pickle</code><span class="sig-paren">(</span><em>self</em>, <em>output_pkl</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#ShapleyData.to_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.ShapleyData.to_pickle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_pickle</code><span class="sig-paren">(</span><em>self</em>, <em>output_pkl</em>, <em>output_dict=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#ShapleyData.to_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.ShapleyData.to_pickle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Export Shapley data to pickle.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1485,7 +1687,7 @@ For multiclass/multivariate outcomes, scores are generated for each outcome clas
 <tr class="row-odd"><td><a class="reference internal" href="#methylnet.interpretation_classes.ShapleyDataExplorer.extract_class" title="methylnet.interpretation_classes.ShapleyDataExplorer.extract_class"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_class</span></code></a>(self,&nbsp;class_name[,&nbsp;…])</td>
 <td>Extract the top cpgs from a class</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#methylnet.interpretation_classes.ShapleyDataExplorer.extract_individual" title="methylnet.interpretation_classes.ShapleyDataExplorer.extract_individual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_individual</span></code></a>(self,&nbsp;individual)</td>
+<tr class="row-even"><td><a class="reference internal" href="#methylnet.interpretation_classes.ShapleyDataExplorer.extract_individual" title="methylnet.interpretation_classes.ShapleyDataExplorer.extract_individual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_individual</span></code></a>(self,&nbsp;individual[,&nbsp;…])</td>
 <td>Extract the top cpgs from an individual</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#methylnet.interpretation_classes.ShapleyDataExplorer.extract_methylation_array" title="methylnet.interpretation_classes.ShapleyDataExplorer.extract_methylation_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_methylation_array</span></code></a>(self,&nbsp;methyl_arr)</td>
@@ -1526,6 +1728,17 @@ For multiclass/multivariate outcomes, scores are generated for each outcome clas
 </tr>
 </tbody>
 </table>
+<table border="1" class="docutils">
+<colgroup>
+<col width="71%" />
+<col width="29%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>make_shap_scores_abs</strong></td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="methylnet.interpretation_classes.ShapleyDataExplorer.add_abs_value_classes">
 <code class="descname">add_abs_value_classes</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#ShapleyDataExplorer.add_abs_value_classes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.ShapleyDataExplorer.add_abs_value_classes" title="Permalink to this definition">¶</a></dt>
@@ -1540,7 +1753,7 @@ For multiclass/multivariate outcomes, scores are generated for each outcome clas
 
 <dl class="method">
 <dt id="methylnet.interpretation_classes.ShapleyDataExplorer.extract_class">
-<code class="descname">extract_class</code><span class="sig-paren">(</span><em>self</em>, <em>class_name</em>, <em>class_intersect=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#ShapleyDataExplorer.extract_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.ShapleyDataExplorer.extract_class" title="Permalink to this definition">¶</a></dt>
+<code class="descname">extract_class</code><span class="sig-paren">(</span><em>self</em>, <em>class_name</em>, <em>class_intersect=False</em>, <em>get_shap_values=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#ShapleyDataExplorer.extract_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.ShapleyDataExplorer.extract_class" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract the top cpgs from a class</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1569,7 +1782,7 @@ For multiclass/multivariate outcomes, scores are generated for each outcome clas
 
 <dl class="method">
 <dt id="methylnet.interpretation_classes.ShapleyDataExplorer.extract_individual">
-<code class="descname">extract_individual</code><span class="sig-paren">(</span><em>self</em>, <em>individual</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#ShapleyDataExplorer.extract_individual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.ShapleyDataExplorer.extract_individual" title="Permalink to this definition">¶</a></dt>
+<code class="descname">extract_individual</code><span class="sig-paren">(</span><em>self</em>, <em>individual</em>, <em>get_shap_values=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#ShapleyDataExplorer.extract_individual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.ShapleyDataExplorer.extract_individual" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract the top cpgs from an individual</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1843,7 +2056,7 @@ For multiclass/multivariate outcomes, scores are generated for each outcome clas
 
 <dl class="method">
 <dt id="methylnet.interpretation_classes.ShapleyDataExplorer.return_shapley_data_by_methylation_status">
-<code class="descname">return_shapley_data_by_methylation_status</code><span class="sig-paren">(</span><em>self</em>, <em>methyl_array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#ShapleyDataExplorer.return_shapley_data_by_methylation_status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.ShapleyDataExplorer.return_shapley_data_by_methylation_status" title="Permalink to this definition">¶</a></dt>
+<code class="descname">return_shapley_data_by_methylation_status</code><span class="sig-paren">(</span><em>self</em>, <em>methyl_array</em>, <em>threshold</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methylnet/interpretation_classes.html#ShapleyDataExplorer.return_shapley_data_by_methylation_status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methylnet.interpretation_classes.ShapleyDataExplorer.return_shapley_data_by_methylation_status" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return dictionary containing two SHAPley datasets, each split by low/high levels of methylation. Todo: Define this using median methylation value vs 0.5.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3922,8 +4135,8 @@ last_epoch (int): The index of last epoch. Default: -1.</dd>
 </dd></dl>
 
 <dl class="option">
-<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-crossover-p">
-<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--crossover_p</code><code class="descclassname"> &lt;crossover_p&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-crossover-p" title="Permalink to this definition">¶</a></dt>
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-cp">
+<code class="descname">-cp</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--crossover_p</code><code class="descclassname"> &lt;crossover_p&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-cp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rate of crossover between hyperparameters.  [default: 0.0]</p>
 </dd></dl>
 
@@ -3937,6 +4150,18 @@ last_epoch (int): The index of last epoch. Default: -1.</dd>
 <dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-a">
 <code class="descname">-a</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--additional_command</code><code class="descclassname"> &lt;additional_command&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Additional command to input for torque run.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-cu">
+<code class="descname">-cu</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--cuda</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-cu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use GPUs.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-embed-launch-hyperparameter-scan-grid">
+<code class="descname">-grid</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--hyperparameter_yaml</code><code class="descclassname"> &lt;hyperparameter_yaml&gt;</code><a class="headerlink" href="#cmdoption-methylnet-embed-launch-hyperparameter-scan-grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>YAML file with custom subset of hyperparameter grid.</p>
 </dd></dl>
 
 </div>
@@ -4148,6 +4373,12 @@ last_epoch (int): The index of last epoch. Default: -1.</dd>
 <dd><p>One hot encoder if categorical model. If path exists, then return top positive controbutions per samples of that class. Encoded values must be of sample class as interest_col.  [default: ./predictions/one_hot_encoder.p]</p>
 </dd></dl>
 
+<dl class="option">
+<dt id="cmdoption-methylnet-predict-classification-report-a">
+<code class="descname">-a</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--average_mechanism</code><code class="descclassname"> &lt;average_mechanism&gt;</code><a class="headerlink" href="#cmdoption-methylnet-predict-classification-report-a" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output directory.  [default: micro]</p>
+</dd></dl>
+
 </div>
 <div class="section" id="methylnet-predict-launch-hyperparameter-scan">
 <h3>launch_hyperparameter_scan<a class="headerlink" href="#methylnet-predict-launch-hyperparameter-scan" title="Permalink to this headline">¶</a></h3>
@@ -4229,8 +4460,8 @@ last_epoch (int): The index of last epoch. Default: -1.</dd>
 </dd></dl>
 
 <dl class="option">
-<dt id="cmdoption-methylnet-predict-launch-hyperparameter-scan-crossover-p">
-<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--crossover_p</code><code class="descclassname"> &lt;crossover_p&gt;</code><a class="headerlink" href="#cmdoption-methylnet-predict-launch-hyperparameter-scan-crossover-p" title="Permalink to this definition">¶</a></dt>
+<dt id="cmdoption-methylnet-predict-launch-hyperparameter-scan-cp">
+<code class="descname">-cp</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--crossover_p</code><code class="descclassname"> &lt;crossover_p&gt;</code><a class="headerlink" href="#cmdoption-methylnet-predict-launch-hyperparameter-scan-cp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rate of crossover between hyperparameters.  [default: 0.0]</p>
 </dd></dl>
 
@@ -4262,6 +4493,18 @@ last_epoch (int): The index of last epoch. Default: -1.</dd>
 <dt id="cmdoption-methylnet-predict-launch-hyperparameter-scan-a">
 <code class="descname">-a</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--additional_command</code><code class="descclassname"> &lt;additional_command&gt;</code><a class="headerlink" href="#cmdoption-methylnet-predict-launch-hyperparameter-scan-a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Additional command to input for torque run.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-predict-launch-hyperparameter-scan-cu">
+<code class="descname">-cu</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--cuda</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-predict-launch-hyperparameter-scan-cu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use GPUs.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-predict-launch-hyperparameter-scan-grid">
+<code class="descname">-grid</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--hyperparameter_yaml</code><code class="descclassname"> &lt;hyperparameter_yaml&gt;</code><a class="headerlink" href="#cmdoption-methylnet-predict-launch-hyperparameter-scan-grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>YAML file with custom subset of hyperparameter grid.</p>
 </dd></dl>
 
 </div>
@@ -4772,6 +5015,50 @@ last_epoch (int): The index of last epoch. Default: -1.</dd>
 </dd></dl>
 
 </div>
+<div class="section" id="methylnet-interpret-interpret-embedding-classes">
+<h3>interpret_embedding_classes<a class="headerlink" href="#methylnet-interpret-interpret-embedding-classes" title="Permalink to this headline">¶</a></h3>
+<p>Compare average distance between classes in embedding space.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>methylnet-interpret interpret_embedding_classes <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-interpret-embedding-classes-i">
+<code class="descname">-i</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--embedding_methyl_array_pkl</code><code class="descclassname"> &lt;embedding_methyl_array_pkl&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-interpret-embedding-classes-i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_methyl_arr.pkl for vae interpretations.  [default: ./embeddings/vae_methyl_arr.pkl]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-interpret-embedding-classes-c">
+<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--pheno_col</code><code class="descclassname"> &lt;pheno_col&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-interpret-embedding-classes-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>Column to separate on.  [default: disease]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-interpret-embedding-classes-m">
+<code class="descname">-m</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--metric</code><code class="descclassname"> &lt;metric&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-interpret-embedding-classes-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distance metric to compare classes.  [default: cosine]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-interpret-embedding-classes-t">
+<code class="descname">-t</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--trim</code><code class="descclassname"> &lt;trim&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-interpret-embedding-classes-t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trim outlier distances. Number 0-0.5.  [default: 0.0]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-interpret-embedding-classes-o">
+<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--output_csv</code><code class="descclassname"> &lt;output_csv&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-interpret-embedding-classes-o" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distances between classes.  [default: ./results/class_embedding_differences.csv]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-interpret-embedding-classes-op">
+<code class="descname">-op</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--output_pval_csv</code><code class="descclassname"> &lt;output_pval_csv&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-interpret-embedding-classes-op" title="Permalink to this definition">¶</a></dt>
+<dd><p>If specify a CSV file, outputs pairwise manova tests between embeddings for clusters.  [default: ]</p>
+</dd></dl>
+
+</div>
 <div class="section" id="methylnet-interpret-list-classes">
 <h3>list_classes<a class="headerlink" href="#methylnet-interpret-list-classes" title="Permalink to this headline">¶</a></h3>
 <p>List classes/multioutput regression cell-types that have SHAPley data to be interrogated.</p>
@@ -4953,13 +5240,13 @@ Store in Shapley data object.</p>
 <dl class="option">
 <dt id="cmdoption-methylnet-interpret-produce-shapley-data-i">
 <code class="descname">-i</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--train_pkl</code><code class="descclassname"> &lt;train_pkl&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-produce-shapley-data-i" title="Permalink to this definition">¶</a></dt>
-<dd><p>Input database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.  [default: ./train_val_test_sets/train_methyl_array.pkl]</p>
+<dd><p>Input database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_methyl_arr.pkl for vae interpretations.  [default: ./train_val_test_sets/train_methyl_array.pkl]</p>
 </dd></dl>
 
 <dl class="option">
 <dt id="cmdoption-methylnet-interpret-produce-shapley-data-v">
 <code class="descname">-v</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--val_pkl</code><code class="descclassname"> &lt;val_pkl&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-produce-shapley-data-v" title="Permalink to this definition">¶</a></dt>
-<dd><p>Val database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_mlp_methyl_arr.pkl for vae interpretations.  [default: ./train_val_test_sets/val_methyl_array.pkl]</p>
+<dd><p>Val database for beta and phenotype data. Use ./predictions/vae_mlp_methyl_arr.pkl or ./embeddings/vae_methyl_arr.pkl for vae interpretations.  [default: ./train_val_test_sets/val_methyl_array.pkl]</p>
 </dd></dl>
 
 <dl class="option">
@@ -5100,6 +5387,12 @@ Store in Shapley data object.</p>
 <dd><p>Multioutput names for multi-output regression.  [default: ]</p>
 </dd></dl>
 
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-produce-shapley-data-dsd">
+<code class="descname">-dsd</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--dump_shap_data</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-interpret-produce-shapley-data-dsd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump raw SHAP data to numpy file, warning, may be large file.  [default: False]</p>
+</dd></dl>
+
 </div>
 <div class="section" id="methylnet-interpret-reduce-top-cpgs">
 <h3>reduce_top_cpgs<a class="headerlink" href="#methylnet-interpret-reduce-top-cpgs" title="Permalink to this headline">¶</a></h3>
@@ -5162,6 +5455,56 @@ Store in Shapley data object.</p>
 <dt id="cmdoption-methylnet-interpret-regenerate-top-cpgs-n">
 <code class="descname">-n</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--neg_val</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-interpret-regenerate-top-cpgs-n" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return top CpGs that are making negative contributions.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="methylnet-interpret-return-shap-values">
+<h3>return_shap_values<a class="headerlink" href="#methylnet-interpret-return-shap-values" title="Permalink to this headline">¶</a></h3>
+<p>Return matrix of shapley values per class, with option to, classes/individuals are columns, CpGs are rows, option to plot multiple histograms/density plots.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>methylnet-interpret return_shap_values <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-return-shap-values-s">
+<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--shapley_data</code><code class="descclassname"> &lt;shapley_data&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-return-shap-values-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pickle containing top CpGs.  [default: ./interpretations/shapley_explanations/shapley_data.p]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-return-shap-values-o">
+<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--output_dir</code><code class="descclassname"> &lt;output_dir&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-return-shap-values-o" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output directory for output plots.  [default: ./interpretations/shap_outputs/]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-return-shap-values-i">
+<code class="descname">-i</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--individuals</code><code class="descclassname"> &lt;individuals&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-return-shap-values-i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Individuals to evaluate.  [default: ]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-return-shap-values-c">
+<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--classes</code><code class="descclassname"> &lt;classes&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-return-shap-values-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>Classes to evaluate.  [default: ]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-return-shap-values-hist">
+<code class="descname">-hist</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--output_histogram</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-interpret-return-shap-values-hist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to output a histogram for each class/individual of their SHAP scores.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-return-shap-values-abs">
+<code class="descname">-abs</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--absolute</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-interpret-return-shap-values-abs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use sums of absolute values in making computations.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-return-shap-values-log">
+<code class="descname">-log</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--log_transform</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-interpret-return-shap-values-log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log transform final results for plotting.</p>
 </dd></dl>
 
 </div>
@@ -5238,6 +5581,12 @@ Store in Shapley data object.</p>
 <dt id="cmdoption-methylnet-interpret-split-hyper-hypo-methylation-t">
 <code class="descname">-t</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--test_pkl</code><code class="descclassname"> &lt;test_pkl&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-split-hyper-hypo-methylation-t" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pickle containing testing set.  [default: ./train_val_test_sets/test_methyl_array.pkl]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-methylnet-interpret-split-hyper-hypo-methylation-thr">
+<code class="descname">-thr</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--threshold</code><code class="descclassname"> &lt;threshold&gt;</code><a class="headerlink" href="#cmdoption-methylnet-interpret-split-hyper-hypo-methylation-thr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pickle containing testing set.  [default: original]</p>
 </dd></dl>
 
 </div>
@@ -5394,6 +5743,25 @@ Store in Shapley data object.</p>
 <dd><p>Number of gpus to request.  [default: 0]</p>
 </dd></dl>
 
+</div>
+</div>
+<div class="section" id="methylnet-test">
+<h2>methylnet-test<a class="headerlink" href="#methylnet-test" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>methylnet-test <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-methylnet-test-version">
+<code class="descname">--version</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-methylnet-test-version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the version and exit.</p>
+</dd></dl>
+
+<div class="section" id="methylnet-test-test-pipeline">
+<h3>test_pipeline<a class="headerlink" href="#methylnet-test-test-pipeline" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>methylnet-test test_pipeline <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>

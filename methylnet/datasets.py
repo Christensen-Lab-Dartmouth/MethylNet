@@ -157,6 +157,8 @@ class MethylationDataSet(Dataset):
         self.samples = np.array(list(self.outcome_col.index))
         self.outcome_col=self.outcome_col.values
         if categorical:
+            if len(self.outcome_col.shape)<2 or self.outcome_col.shape[0]==1:
+                self.outcome_col=self.outcome_col[:,np.newaxis]
             #self.outcome_col=self.outcome_col#[:,np.newaxis]
             if not categorical_encoder:
                 print(self.outcome_col)

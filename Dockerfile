@@ -1,4 +1,4 @@
-FROM joshualevy44/pymethylprocess:0.1.3
+FROM joshualevy44/pymethylprocess:latest
 
 RUN apt-get install -y python-setuptools
 
@@ -12,7 +12,9 @@ RUN pip3 install --upgrade setuptools
 
 RUN pip3 install pandas==0.24.1
 
-RUN cd ./methylnet_code && python3 setup.py sdist bdist_wheel && pip install dist/methylnet-0.1.tar.gz
+#RUN cd ./methylnet_code && python3 setup.py sdist bdist_wheel && pip install dist/methylnet-0.1.tar.gz
+
+RUN pip3 install methylnet==0.1
 
 RUN tar -xzf ./methylnet_code/test_data/age_test_data.tar.gz -C /pymethyl/
 

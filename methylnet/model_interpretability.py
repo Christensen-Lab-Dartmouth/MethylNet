@@ -441,6 +441,8 @@ def return_shap_values(shapley_data,output_dir,individuals,classes, output_histo
     pd.DataFrame(pairwise_distances(df.T.values,metric='correlation'),index=list(df),columns=list(df)).to_csv(join(output_dir,'returned_shap_values_corr_dist.csv'))
     #df.corr().to_csv(join(output_dir,'returned_shap_values_corr_dist.csv'))
     if output_histogram:
+        import matplotlib
+        matplotlib.use('Agg')
         import matplotlib.pyplot as plt
         import seaborn as sns
         sns.set()

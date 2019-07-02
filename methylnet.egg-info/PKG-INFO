@@ -10,7 +10,7 @@ Description: # MethylNet
         
         Deep Learning with Methylation
         
-        MethylNet is a command line tool and python library that provides classes to handle deep learning tasks for methylation data. It is built off of pythonic MethylationArray data types introduced in (https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess), and uses PyTorch to explore/make predictions on the methylation data.
+        MethylNet is a command line tool and python library that provides classes to handle deep learning tasks for methylation data. It is built off of pythonic MethylationArray data types introduced in (https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess), and uses PyTorch to explore/make predictions on the methylation data.  
         
         **What MethylNet can do:**  
         1. Extract DNA Methylation Latent Space by training Variational Auto-encoders (VAE) after hyperparameter and neural network topology grid-search.  
@@ -41,7 +41,7 @@ Description: # MethylNet
                         * If looking to use only CPUs, only core docker or singularity needed, and see singularity website for information on how to pull Docker images  
                         * See https://singularity.lbl.gov/faq#does-singularity-support-containers-that-require-gpus for information on getting Singularity to work with GPUs  
                         * nvidia-docker is also the Docker equivalent to run GPU jobs  
-        * GPU usage is also possible through the base install (without Docker), provided that your machine has GPU access.  
+        * GPU usage is also possible through the base install (without Docker, or considering nvidia-docker options), provided that your machine has GPU access.  
         
         **Running MethylNet:**
         1. source activate methylnet  
@@ -54,17 +54,24 @@ Description: # MethylNet
         8. Interrogate SHAP derived CpGs.  
         9. See help-docs for usage.  
         
+        **Running Test Pipeline:**
+        1. docker pull joshualevy44/pymethylprocess:0.1.3  
+        2. Clone the MethylNet Repository  
+        3. sh docker_build.sh  
+        4. sh run_docker.sh  
+        5. methylnet-test test_pipeline  
+        
         **Example of Running Pipeline:**  
         See ./example_scripts for examples on how to explicitly run:
-        ![MethylNetPresentationSpring2019Lab 001](https://user-images.githubusercontent.com/19698023/55677358-f12a9200-58b3-11e9-8aaf-50536d2afb00.jpeg)
-        ![MethylNetPresentationSpring2019Lab 002](https://user-images.githubusercontent.com/19698023/55677359-f12a9200-58b3-11e9-8533-ad486ee7a0e7.jpeg)
-        ![MethylNetPresentationSpring2019Lab 003](https://user-images.githubusercontent.com/19698023/55677360-f12a9200-58b3-11e9-8bdc-987bb9c0122e.jpeg)
-        ![MethylNetPresentationSpring2019Lab 004](https://user-images.githubusercontent.com/19698023/55677361-f12a9200-58b3-11e9-8381-976ec02424f2.jpeg)
-        ![MethylNetPresentationSpring2019Lab 005](https://user-images.githubusercontent.com/19698023/55677362-f12a9200-58b3-11e9-8095-cd25fbbb33c5.jpeg)
-        ![MethylNetPresentationSpring2019Lab 006](https://user-images.githubusercontent.com/19698023/55677363-f12a9200-58b3-11e9-9acd-32e7752785fe.jpeg)
-        ![MethylNetPresentationSpring2019Lab 007](https://user-images.githubusercontent.com/19698023/55677364-f12a9200-58b3-11e9-857d-b4ec88c08b78.jpeg)
-        ![MethylNetPresentationSpring2019Lab 008](https://user-images.githubusercontent.com/19698023/55677365-f12a9200-58b3-11e9-95e1-e144f9c56287.jpeg)
-        ![MethylNetPresentationSpring2019Lab 009](https://user-images.githubusercontent.com/19698023/55677366-f1c32880-58b3-11e9-9082-a7cc89f71a7d.jpeg)
+        ![1](https://user-images.githubusercontent.com/19698023/55677358-f12a9200-58b3-11e9-8aaf-50536d2afb00.jpeg)
+        ![2](https://user-images.githubusercontent.com/19698023/60547526-f306c480-9ced-11e9-817b-b4566edac22f.jpeg)
+        ![3](https://user-images.githubusercontent.com/19698023/60547527-f306c480-9ced-11e9-9b0e-9ec89e056fa4.jpeg)
+        ![4](https://user-images.githubusercontent.com/19698023/60547528-f306c480-9ced-11e9-9666-161a54a9e237.jpeg)
+        ![5](https://user-images.githubusercontent.com/19698023/60547529-f306c480-9ced-11e9-8267-acb72940729b.jpeg)
+        ![6](https://user-images.githubusercontent.com/19698023/60547530-f306c480-9ced-11e9-9295-31ae3b9c3edf.jpeg)
+        ![7](https://user-images.githubusercontent.com/19698023/60547531-f306c480-9ced-11e9-9ddc-4c8c60853445.jpeg)
+        ![8](https://user-images.githubusercontent.com/19698023/60547532-f306c480-9ced-11e9-8380-643b0e548d20.jpeg)
+        ![9](https://user-images.githubusercontent.com/19698023/60547533-f306c480-9ced-11e9-84c6-2530018d7871.jpeg)
         
 Platform: UNKNOWN
 Description-Content-Type: text/markdown

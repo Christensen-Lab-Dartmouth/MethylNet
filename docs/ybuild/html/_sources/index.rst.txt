@@ -80,6 +80,10 @@ There is both an API and CLI available for use. Examples for CLI usage can be fo
    :prog: methylnet-torque
    :show-nested:
 
+.. click:: methylnet.test_pipeline:test
+   :prog: methylnet-test
+   :show-nested:
+
 Example Usage
 =============
 

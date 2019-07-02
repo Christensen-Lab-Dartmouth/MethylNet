@@ -17,7 +17,7 @@ def run_svc(train_pkl, val_pkl, test_pkl, series=False, outcome_col='Disease_Sta
     test_methyl_array.beta = pd.DataFrame(umap.transform(test_methyl_array.beta),index=test_methyl_array.return_idx())
 
     model = SVC
-    model = MachineLearning(model,options={'penalty':'l2','verbose':3,'n_jobs':35,'class_weight':'balanced'},grid={'C':[1,10,100,1000],'gamma':[1,0.1,0.001,0.0001], 'kernel':['linear','rbf']},
+    model = MachineLearning(model,options={'penalty':'l2','verbose':3,'n_jobs':35,'class_weight':'balanced'},grid={'C':[1,10,100,1000], 'gamma':[1,0.1,0.001,0.0001], 'kernel':['linear','rbf']},
                             n_eval=num_random_search,
                             series=series,
                             labelencode=True,

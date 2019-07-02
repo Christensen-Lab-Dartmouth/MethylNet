@@ -226,8 +226,7 @@
 <span class="c1"># methyl_train_df = methyl_df2.drop(methyl_test_df.index)</span>
 <span class="c1"># instead get beta keys and sample</span>
 
-
-<div class="viewcode-block" id="get_methylation_dataset"><a class="viewcode-back" href="../../index.html#methylnet.datasets.get_methylation_dataset">[docs]</a><span class="k">def</span> <span class="nf">get_methylation_dataset</span><span class="p">(</span><span class="n">methylation_array</span><span class="p">,</span> <span class="n">outcome_col</span><span class="p">,</span> <span class="n">convolutional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cpg_per_row</span><span class="o">=</span><span class="mi">1200</span><span class="p">,</span> <span class="n">predict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">categorical_encoder</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="get_methylation_dataset"><a class="viewcode-back" href="../../index.html#methylnet.datasets.get_methylation_dataset">[docs]</a><span class="k">def</span> <span class="nf">get_methylation_dataset</span><span class="p">(</span><span class="n">methylation_array</span><span class="p">,</span> <span class="n">outcome_col</span><span class="p">,</span> <span class="n">convolutional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cpg_per_row</span><span class="o">=</span><span class="mi">1200</span><span class="p">,</span> <span class="n">predict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">categorical_encoder</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">generate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Turn methylation array into pytorch dataset.</span>
 
 <span class="sd">    Parameters</span>
@@ -252,7 +251,9 @@
 <span class="sd">    Pytorch Dataset</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">predict</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">generate</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">MethylationGenerationDataSet</span><span class="p">(</span><span class="n">methylation_array</span><span class="p">,</span> <span class="n">Transformer</span><span class="p">(</span><span class="n">convolutional</span><span class="p">,</span> <span class="n">cpg_per_row</span><span class="p">,</span> <span class="n">methylation_array</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">outcome_col</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="n">categorical</span><span class="p">,</span> <span class="n">categorical_encoder</span><span class="o">=</span><span class="n">categorical_encoder</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">predict</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">MethylationPredictionDataSet</span><span class="p">(</span><span class="n">methylation_array</span><span class="p">,</span> <span class="n">Transformer</span><span class="p">(</span><span class="n">convolutional</span><span class="p">,</span> <span class="n">cpg_per_row</span><span class="p">,</span> <span class="n">methylation_array</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">outcome_col</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="n">categorical</span><span class="p">,</span> <span class="n">categorical_encoder</span><span class="o">=</span><span class="n">categorical_encoder</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">MethylationDataSet</span><span class="p">(</span><span class="n">methylation_array</span><span class="p">,</span> <span class="n">Transformer</span><span class="p">(</span><span class="n">convolutional</span><span class="p">,</span> <span class="n">cpg_per_row</span><span class="p">,</span> <span class="n">methylation_array</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">outcome_col</span><span class="p">)</span></div>
@@ -300,6 +301,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome_col</span><span class="o">.</span><span class="n">index</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">outcome_col</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome_col</span><span class="o">.</span><span class="n">values</span>
         <span class="k">if</span> <span class="n">categorical</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome_col</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">2</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcome_col</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">outcome_col</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome_col</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
             <span class="c1">#self.outcome_col=self.outcome_col#[:,np.newaxis]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">categorical_encoder</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome_col</span><span class="p">)</span>
@@ -313,7 +316,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">new_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">shape</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">methylation_array</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome_col</span><span class="p">)</span>
+        <span class="c1">#print(self.outcome_col)</span>
         <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome_col</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
 <div class="viewcode-block" id="MethylationDataSet.to_methyl_array"><a class="viewcode-back" href="../../index.html#methylnet.datasets.MethylationDataSet.to_methyl_array">[docs]</a>    <span class="k">def</span> <span class="nf">to_methyl_array</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -381,10 +384,53 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">methylation_array</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">outcome_col</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">categorical_encoder</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">methylation_array</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">outcome_col</span><span class="p">,</span> <span class="n">categorical</span><span class="p">,</span> <span class="n">categorical_encoder</span><span class="o">=</span><span class="n">categorical_encoder</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome_col</span><span class="p">)</span>
+        <span class="c1">#print(self.outcome_col)</span>
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">index</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">generate</span><span class="p">()(</span><span class="bp">self</span><span class="o">.</span><span class="n">methylation_array</span><span class="o">.</span><span class="n">beta</span><span class="p">[</span><span class="n">index</span><span class="p">,:]),</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">[</span><span class="n">index</span><span class="p">],</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome_col</span><span class="p">[</span><span class="n">index</span><span class="p">,:])</span></div>
+
+<div class="viewcode-block" id="MethylationGenerationDataSet"><a class="viewcode-back" href="../../index.html#methylnet.datasets.MethylationGenerationDataSet">[docs]</a><span class="k">class</span> <span class="nc">MethylationGenerationDataSet</span><span class="p">(</span><span class="n">MethylationPredictionDataSet</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;MethylationArray Torch Dataset that contains instances of methylation array samples to be loaded, specifically targetted for prediction.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    methylation_array : MethylationArray</span>
+<span class="sd">        Methylation Array input.</span>
+<span class="sd">    transform : Transformer</span>
+<span class="sd">        Transforms data into torch tensor.</span>
+<span class="sd">    outcome_col : str</span>
+<span class="sd">        Pheno column(s) to train on.</span>
+<span class="sd">    categorical : bool</span>
+<span class="sd">        Whether predicting categorical/classification.</span>
+<span class="sd">    categorical_encoder : encoder</span>
+<span class="sd">        Encoder used to binarize categorical column.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    samples : np.array</span>
+<span class="sd">        Samples of MethylationArray</span>
+<span class="sd">    features : np.array</span>
+<span class="sd">        List CpGs.</span>
+<span class="sd">    encoder :</span>
+<span class="sd">        Encoder used to binarize categorical column.</span>
+<span class="sd">    new_shape :</span>
+<span class="sd">        Shape of torch tensors.</span>
+<span class="sd">    length :</span>
+<span class="sd">        Number CpGs.</span>
+<span class="sd">    methylation_array</span>
+<span class="sd">    outcome_col</span>
+<span class="sd">    transform</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">methylation_array</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">outcome_col</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">categorical_encoder</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">methylation_array</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">outcome_col</span><span class="p">,</span> <span class="n">categorical</span><span class="p">,</span> <span class="n">categorical_encoder</span><span class="o">=</span><span class="n">categorical_encoder</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">index</span><span class="p">):</span>
+        <span class="c1">#print(index)</span>
+        <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome_col</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">y</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">generate</span><span class="p">()(</span><span class="bp">self</span><span class="o">.</span><span class="n">methylation_array</span><span class="o">.</span><span class="n">beta</span><span class="p">[</span><span class="n">index</span><span class="p">,:]),</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">y</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RawBetaArrayDataSet"><a class="viewcode-back" href="../../index.html#methylnet.datasets.RawBetaArrayDataSet">[docs]</a><span class="k">class</span> <span class="nc">RawBetaArrayDataSet</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Torch Dataset just for beta matrix in numpy format.</span>

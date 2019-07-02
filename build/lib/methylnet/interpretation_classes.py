@@ -1374,15 +1374,20 @@ class DistanceMatrixCompute:
     def calculate_p_values(self):
         """Compute pairwise p-values between different clusters using manova."""
         from statsmodels.multivariate.manova import MANOVA
+        from itertools import combinations
+        from sklearn.preprocessing import OneHotEncoder
         test_id = 0 # returns wilk's lambda
         self.p_values = pd.DataFrame(1,index=self.classes,columns=self.classes)
 
         for i,j in combinations(self.classes,r=2):
             if i!=j:
                 cluster_labels = self.col[np.isin(self.col,np.array([i,j]))]
-                embeddings = self.embeddings[cluster_labels.index].values
-                cluster_labels = cluster_labels.values[:,np.newaxis]
-                p_val = MANOVA(cluster_labels, embeddings).mv_test().results['x0']['stat'].values[test_id, 4]
+                embeddings = np.array(self.embeddings.loc[cluster_labels.index].values)
+                cluster_labels = OneHotEncoder().fit_transform(cluster_labels.values[:,np.newaxis]).todense().astype(int)
+                #print(embeddings,cluster_labels)
+                test_results = MANOVA(embeddings, cluster_labels)
+                #print(test_results)
+                p_val = test_results.mv_test().results['x0']['stat'].values[test_id, 4]
                 self.p_values.loc[i,j]=p_val
                 self.p_values.loc[j,i]=self.p_values.loc[i,j]
                 #cluster_labels = cluster_labels.map({v:k for k,v in enumerate(self.col.unique().tolist())})
