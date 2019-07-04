@@ -21,6 +21,8 @@ MethylNet is a command line tool and python library that provides classes to han
 
 NOTE: Images will be updated to reflect latest set of MethylNet commands. Wiki page and biorxiv are coming soon!
 
+Help docs: https://christensen-lab-dartmouth.github.io/MethylNet/
+
 **Install (Conda highly recommended, though Docker can be used):**
 * conda create -n methylnet python=3.6  
 * source activate methylnet  
