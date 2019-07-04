@@ -1,0 +1,1317 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>methylnet.models &mdash; MethylNet 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> MethylNet
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MethylNet</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>methylnet.models</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for methylnet.models</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">models.py</span>
+<span class="sd">=======================</span>
+<span class="sd">Contains core PyTorch Models for running VAE and VAE-MLP.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">torch</span> <span class="k">import</span> <span class="n">nn</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="k">import</span> <span class="n">Variable</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">methylnet.schedulers</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">methylnet.plotter</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">LabelEncoder</span>
+<span class="kn">from</span> <span class="nn">pymethylprocess.visualizations</span> <span class="k">import</span> <span class="n">umap_embed</span><span class="p">,</span> <span class="n">plotly_plot</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<div class="viewcode-block" id="train_vae"><a class="viewcode-back" href="../../index.html#methylnet.models.train_vae">[docs]</a><span class="k">def</span> <span class="nf">train_vae</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">loss_func</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">epoch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">kl_warm_up</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function for parameter update during VAE training for one iteration.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : type</span>
+<span class="sd">        VAE torch model</span>
+<span class="sd">    loader : type</span>
+<span class="sd">        Data loader, generator that calls batches of data.</span>
+<span class="sd">    loss_func : type</span>
+<span class="sd">        Loss function for reconstruction error, nn.BCELoss or MSELoss</span>
+<span class="sd">    optimizer : type</span>
+<span class="sd">        SGD or Adam pytorch optimizer.</span>
+<span class="sd">    cuda : type</span>
+<span class="sd">        GPU?</span>
+<span class="sd">    epoch : type</span>
+<span class="sd">        Epoch of training, passed in from outer loop.</span>
+<span class="sd">    kl_warm_up : type</span>
+<span class="sd">        How many epochs until model is fully utilizes KL Loss.</span>
+<span class="sd">    beta : type</span>
+<span class="sd">        Weight given to KL Loss.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nn.Module</span>
+<span class="sd">        Pytorch VAE model</span>
+<span class="sd">    float</span>
+<span class="sd">        Total Training Loss across all batches</span>
+<span class="sd">    float</span>
+<span class="sd">        Total Training reconstruction loss across all batches</span>
+<span class="sd">    float</span>
+<span class="sd">        Total KL Loss across all batches</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span> <span class="c1">#FIXME</span>
+    <span class="c1">#print(model)</span>
+    <span class="n">total_loss</span><span class="p">,</span><span class="n">total_recon_loss</span><span class="p">,</span><span class="n">total_kl_loss</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span>
+    <span class="n">stop_iter</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">length</span> <span class="o">//</span> <span class="n">loader</span><span class="o">.</span><span class="n">batch_size</span>
+    <span class="n">total_loss</span><span class="p">,</span><span class="n">total_recon_loss</span><span class="p">,</span><span class="n">total_kl_loss</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">loader</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">stop_iter</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span> <span class="c1"># modify for convolutions, add batchnorm2d?</span>
+        <span class="c1">#print(inputs.size())</span>
+        <span class="k">if</span> <span class="n">cuda</span><span class="p">:</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="n">output</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">logvar</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">loss</span><span class="p">,</span> <span class="n">reconstruction_loss</span><span class="p">,</span> <span class="n">kl_loss</span> <span class="o">=</span> <span class="n">vae_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">logvar</span><span class="p">,</span> <span class="n">loss_func</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">kl_warm_up</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">total_loss</span><span class="o">+=</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">total_recon_loss</span><span class="o">+=</span><span class="n">reconstruction_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">total_kl_loss</span><span class="o">+=</span><span class="n">kl_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">total_loss</span><span class="p">,</span><span class="n">total_recon_loss</span><span class="p">,</span><span class="n">total_kl_loss</span></div>
+
+<div class="viewcode-block" id="val_vae"><a class="viewcode-back" href="../../index.html#methylnet.models.val_vae">[docs]</a><span class="k">def</span> <span class="nf">val_vae</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">loss_func</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">epoch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">kl_warm_up</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function for validation loss computation during VAE training for one epoch.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : type</span>
+<span class="sd">        VAE torch model</span>
+<span class="sd">    loader : type</span>
+<span class="sd">        Validation Data loader, generator that calls batches of data.</span>
+<span class="sd">    loss_func : type</span>
+<span class="sd">        Loss function for reconstruction error, nn.BCELoss or MSELoss</span>
+<span class="sd">    optimizer : type</span>
+<span class="sd">        SGD or Adam pytorch optimizer.</span>
+<span class="sd">    cuda : type</span>
+<span class="sd">        GPU?</span>
+<span class="sd">    epoch : type</span>
+<span class="sd">        Epoch of training, passed in from outer loop.</span>
+<span class="sd">    kl_warm_up : type</span>
+<span class="sd">        How many epochs until model is fully utilizes KL Loss.</span>
+<span class="sd">    beta : type</span>
+<span class="sd">        Weight given to KL Loss.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nn.Module</span>
+<span class="sd">        Pytorch VAE model</span>
+<span class="sd">    float</span>
+<span class="sd">        Total Validation Loss across all batches</span>
+<span class="sd">    float</span>
+<span class="sd">        Total Validation reconstruction loss across all batches</span>
+<span class="sd">    float</span>
+<span class="sd">        Total Validation KL Loss across all batches</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span> <span class="c1">#FIXME</span>
+    <span class="c1">#print(model)</span>
+    <span class="n">stop_iter</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">length</span> <span class="o">//</span> <span class="n">loader</span><span class="o">.</span><span class="n">batch_size</span>
+    <span class="n">total_loss</span><span class="p">,</span><span class="n">total_recon_loss</span><span class="p">,</span><span class="n">total_kl_loss</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">loader</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">stop_iter</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span> <span class="c1"># modify for convolutions, add batchnorm2d?</span>
+            <span class="c1">#print(inputs.size())</span>
+            <span class="k">if</span> <span class="n">cuda</span><span class="p">:</span>
+                <span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="n">output</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">logvar</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="n">loss</span><span class="p">,</span> <span class="n">reconstruction_loss</span><span class="p">,</span> <span class="n">kl_loss</span> <span class="o">=</span> <span class="n">vae_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">logvar</span><span class="p">,</span> <span class="n">loss_func</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">kl_warm_up</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
+            <span class="n">total_loss</span><span class="o">+=</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">total_recon_loss</span><span class="o">+=</span><span class="n">reconstruction_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">total_kl_loss</span><span class="o">+=</span><span class="n">kl_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">total_loss</span><span class="p">,</span><span class="n">total_recon_loss</span><span class="p">,</span><span class="n">total_kl_loss</span></div>
+
+<div class="viewcode-block" id="project_vae"><a class="viewcode-back" href="../../index.html#methylnet.models.project_vae">[docs]</a><span class="k">def</span> <span class="nf">project_vae</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return Latent Embeddings of any data supplied to it.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : type</span>
+<span class="sd">        VAE Pytorch Model.</span>
+<span class="sd">    loader : type</span>
+<span class="sd">        Loads data one batch at a time.</span>
+<span class="sd">    cuda : type</span>
+<span class="sd">        GPU?</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Latent Embeddings.</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Sample names from MethylationArray</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Outcomes from column of methylarray.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="c1">#print(model)</span>
+    <span class="n">final_outputs</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">sample_names_final</span><span class="o">=</span><span class="p">[]</span>
+    <span class="c1">#outcomes_final=[]</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">sample_names</span><span class="p">,</span> <span class="n">outcomes</span> <span class="ow">in</span> <span class="n">loader</span><span class="p">:</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span> <span class="c1"># modify for convolutions, add batchnorm2d?</span>
+            <span class="k">if</span> <span class="n">cuda</span><span class="p">:</span>
+                <span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get_latent_z</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+            <span class="n">final_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+            <span class="n">sample_names_final</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sample_names</span><span class="p">])</span>
+            <span class="c1">#outcomes_final.extend([outcome[0] for outcome in outcomes])</span>
+        <span class="n">z</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">final_outputs</span><span class="p">)</span>
+        <span class="n">sample_names</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sample_names_final</span><span class="p">)</span>
+        <span class="c1">#outcomes=np.array(outcomes_final)</span>
+    <span class="k">return</span> <span class="n">z</span><span class="p">,</span> <span class="n">sample_names</span><span class="p">,</span> <span class="kc">None</span><span class="c1">#outcomes</span></div>
+
+<div class="viewcode-block" id="AutoEncoder"><a class="viewcode-back" href="../../index.html#methylnet.models.AutoEncoder">[docs]</a><span class="k">class</span> <span class="nc">AutoEncoder</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Wraps Pytorch VAE module into Scikit-learn like interface for ease of training, validation and testing.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    autoencoder_model : type</span>
+<span class="sd">        Pytorch VAE Model to supply.</span>
+<span class="sd">    n_epochs : type</span>
+<span class="sd">        Number of epochs to train for.</span>
+<span class="sd">    loss_fn : type</span>
+<span class="sd">        Pytorch loss function for reconstruction error.</span>
+<span class="sd">    optimizer : type</span>
+<span class="sd">        Pytorch Optimizer.</span>
+<span class="sd">    cuda : type</span>
+<span class="sd">        GPU?</span>
+<span class="sd">    kl_warm_up : type</span>
+<span class="sd">        Number of epochs until fully utilizing KLLoss, begin saving models here.</span>
+<span class="sd">    beta : type</span>
+<span class="sd">        Weighting for KLLoss.</span>
+<span class="sd">    scheduler_opts : type</span>
+<span class="sd">        Options to feed learning rate scheduler, which modulates learning rate of optimizer.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : type</span>
+<span class="sd">        Pytorch VAE model.</span>
+<span class="sd">    scheduler : type</span>
+<span class="sd">        Learning rate scheduler object.</span>
+<span class="sd">    vae_animation_fname : type</span>
+<span class="sd">        Save VAE embeddings evolving over epochs to this file name. Defunct for now.</span>
+<span class="sd">    loss_plt_fname : type</span>
+<span class="sd">        Where to save loss curves. This has been superceded by plot_training_curves in methylnet-visualize command.</span>
+<span class="sd">    plot_interval : type</span>
+<span class="sd">        How often to plot data; defunct.</span>
+<span class="sd">    embed_interval : type</span>
+<span class="sd">        How often to embed; defunct.</span>
+<span class="sd">    validation_set : type</span>
+<span class="sd">        MethylationArray DataLoader, produced from Pytorch MethylationDataset of Validation MethylationArray.</span>
+<span class="sd">    n_epochs</span>
+<span class="sd">    loss_fn</span>
+<span class="sd">    optimizer</span>
+<span class="sd">    cuda</span>
+<span class="sd">    kl_warm_up</span>
+<span class="sd">    beta</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">autoencoder_model</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kl_warm_up</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span><span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">=</span><span class="n">autoencoder_model</span>
+        <span class="c1">#print(self.model)</span>
+        <span class="k">if</span> <span class="n">cuda</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span> <span class="o">=</span> <span class="n">n_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span> <span class="o">=</span> <span class="n">loss_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cuda</span> <span class="o">=</span> <span class="n">cuda</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kl_warm_up</span> <span class="o">=</span> <span class="n">kl_warm_up</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">=</span><span class="n">beta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">Scheduler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span><span class="n">scheduler_opts</span><span class="p">)</span> <span class="k">if</span> <span class="n">scheduler_opts</span> <span class="k">else</span> <span class="n">Scheduler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vae_animation_fname</span><span class="o">=</span><span class="s1">&#39;animation.mp4&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_plt_fname</span><span class="o">=</span><span class="s1">&#39;loss.png&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_interval</span><span class="o">=</span><span class="mi">5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embed_interval</span><span class="o">=</span><span class="mi">200</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="AutoEncoder.fit"><a class="viewcode-back" href="../../index.html#methylnet.models.AutoEncoder.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fit VAE model to training data, best model returned with lowest validation loss over epochs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        train_data : DataLoader</span>
+<span class="sd">            Training DataLoader that is loading MethylationDataset in batches.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self</span>
+<span class="sd">            Autoencoder object with updated VAE model.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">loss_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">best_model</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">animation_plts</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">plt_data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;kl_loss&#39;</span><span class="p">:[],</span><span class="s1">&#39;recon_loss&#39;</span><span class="p">:[],</span><span class="s1">&#39;lr&#39;</span><span class="p">:[],</span><span class="s1">&#39;val_kl_loss&#39;</span><span class="p">:[],</span><span class="s1">&#39;val_recon_loss&#39;</span><span class="p">:[],</span> <span class="s1">&#39;val_loss&#39;</span><span class="p">:[]}</span>
+        <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span><span class="p">):</span>
+            <span class="n">model</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">recon_loss</span><span class="p">,</span> <span class="n">kl_loss</span> <span class="o">=</span> <span class="n">train_vae</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kl_warm_up</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;kl_loss&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kl_loss</span><span class="p">)</span>
+            <span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;recon_loss&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">recon_loss</span><span class="p">)</span>
+            <span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;lr&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">get_lr</span><span class="p">())</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Epoch </span><span class="si">{}</span><span class="s2">: Loss </span><span class="si">{}</span><span class="s2">, Recon Loss </span><span class="si">{}</span><span class="s2">, KL-Loss </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span><span class="n">loss</span><span class="p">,</span><span class="n">recon_loss</span><span class="p">,</span><span class="n">kl_loss</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span><span class="p">:</span>
+                <span class="n">model</span><span class="p">,</span> <span class="n">val_loss</span><span class="p">,</span> <span class="n">val_recon_loss</span><span class="p">,</span> <span class="n">val_kl_loss</span> <span class="o">=</span> <span class="n">val_vae</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kl_warm_up</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span>
+                <span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;val_kl_loss&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val_kl_loss</span><span class="p">)</span>
+                <span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;val_recon_loss&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val_recon_loss</span><span class="p">)</span>
+                <span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val_loss</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Epoch </span><span class="si">{}</span><span class="s2">: Val-Loss </span><span class="si">{}</span><span class="s2">, Val-Recon Loss </span><span class="si">{}</span><span class="s2">, Val-KL-Loss </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span><span class="n">val_loss</span><span class="p">,</span><span class="n">val_recon_loss</span><span class="p">,</span><span class="n">val_kl_loss</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">epoch</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kl_warm_up</span><span class="p">:</span>
+                <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span> <span class="k">else</span> <span class="n">val_loss</span>
+                <span class="n">loss_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">loss</span> <span class="o">&lt;=</span> <span class="nb">min</span><span class="p">(</span><span class="n">loss_list</span><span class="p">):</span> <span class="c1"># next get models for lowest reconstruction and kl, 3 models</span>
+                    <span class="n">best_model</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="c1">#.state_dict())</span>
+                    <span class="n">best_epoch</span><span class="o">=</span><span class="n">epoch</span>
+                <span class="k">if</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">epoch</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_interval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">z</span><span class="p">,</span><span class="n">samples</span><span class="p">,</span><span class="n">outcomes</span><span class="o">=</span><span class="n">project_vae</span><span class="p">(</span><span class="n">best_model</span><span class="p">,</span> <span class="n">train_data</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda</span><span class="p">)</span>
+                    <span class="n">beta_df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="n">samples</span><span class="p">)</span>
+                    <span class="n">plotly_plot</span><span class="p">(</span><span class="n">umap_embed</span><span class="p">(</span><span class="n">beta_df</span><span class="p">,</span><span class="n">outcomes</span><span class="p">,</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span><span class="n">supervised</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">min_dist</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="n">metric</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">),</span><span class="s1">&#39;training_</span><span class="si">{}</span><span class="s1">.html&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">best_epoch</span><span class="p">))</span>
+            <span class="k">if</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_interval</span> <span class="ow">and</span> <span class="n">epoch</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_interval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">z</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">outcomes</span><span class="o">=</span><span class="n">project_vae</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda</span><span class="p">)</span>
+                <span class="n">animation_plts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Plot</span><span class="p">(</span><span class="s1">&#39;Latent Embedding, epoch </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">),</span>
+                        <span class="n">data</span><span class="o">=</span><span class="n">PlotTransformer</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">LabelEncoder</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">outcomes</span><span class="p">))</span><span class="o">.</span><span class="n">transform</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">plts</span><span class="o">=</span><span class="n">Plotter</span><span class="p">([</span><span class="n">Plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="s1">&#39;epoch&#39;</span><span class="p">,</span><span class="s1">&#39;lr&#39;</span> <span class="k">if</span> <span class="s1">&#39;loss&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">k</span> <span class="k">else</span> <span class="n">k</span><span class="p">,</span>
+                          <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">plt_data</span><span class="p">[</span><span class="n">k</span><span class="p">])),</span><span class="n">plt_data</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                                       <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span><span class="s1">&#39;y&#39;</span><span class="p">]))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">plt_data</span> <span class="k">if</span> <span class="n">plt_data</span><span class="p">[</span><span class="n">k</span><span class="p">]],</span><span class="n">animation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">plts</span><span class="o">.</span><span class="n">write_plots</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_plt_fname</span><span class="p">)</span>
+        <span class="k">if</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_interval</span><span class="p">:</span>
+            <span class="n">Plotter</span><span class="p">(</span><span class="n">animation_plts</span><span class="p">)</span><span class="o">.</span><span class="n">write_plots</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vae_animation_fname</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_loss</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;kl_loss&#39;</span><span class="p">])</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;recon_loss&#39;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_val_loss</span> <span class="o">=</span> <span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">][</span><span class="n">best_epoch</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_val_kl_loss</span> <span class="o">=</span> <span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;val_kl_loss&#39;</span><span class="p">][</span><span class="n">best_epoch</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_val_recon_loss</span> <span class="o">=</span> <span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;val_recon_loss&#39;</span><span class="p">][</span><span class="n">best_epoch</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_val_loss</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_val_kl_loss</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_val_recon_loss</span>  <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span><span class="p">,</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span><span class="o">-</span><span class="mf">1.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_epoch</span> <span class="o">=</span> <span class="n">best_epoch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">best_model</span><span class="c1">#self.model.load_state_dict(best_model)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_plot_data</span> <span class="o">=</span> <span class="n">plt_data</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="AutoEncoder.add_validation_set"><a class="viewcode-back" href="../../index.html#methylnet.models.AutoEncoder.add_validation_set">[docs]</a>    <span class="k">def</span> <span class="nf">add_validation_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validation_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add validation data in the form of Validation DataLoader. Adding this will use validation data for early termination / generalization of model to unseen data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        validation_data : type</span>
+<span class="sd">            Pytorch DataLoader housing validation MethylationDataset.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span><span class="o">=</span><span class="n">validation_data</span></div>
+
+<div class="viewcode-block" id="AutoEncoder.transform"><a class="viewcode-back" href="../../index.html#methylnet.models.AutoEncoder.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        train_data : type</span>
+<span class="sd">            Pytorch DataLoader housing training MethylationDataset.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.array</span>
+<span class="sd">            Latent Embeddings.</span>
+<span class="sd">        np.array</span>
+<span class="sd">            Sample names from MethylationArray</span>
+<span class="sd">        np.array</span>
+<span class="sd">            Outcomes from column of methylarray.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">project_vae</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">train_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AutoEncoder.fit_transform"><a class="viewcode-back" href="../../index.html#methylnet.models.AutoEncoder.fit_transform">[docs]</a>    <span class="k">def</span> <span class="nf">fit_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fit VAE model and transform Methylation Array using VAE model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        train_data : type</span>
+<span class="sd">            Pytorch DataLoader housing training MethylationDataset.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.array</span>
+<span class="sd">            Latent Embeddings.</span>
+<span class="sd">        np.array</span>
+<span class="sd">            Sample names from MethylationArray</span>
+<span class="sd">        np.array</span>
+<span class="sd">            Outcomes from column of methylarray.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_data</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">train_data</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="vae_loss"><a class="viewcode-back" href="../../index.html#methylnet.models.vae_loss">[docs]</a><span class="k">def</span> <span class="nf">vae_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">logvar</span><span class="p">,</span> <span class="n">loss_func</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">kl_warm_up</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to calculate VAE Loss, Reconstruction Loss + Beta KLLoss.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    output : torch.tensor</span>
+<span class="sd">        Reconstructed output from autoencoder.</span>
+<span class="sd">    input : torch.tensor</span>
+<span class="sd">        Original input data.</span>
+<span class="sd">    mean : type</span>
+<span class="sd">        Learned mean tensor for each sample point.</span>
+<span class="sd">    logvar : type</span>
+<span class="sd">        Variation around that mean sample point, learned from reparameterization.</span>
+<span class="sd">    loss_func : type</span>
+<span class="sd">        Loss function for reconstruction loss, MSE or BCE.</span>
+<span class="sd">    epoch : type</span>
+<span class="sd">        Epoch of training.</span>
+<span class="sd">    kl_warm_up : type</span>
+<span class="sd">        Number of epochs until fully utilizing KLLoss, begin saving models here.</span>
+<span class="sd">    beta : type</span>
+<span class="sd">        Weighting for KLLoss.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    torch.tensor</span>
+<span class="sd">        Total loss</span>
+<span class="sd">    torch.tensor</span>
+<span class="sd">        Recon loss</span>
+<span class="sd">    torch.tensor</span>
+<span class="sd">        KL loss</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">([]):</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">[</span><span class="n">output</span><span class="p">]</span>
+    <span class="n">recon_loss</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">loss_func</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span> <span class="k">for</span> <span class="n">out</span> <span class="ow">in</span> <span class="n">output</span><span class="p">])</span>
+    <span class="n">kl_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">logvar</span><span class="p">)</span> <span class="o">+</span> <span class="n">mean</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">logvar</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">kl_loss</span> <span class="o">*=</span> <span class="n">beta</span>
+    <span class="k">if</span> <span class="n">epoch</span> <span class="o">&lt;</span> <span class="n">kl_warm_up</span><span class="p">:</span>
+        <span class="n">kl_loss</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">epoch</span><span class="o">/</span><span class="n">kl_warm_up</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">)</span>
+    <span class="c1">#print(recon_loss,kl_loss)</span>
+    <span class="k">return</span> <span class="n">recon_loss</span> <span class="o">+</span> <span class="n">kl_loss</span><span class="p">,</span> <span class="n">recon_loss</span><span class="p">,</span> <span class="n">kl_loss</span></div>
+
+<div class="viewcode-block" id="TybaltTitusVAE"><a class="viewcode-back" href="../../index.html#methylnet.models.TybaltTitusVAE">[docs]</a><span class="k">class</span> <span class="nc">TybaltTitusVAE</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Pytorch NN Module housing VAE with fully connected layers and customizable topology.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_input : type</span>
+<span class="sd">        Number of input CpGs.</span>
+<span class="sd">    n_latent : type</span>
+<span class="sd">        Size of latent embeddings.</span>
+<span class="sd">    hidden_layer_encoder_topology : type</span>
+<span class="sd">        List, length of list contains number of hidden layers for encoder, and each element is number of neurons, mirrored for decoder.</span>
+<span class="sd">    cuda : type</span>
+<span class="sd">        GPU?</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cuda_on : type</span>
+<span class="sd">        GPU?</span>
+<span class="sd">    pre_latent_topology : type</span>
+<span class="sd">        Hidden layer topology for encoder.</span>
+<span class="sd">    post_latent_topology : type</span>
+<span class="sd">        Mirrored hidden layer topology for decoder.</span>
+<span class="sd">    encoder_layers : list</span>
+<span class="sd">        Encoder pytorch layers.</span>
+<span class="sd">    encoder : type</span>
+<span class="sd">        Encoder layers wrapped into pytorch module.</span>
+<span class="sd">    z_mean : type</span>
+<span class="sd">        Linear layer from last encoder layer to mean layer.</span>
+<span class="sd">    z_var : type</span>
+<span class="sd">        Linear layer from last encoder layer to var layer.</span>
+<span class="sd">    z_develop : type</span>
+<span class="sd">        Linear layer connecting sampled latent embedding to first layer decoder.</span>
+<span class="sd">    decoder_layers : type</span>
+<span class="sd">        Decoder layers wrapped into pytorch module.</span>
+<span class="sd">    output_layer : type</span>
+<span class="sd">        Linear layer connecting last decoder layer to output layer, which is same size as input..</span>
+<span class="sd">    decoder : type</span>
+<span class="sd">        Wraps decoder_layers and output_layers into Sequential module.</span>
+<span class="sd">    n_input</span>
+<span class="sd">    n_latent</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_input</span><span class="p">,</span> <span class="n">n_latent</span><span class="p">,</span> <span class="n">hidden_layer_encoder_topology</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">],</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TybaltTitusVAE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_input</span> <span class="o">=</span> <span class="n">n_input</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_latent</span> <span class="o">=</span> <span class="n">n_latent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cuda_on</span> <span class="o">=</span> <span class="n">cuda</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_latent_topology</span> <span class="o">=</span> <span class="p">[</span><span class="n">n_input</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">hidden_layer_encoder_topology</span> <span class="k">if</span> <span class="n">hidden_layer_encoder_topology</span> <span class="k">else</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_latent_topology</span> <span class="o">=</span> <span class="p">[</span><span class="n">n_latent</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">hidden_layer_encoder_topology</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">hidden_layer_encoder_topology</span> <span class="k">else</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder_layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_latent_topology</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_latent_topology</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_latent_topology</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_latent_topology</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">encoder_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder_layers</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder_layers</span> <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z_mean</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_latent_topology</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">n_latent</span><span class="p">),</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="n">n_latent</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z_var</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_latent_topology</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">n_latent</span><span class="p">),</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="n">n_latent</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z_develop</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">n_latent</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_latent_topology</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder_layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_latent_topology</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_latent_topology</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_latent_topology</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">post_latent_topology</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">decoder_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">decoder_layers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_latent_topology</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">n_input</span><span class="p">),</span><span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">())</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder_layers</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">decoder_layers</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">output_layer</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_layer</span>
+
+<div class="viewcode-block" id="TybaltTitusVAE.sample_z"><a class="viewcode-back" href="../../index.html#methylnet.models.TybaltTitusVAE.sample_z">[docs]</a>    <span class="k">def</span> <span class="nf">sample_z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">logvar</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sample latent embeddings, reparameterize by adding noise to embedding.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        mean : type</span>
+<span class="sd">            Learned mean vector of embeddings.</span>
+<span class="sd">        logvar : type</span>
+<span class="sd">            Learned variance of learned mean embeddings.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.tensor</span>
+<span class="sd">            Mean + noise, reparameterization trick.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">stddev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">logvar</span><span class="p">)</span>
+        <span class="n">noise</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">stddev</span><span class="o">.</span><span class="n">size</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda_on</span><span class="p">:</span>
+            <span class="n">noise</span><span class="o">=</span><span class="n">noise</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
+            <span class="n">noise</span> <span class="o">=</span> <span class="mf">0.</span>
+            <span class="n">stddev</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">noise</span> <span class="o">*</span> <span class="n">stddev</span><span class="p">)</span> <span class="o">+</span> <span class="n">mean</span></div>
+
+<div class="viewcode-block" id="TybaltTitusVAE.encode"><a class="viewcode-back" href="../../index.html#methylnet.models.TybaltTitusVAE.encode">[docs]</a>    <span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Encode input into latent representation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : type</span>
+<span class="sd">            Input methylation data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.tensor</span>
+<span class="sd">            Learned mean vector of embeddings.</span>
+<span class="sd">        torch.tensor</span>
+<span class="sd">            Learned variance of learned mean embeddings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1">#print(x.size())</span>
+        <span class="c1">#x = x.view(x.size(0), -1)</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_mean</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_var</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1">#print(&#39;mean&#39;,mean.size())</span>
+        <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">var</span></div>
+
+<div class="viewcode-block" id="TybaltTitusVAE.decode"><a class="viewcode-back" href="../../index.html#methylnet.models.TybaltTitusVAE.decode">[docs]</a>    <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decode latent embeddings back into reconstructed input.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        z : type</span>
+<span class="sd">            Reparameterized latent embedding.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.tensor</span>
+<span class="sd">            Reconstructed input.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#out = self.z_develop(z)</span>
+        <span class="c1">#print(&#39;out&#39;,out.size())</span>
+        <span class="c1">#out = out.view(z.size(0), 64, self.z_dim, self.z_dim)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="c1">#print(out)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+
+<div class="viewcode-block" id="TybaltTitusVAE.forward"><a class="viewcode-back" href="../../index.html#methylnet.models.TybaltTitusVAE.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return reconstructed output, mean and variance of embeddings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mean</span><span class="p">,</span> <span class="n">logvar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_z</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">logvar</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">logvar</span></div>
+
+<div class="viewcode-block" id="TybaltTitusVAE.get_latent_z"><a class="viewcode-back" href="../../index.html#methylnet.models.TybaltTitusVAE.get_latent_z">[docs]</a>    <span class="k">def</span> <span class="nf">get_latent_z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Encode X into reparameterized latent representation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : type</span>
+<span class="sd">            Input methylation data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.tensor</span>
+<span class="sd">            Latent embeddings.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mean</span><span class="p">,</span> <span class="n">logvar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_z</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">logvar</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TybaltTitusVAE.forward_predict"><a class="viewcode-back" href="../../index.html#methylnet.models.TybaltTitusVAE.forward_predict">[docs]</a>    <span class="k">def</span> <span class="nf">forward_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Forward pass from input to reconstructed input.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_latent_z</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="train_mlp"><a class="viewcode-back" href="../../index.html#methylnet.models.train_mlp">[docs]</a><span class="k">def</span> <span class="nf">train_mlp</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">loss_func</span><span class="p">,</span> <span class="n">optimizer_vae</span><span class="p">,</span> <span class="n">optimizer_mlp</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">train_decoder</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Train Multi-layer perceptron appended to latent embeddings of VAE via transfer learning. Do this for one iteration.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : type</span>
+<span class="sd">        VAE_MLP model.</span>
+<span class="sd">    loader : type</span>
+<span class="sd">        DataLoader with MethylationDataset.</span>
+<span class="sd">    loss_func : type</span>
+<span class="sd">        Loss function (BCE, CrossEntropy, MSE).</span>
+<span class="sd">    optimizer_vae : type</span>
+<span class="sd">        Optimizer for pytorch VAE.</span>
+<span class="sd">    optimizer_mlp : type</span>
+<span class="sd">        Optimizer for outcome MLP layers.</span>
+<span class="sd">    cuda : type</span>
+<span class="sd">        GPU?</span>
+<span class="sd">    categorical : type</span>
+<span class="sd">        Predicting categorical or continuous outcomes.</span>
+<span class="sd">    train_decoder : type</span>
+<span class="sd">        Retrain decoder during training loop to adjust for fine-tuned embeddings.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nn.Module</span>
+<span class="sd">        Training VAE_MLP model with updated parameters.</span>
+<span class="sd">    float</span>
+<span class="sd">        Training loss over all batches</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1">#model.vae.eval() also freeze for depth of tuning?</span>
+    <span class="c1">#print(loss_func)</span>
+    <span class="n">stop_iter</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">length</span> <span class="o">//</span> <span class="n">loader</span><span class="o">.</span><span class="n">batch_size</span>
+    <span class="n">running_loss</span><span class="o">=</span><span class="mf">0.</span>
+    <span class="n">running_decoder_loss</span><span class="o">=</span><span class="mf">0.</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">loader</span><span class="p">):</span> <span class="c1"># change dataloder for classification/regression tasks</span>
+        <span class="c1">#print(samples)</span>
+        <span class="k">if</span> <span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">==</span> <span class="n">stop_iter</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">y_true</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">categorical</span><span class="p">:</span>
+            <span class="n">y_true</span><span class="o">=</span><span class="n">y_true</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+        <span class="c1">#print(inputs.size())</span>
+        <span class="k">if</span> <span class="n">cuda</span><span class="p">:</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="n">y_true</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="n">y_predict</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">y_predict</span><span class="p">,</span><span class="n">y_true</span><span class="p">)</span>
+
+        <span class="n">optimizer_vae</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">optimizer_mlp</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">train_decoder</span><span class="p">:</span>
+            <span class="n">model</span><span class="p">,</span> <span class="n">decoder_loss</span> <span class="o">=</span> <span class="n">train_decoder_</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+            <span class="n">running_decoder_loss</span> <span class="o">+=</span> <span class="n">decoder_loss</span>
+        <span class="n">optimizer_vae</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">optimizer_mlp</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">running_loss</span><span class="o">+=</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">train_decoder</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Decoder Loss is </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">running_decoder_loss</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">running_loss</span></div>
+
+<div class="viewcode-block" id="val_mlp"><a class="viewcode-back" href="../../index.html#methylnet.models.val_mlp">[docs]</a><span class="k">def</span> <span class="nf">val_mlp</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">loss_func</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">train_decoder</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find validation loss of VAE_MLP over one Epoch.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : type</span>
+<span class="sd">        VAE_MLP model.</span>
+<span class="sd">    loader : type</span>
+<span class="sd">        DataLoader with MethylationDataset.</span>
+<span class="sd">    loss_func : type</span>
+<span class="sd">        Loss function (BCE, CrossEntropy, MSE).</span>
+<span class="sd">    cuda : type</span>
+<span class="sd">        GPU?</span>
+<span class="sd">    categorical : type</span>
+<span class="sd">        Predicting categorical or continuous outcomes.</span>
+<span class="sd">    train_decoder : type</span>
+<span class="sd">        Retrain decoder during training loop to adjust for fine-tuned embeddings.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nn.Module</span>
+<span class="sd">        VAE_MLP model.</span>
+<span class="sd">    float</span>
+<span class="sd">        Validation loss over all batches</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+    <span class="c1">#model.vae.eval() also freeze for depth of tuning?</span>
+    <span class="n">stop_iter</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">length</span> <span class="o">//</span> <span class="n">loader</span><span class="o">.</span><span class="n">batch_size</span>
+    <span class="n">running_decoder_loss</span><span class="o">=</span><span class="mf">0.</span>
+    <span class="n">running_loss</span><span class="o">=</span><span class="mf">0.</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">loader</span><span class="p">):</span> <span class="c1"># change dataloder for classification/regression tasks</span>
+            <span class="k">if</span> <span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">==</span> <span class="n">stop_iter</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">y_true</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+            <span class="c1">#print(inputs.size())</span>
+            <span class="k">if</span> <span class="n">categorical</span><span class="p">:</span>
+                <span class="n">y_true</span><span class="o">=</span><span class="n">y_true</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">cuda</span><span class="p">:</span>
+                <span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+                <span class="n">y_true</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="n">y_predict</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">y_predict</span><span class="p">,</span><span class="n">y_true</span><span class="p">)</span>
+            <span class="n">running_loss</span><span class="o">+=</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">train_decoder</span><span class="p">:</span>
+                <span class="n">running_decoder_loss</span> <span class="o">+=</span> <span class="n">val_decoder_</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">train_decoder</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Val Decoder Loss is </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">running_decoder_loss</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">running_loss</span></div>
+
+<div class="viewcode-block" id="test_mlp"><a class="viewcode-back" href="../../index.html#methylnet.models.test_mlp">[docs]</a><span class="k">def</span> <span class="nf">test_mlp</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">categorical</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">output_latent</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaluate MLP on testing set, output predictions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : type</span>
+<span class="sd">        VAE_MLP model.</span>
+<span class="sd">    loader : type</span>
+<span class="sd">        DataLoader with MethylationDataSet</span>
+<span class="sd">    categorical : type</span>
+<span class="sd">        Categorical or continuous predictions.</span>
+<span class="sd">    cuda : type</span>
+<span class="sd">        GPU?</span>
+<span class="sd">    output_latent : type</span>
+<span class="sd">        Output latent embeddings in addition to predictions?</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Predictions</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Ground truth</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Latent Embeddings</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Sample names.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="c1">#print(model)</span>
+    <span class="n">Y_pred</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">final_latent</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">sample_names_final</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">Y_true</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">sample_names</span><span class="p">,</span> <span class="n">y_true</span> <span class="ow">in</span> <span class="n">loader</span><span class="p">:</span> <span class="c1"># change dataloder for classification/regression tasks</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span><span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">y_true</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+            <span class="c1">#print(inputs.size())</span>
+            <span class="k">if</span> <span class="n">cuda</span><span class="p">:</span>
+                <span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+                <span class="n">y_true</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="n">y_predict</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="n">y_predict</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">y_predict</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+            <span class="n">y_true</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">y_true</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+            <span class="c1">#print(y_predict.shape,y_true.shape)</span>
+            <span class="c1">#print(y_predict,y_true)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_predict</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">y_predict</span><span class="o">=</span><span class="n">y_predict</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">y_true</span><span class="o">=</span><span class="n">y_true</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>  <span class="c1"># FIXME</span>
+            <span class="n">Y_pred</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_predict</span><span class="p">)</span>
+            <span class="n">final_latent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()))</span>
+            <span class="n">sample_names_final</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sample_names</span><span class="p">])</span>
+            <span class="n">Y_true</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y_pred</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="n">Y_pred</span><span class="p">))):</span>
+            <span class="n">Y_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">Y_pred</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Y_pred</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">Y_pred</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Y_pred</span> <span class="o">=</span> <span class="n">Y_pred</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Y_pred</span><span class="p">))</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">:</span>
+            <span class="n">Y_pred</span><span class="o">=</span><span class="n">Y_pred</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">final_latent</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+
+        <span class="n">final_latent</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">final_latent</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">final_latent</span> <span class="o">=</span> <span class="n">final_latent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y_true</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="n">Y_true</span><span class="p">))):</span>
+            <span class="n">Y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">Y_true</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Y_true</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">Y_true</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Y_true</span> <span class="o">=</span> <span class="n">Y_true</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Y_true</span><span class="p">))</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">:</span>
+            <span class="n">Y_true</span><span class="o">=</span><span class="n">Y_true</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">Y_pred</span><span class="p">,</span><span class="n">Y_true</span><span class="p">)</span>
+    <span class="c1">#print(np.hstack([Y_pred,Y_true]))</span>
+    <span class="n">sample_names_final</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sample_names_final</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">output_latent</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Y_pred</span><span class="p">,</span> <span class="n">Y_true</span><span class="p">,</span> <span class="n">final_latent</span><span class="p">,</span> <span class="n">sample_names_final</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Y_pred</span></div>
+
+<div class="viewcode-block" id="train_decoder_"><a class="viewcode-back" href="../../index.html#methylnet.models.train_decoder_">[docs]</a><span class="k">def</span> <span class="nf">train_decoder_</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Run if retraining decoder to adjust for adjusted latent embeddings during finetuning of embedding layers for VAE_MLP.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : type</span>
+<span class="sd">        VAE_MLP model.</span>
+<span class="sd">    x : type</span>
+<span class="sd">        Input methylation data.</span>
+<span class="sd">    z : type</span>
+<span class="sd">        Latent Embeddings</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nn.Module</span>
+<span class="sd">        VAE_MLP module with updated decoder parameters.</span>
+<span class="sd">    float</span>
+<span class="sd">        Reconstruction loss over all batches.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">vae</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">vae</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BCELoss</span><span class="p">(</span><span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
+    <span class="n">x_hat</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">x_hat</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">([]):</span>
+        <span class="n">x_hat</span> <span class="o">=</span> <span class="p">[</span><span class="n">x_hat</span><span class="p">]</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">loss_func</span><span class="p">(</span><span class="n">x_h</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x_h</span> <span class="ow">in</span> <span class="n">x_hat</span><span class="p">])</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">vae</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="val_decoder_"><a class="viewcode-back" href="../../index.html#methylnet.models.val_decoder_">[docs]</a><span class="k">def</span> <span class="nf">val_decoder_</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Validation Loss over decoder.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : type</span>
+<span class="sd">        VAE_MLP model.</span>
+<span class="sd">    x : type</span>
+<span class="sd">        Input methylation data.</span>
+<span class="sd">    z : type</span>
+<span class="sd">        Latent Embeddings</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        Reconstruction loss over all batches.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">vae</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BCELoss</span><span class="p">(</span><span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
+    <span class="n">x_hat</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">x_hat</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">([]):</span>
+        <span class="n">x_hat</span> <span class="o">=</span> <span class="p">[</span><span class="n">x_hat</span><span class="p">]</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">loss_func</span><span class="p">(</span><span class="n">x_h</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x_h</span> <span class="ow">in</span> <span class="n">x_hat</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MLPFinetuneVAE"><a class="viewcode-back" href="../../index.html#methylnet.models.MLPFinetuneVAE">[docs]</a><span class="k">class</span> <span class="nc">MLPFinetuneVAE</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Wraps VAE_MLP pytorch module into scikit-learn interface with fit, predict and fit_predict methods for ease-of-use model training/evaluation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mlp_model : type</span>
+<span class="sd">        VAE_MLP model.</span>
+<span class="sd">    n_epochs : type</span>
+<span class="sd">        Number epochs train for.</span>
+<span class="sd">    loss_fn : type</span>
+<span class="sd">        Loss function, pytorch, CrossEntropy, BCE, MSE depending on outcome.</span>
+<span class="sd">    optimizer_vae : type</span>
+<span class="sd">        Optimizer for VAE layers for finetuning original pretrained network.</span>
+<span class="sd">    optimizer_mlp : type</span>
+<span class="sd">        Optimizer for new appended MLP layers.</span>
+<span class="sd">    cuda : type</span>
+<span class="sd">        GPU?</span>
+<span class="sd">    categorical : type</span>
+<span class="sd">        Classification or regression outcome?</span>
+<span class="sd">    scheduler_opts : type</span>
+<span class="sd">        Options for learning rate scheduler, modulates learning rates for VAE and MLP.</span>
+<span class="sd">    output_latent : type</span>
+<span class="sd">        Whether to output latent embeddings during evaluation.</span>
+<span class="sd">    train_decoder : type</span>
+<span class="sd">        Retrain decoder to adjust for finetuning of VAE?</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : type</span>
+<span class="sd">        VAE_MLP.</span>
+<span class="sd">    scheduler_vae : type</span>
+<span class="sd">        Learning rate modulator for VAE optimizer.</span>
+<span class="sd">    scheduler_mlp : type</span>
+<span class="sd">        Learning rate modulator for MLP optimizer.</span>
+<span class="sd">    loss_plt_fname : type</span>
+<span class="sd">        File where to plot loss over time; defunct.</span>
+<span class="sd">    embed_interval : type</span>
+<span class="sd">        How often to return embeddings; defunct.</span>
+<span class="sd">    validation_set : type</span>
+<span class="sd">        Validation set used for hyperparameter tuning and early stopping criteria for generalization.</span>
+<span class="sd">    return_latent : type</span>
+<span class="sd">        Return embedding during evaluation?</span>
+<span class="sd">    n_epochs</span>
+<span class="sd">    loss_fn</span>
+<span class="sd">    optimizer_vae</span>
+<span class="sd">    optimizer_mlp</span>
+<span class="sd">    cuda</span>
+<span class="sd">    categorical</span>
+<span class="sd">    output_latent</span>
+<span class="sd">    train_decoder</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mlp_model</span><span class="p">,</span> <span class="n">n_epochs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">loss_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimizer_vae</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimizer_mlp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{},</span> <span class="n">output_latent</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">train_decoder</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">=</span><span class="n">mlp_model</span>
+        <span class="c1">#print(self.model)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vae</span><span class="o">.</span><span class="n">cuda_on</span> <span class="o">=</span> <span class="n">cuda</span>
+        <span class="k">if</span> <span class="n">cuda</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="c1">#self.model.vae = self.model.vae.cuda()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span> <span class="o">=</span> <span class="n">n_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span> <span class="o">=</span> <span class="n">loss_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_vae</span> <span class="o">=</span> <span class="n">optimizer_vae</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_mlp</span> <span class="o">=</span> <span class="n">optimizer_mlp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cuda</span> <span class="o">=</span> <span class="n">cuda</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_vae</span><span class="o">!=</span><span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_mlp</span><span class="o">!=</span><span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_vae</span> <span class="o">=</span> <span class="n">Scheduler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_vae</span><span class="p">,</span><span class="n">scheduler_opts</span><span class="p">)</span> <span class="k">if</span> <span class="n">scheduler_opts</span> <span class="k">else</span> <span class="n">Scheduler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_vae</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_mlp</span> <span class="o">=</span> <span class="n">Scheduler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_mlp</span><span class="p">,</span><span class="n">scheduler_opts</span><span class="p">)</span> <span class="k">if</span> <span class="n">scheduler_opts</span> <span class="k">else</span> <span class="n">Scheduler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_mlp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_vae</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_mlp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_plt_fname</span><span class="o">=</span><span class="s1">&#39;loss.png&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embed_interval</span><span class="o">=</span><span class="mi">200</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">return_latent</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">categorical</span> <span class="o">=</span> <span class="n">categorical</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_latent</span> <span class="o">=</span> <span class="n">output_latent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_decoder</span> <span class="o">=</span> <span class="n">train_decoder</span> <span class="c1"># FIXME add loss for decoder if selecting this option and freeze other weights when updating decoder, also change forward function to include reconstruction, change back when done</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_fn</span> <span class="o">=</span> <span class="n">train_mlp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_fn</span> <span class="o">=</span> <span class="n">val_mlp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_fn</span> <span class="o">=</span> <span class="n">test_mlp</span>
+
+<div class="viewcode-block" id="MLPFinetuneVAE.fit"><a class="viewcode-back" href="../../index.html#methylnet.models.MLPFinetuneVAE.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fit MLP to training data to make predictions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        train_data : type</span>
+<span class="sd">            DataLoader with Training MethylationDataset.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self</span>
+<span class="sd">            MLPFinetuneVAE with updated parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">loss_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">best_model</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">plt_data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;loss&#39;</span><span class="p">:[],</span><span class="s1">&#39;lr_vae&#39;</span><span class="p">:[],</span><span class="s1">&#39;lr_mlp&#39;</span><span class="p">:[],</span> <span class="s1">&#39;val_loss&#39;</span><span class="p">:[]}</span>
+        <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+            <span class="n">model</span><span class="p">,</span> <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_fn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_vae</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_mlp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda</span><span class="p">,</span><span class="n">categorical</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">categorical</span><span class="p">,</span> <span class="n">train_decoder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">train_decoder</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_vae</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_mlp</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Epoch </span><span class="si">{}</span><span class="s2">: Loss </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span><span class="n">loss</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span><span class="p">:</span>
+                <span class="n">model</span><span class="p">,</span> <span class="n">val_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_fn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda</span><span class="p">,</span><span class="n">categorical</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">categorical</span><span class="p">,</span> <span class="n">train_decoder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">train_decoder</span><span class="p">)</span>
+                <span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val_loss</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Epoch </span><span class="si">{}</span><span class="s2">: Val-Loss </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span><span class="n">val_loss</span><span class="p">))</span>
+            <span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;lr_vae&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_vae</span><span class="o">.</span><span class="n">get_lr</span><span class="p">())</span>
+            <span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;lr_mlp&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_mlp</span><span class="o">.</span><span class="n">get_lr</span><span class="p">())</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span> <span class="k">else</span> <span class="n">val_loss</span>
+            <span class="n">loss_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">loss</span> <span class="o">&lt;=</span> <span class="nb">min</span><span class="p">(</span><span class="n">loss_list</span><span class="p">):</span> <span class="c1"># next get models for lowest reconstruction and kl, 3 models</span>
+                <span class="n">best_model</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+                <span class="n">best_epoch</span><span class="o">=</span><span class="n">epoch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_plot_data</span><span class="o">=</span><span class="n">plt_data</span>
+        <span class="k">if</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">plts</span><span class="o">=</span><span class="n">Plotter</span><span class="p">([</span><span class="n">Plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="s1">&#39;epoch&#39;</span><span class="p">,</span><span class="s1">&#39;lr&#39;</span> <span class="k">if</span> <span class="s1">&#39;loss&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">k</span> <span class="k">else</span> <span class="n">k</span><span class="p">,</span>
+                          <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">plt_data</span><span class="p">[</span><span class="n">k</span><span class="p">])),</span><span class="n">plt_data</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                                       <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span><span class="s1">&#39;y&#39;</span><span class="p">]))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">plt_data</span> <span class="k">if</span> <span class="n">plt_data</span><span class="p">[</span><span class="n">k</span><span class="p">]],</span><span class="n">animation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">plts</span><span class="o">.</span><span class="n">write_plots</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_plt_fname</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_loss</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_val_loss</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">plt_data</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_val_loss</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_epoch</span> <span class="o">=</span> <span class="n">best_epoch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">best_model</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="MLPFinetuneVAE.add_validation_set"><a class="viewcode-back" href="../../index.html#methylnet.models.MLPFinetuneVAE.add_validation_set">[docs]</a>    <span class="k">def</span> <span class="nf">add_validation_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validation_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add validation data to reduce overfitting.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        validation_data : type</span>
+<span class="sd">            Validation Dataloader MethylationDataset.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validation_set</span><span class="o">=</span><span class="n">validation_data</span></div>
+
+<div class="viewcode-block" id="MLPFinetuneVAE.predict"><a class="viewcode-back" href="../../index.html#methylnet.models.MLPFinetuneVAE.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Short summary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        test_data : type</span>
+<span class="sd">            Test DataLoader MethylationDataset.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.array</span>
+<span class="sd">            Predictions</span>
+<span class="sd">        np.array</span>
+<span class="sd">            Ground truth</span>
+<span class="sd">        np.array</span>
+<span class="sd">            Latent Embeddings</span>
+<span class="sd">        np.array</span>
+<span class="sd">            Sample names.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">test_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">categorical</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_latent</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="VAE_MLP"><a class="viewcode-back" href="../../index.html#methylnet.models.VAE_MLP">[docs]</a><span class="k">class</span> <span class="nc">VAE_MLP</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;VAE_MLP, pytorch module used to both finetune VAE embeddings and simultaneously train downstream MLP layers for classification/regression tasks.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vae_model : type</span>
+<span class="sd">        VAE pytorch model for methylation data.</span>
+<span class="sd">    n_output : type</span>
+<span class="sd">        Number of outputs at end of model.</span>
+<span class="sd">    categorical : type</span>
+<span class="sd">        Classification or regression problem?</span>
+<span class="sd">    hidden_layer_topology : type</span>
+<span class="sd">        Hidden Layer topology, list of size number of hidden layers for MLP and each element contains number of neurons per layer.</span>
+<span class="sd">    dropout_p : type</span>
+<span class="sd">        Apply dropout regularization to reduce overfitting.</span>
+<span class="sd">    add_softmax : type</span>
+<span class="sd">        Softmax the output before evaluation.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vae : type</span>
+<span class="sd">        Pytorch VAE module.</span>
+<span class="sd">    topology : type</span>
+<span class="sd">        List with hidden layer topology of MLP.</span>
+<span class="sd">    mlp_layers : type</span>
+<span class="sd">        All MLP layers (# layers and neurons per layer)</span>
+<span class="sd">    output_layer : type</span>
+<span class="sd">        nn.Linear connecting last MLP layer and output nodes.</span>
+<span class="sd">    mlp : type</span>
+<span class="sd">        nn.Sequential wraps all layers into sequential ordered pytorch module.</span>
+<span class="sd">    output_z : type</span>
+<span class="sd">        Whether to output latent embeddings.</span>
+<span class="sd">    n_output</span>
+<span class="sd">    categorical</span>
+<span class="sd">    add_softmax</span>
+<span class="sd">    dropout_p</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># add ability to train decoderF</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vae_model</span><span class="p">,</span> <span class="n">n_output</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">hidden_layer_topology</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">],</span> <span class="n">dropout_p</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">add_softmax</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VAE_MLP</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vae</span> <span class="o">=</span> <span class="n">vae_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_output</span> <span class="o">=</span> <span class="n">n_output</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">categorical</span> <span class="o">=</span> <span class="n">categorical</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_softmax</span> <span class="o">=</span> <span class="n">add_softmax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topology</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">vae</span><span class="o">.</span><span class="n">n_latent</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">hidden_layer_topology</span> <span class="k">if</span> <span class="n">hidden_layer_topology</span> <span class="k">else</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mlp_layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout_p</span><span class="o">=</span><span class="n">dropout_p</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">topology</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">topology</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">topology</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">topology</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mlp_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span><span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dropout_p</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">topology</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">n_output</span><span class="p">)</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_layer</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mlp_layers</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">output_layer</span><span class="p">]</span><span class="o">+</span><span class="p">([</span><span class="n">nn</span><span class="o">.</span><span class="n">Softmax</span><span class="p">()]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_softmax</span> <span class="k">else</span> <span class="p">[]))</span><span class="c1">#+([nn.LogSoftmax()] if self.categorical else []))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp_layers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_z</span><span class="o">=</span><span class="kc">False</span>
+
+<div class="viewcode-block" id="VAE_MLP.forward"><a class="viewcode-back" href="../../index.html#methylnet.models.VAE_MLP.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass data in to return predictions and embeddings.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : type</span>
+<span class="sd">            Input data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.tensor</span>
+<span class="sd">            Predictions</span>
+<span class="sd">        torch.tensor</span>
+<span class="sd">            Embeddings</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">z</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vae</span><span class="o">.</span><span class="n">get_latent_z</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span><span class="p">(</span><span class="n">z</span><span class="p">),</span> <span class="n">z</span></div>
+
+<div class="viewcode-block" id="VAE_MLP.decode"><a class="viewcode-back" href="../../index.html#methylnet.models.VAE_MLP.decode">[docs]</a>    <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">z</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Run VAE decoder on embeddings.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        z : type</span>
+<span class="sd">            Embeddings.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.tensor</span>
+<span class="sd">            Reconstructed Input.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vae</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">z</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VAE_MLP.forward_embed"><a class="viewcode-back" href="../../index.html#methylnet.models.VAE_MLP.forward_embed">[docs]</a>    <span class="k">def</span> <span class="nf">forward_embed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return predictions, latent embeddings and reconstructed input.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : type</span>
+<span class="sd">            Input data</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.tensor</span>
+<span class="sd">            Predictions</span>
+<span class="sd">        torch.tensor</span>
+<span class="sd">            Embeddings</span>
+<span class="sd">        torch.tensor</span>
+<span class="sd">            Reconstructed input.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vae</span><span class="o">.</span><span class="n">get_latent_z</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">recon</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vae</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="n">out</span><span class="p">,</span> <span class="n">recon</span></div>
+
+<div class="viewcode-block" id="VAE_MLP.toggle_latent_z"><a class="viewcode-back" href="../../index.html#methylnet.models.VAE_MLP.toggle_latent_z">[docs]</a>    <span class="k">def</span> <span class="nf">toggle_latent_z</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Toggle whether to output latent embeddings during forward pass.        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_z</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_z</span><span class="o">=</span><span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_z</span><span class="o">=</span><span class="kc">True</span></div>
+
+<div class="viewcode-block" id="VAE_MLP.forward_predict"><a class="viewcode-back" href="../../index.html#methylnet.models.VAE_MLP.forward_predict">[docs]</a>    <span class="k">def</span> <span class="nf">forward_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make predictions, based on output_z, either output predictions or output embeddings.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : type</span>
+<span class="sd">            Input Data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.tensor</span>
+<span class="sd">            Predictions or embeddings.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_z</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vae</span><span class="o">.</span><span class="n">get_latent_z</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vae</span><span class="o">.</span><span class="n">get_latent_z</span><span class="p">(</span><span class="n">x</span><span class="p">))</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Joshua Levy
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

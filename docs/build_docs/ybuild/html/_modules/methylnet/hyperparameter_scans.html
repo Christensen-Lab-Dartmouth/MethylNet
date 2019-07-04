@@ -1,0 +1,400 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>methylnet.hyperparameter_scans &mdash; MethylNet 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> MethylNet
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MethylNet</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>methylnet.hyperparameter_scans</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for methylnet.hyperparameter_scans</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">hyperparameter_scans.py</span>
+<span class="sd">=======================</span>
+<span class="sd">Run randomized grid search to find ideal model hyperparameters, with possible deployments to batch system for scalability.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span><span class="o">,</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">methylnet.torque_jobs</span> <span class="k">import</span> <span class="n">assemble_run_torque</span>
+
+<div class="viewcode-block" id="find_top_jobs"><a class="viewcode-back" href="../../index.html#methylnet.hyperparameter_scans.find_top_jobs">[docs]</a><span class="k">def</span> <span class="nf">find_top_jobs</span><span class="p">(</span><span class="n">hyperparameter_input_csv</span><span class="p">,</span><span class="n">hyperparameter_output_log</span><span class="p">,</span> <span class="n">n_top_jobs</span><span class="p">,</span> <span class="n">crossover_p</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">val_loss_column</span><span class="o">=</span><span class="s1">&#39;min_val_loss&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Finds top performing jobs from hyper parameter scan to rerun and cross-over parameters.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    hyperparameter_input_csv : str</span>
+<span class="sd">        CSV file containing hyperparameter inputs.</span>
+<span class="sd">    hyperparameter_output_log : str</span>
+<span class="sd">        CSV file containing prior runs.</span>
+<span class="sd">    n_top_jobs : int</span>
+<span class="sd">        Number of top jobs to select</span>
+<span class="sd">    crossover_p : float</span>
+<span class="sd">        Rate of cross over of reused hyperparameters</span>
+<span class="sd">    val_loss_column : str</span>
+<span class="sd">        Loss column used to select top jobs</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        List of list of new parameters for jobs to run.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">custom_jobs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">hyperparameter_input_csv</span><span class="p">)</span>
+    <span class="n">hyperparam_output</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">hyperparameter_output_log</span><span class="p">)[[</span><span class="s1">&#39;job_name&#39;</span><span class="p">,</span><span class="n">val_loss_column</span><span class="p">]]</span>
+    <span class="n">best_outputs</span> <span class="o">=</span> <span class="n">hyperparam_output</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">val_loss_column</span><span class="p">,</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="n">n_top_jobs</span><span class="p">,:]</span>
+    <span class="n">custom_jobs</span> <span class="o">=</span> <span class="n">custom_jobs</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">custom_jobs</span><span class="p">[</span><span class="s1">&#39;--job_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="n">best_outputs</span><span class="p">[</span><span class="s1">&#39;job_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">custom_jobs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span> <span class="ow">and</span> <span class="n">best_outputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">custom_jobs</span> <span class="o">=</span> <span class="n">best_outputs</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;--</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">):</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">best_outputs</span><span class="p">)})[</span><span class="nb">list</span><span class="p">(</span><span class="n">custom_jobs</span><span class="p">)]</span>
+        <span class="n">custom_jobs</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;--hidden_layer_topology&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">custom_jobs</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;--hidden_layer_topology&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;]&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span>
+    <span class="n">custom_jobs</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;--job_name&#39;</span><span class="p">]</span><span class="o">=</span><span class="s1">&#39;False&#39;</span>
+    <span class="k">if</span> <span class="n">crossover_p</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">custom_jobs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">vals</span><span class="o">=</span><span class="n">custom_jobs</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">custom_jobs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">crossover_p</span><span class="p">:</span>
+                    <span class="n">custom_jobs</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">custom_jobs</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="replace_grid"><a class="viewcode-back" href="../../index.html#methylnet.hyperparameter_scans.replace_grid">[docs]</a><span class="k">def</span> <span class="nf">replace_grid</span><span class="p">(</span><span class="n">old_grid</span><span class="p">,</span> <span class="n">new_grid</span><span class="p">,</span> <span class="n">topology_grid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Replaces old hyperparameter search grid with one supplied by YAML.&quot;&quot;&quot;</span>
+    <span class="c1">#print(old_grid,new_grid)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">new_grid</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;topology_grid&#39;</span><span class="p">:</span>
+            <span class="n">old_grid</span><span class="p">[</span><span class="s2">&quot;--</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span> <span class="o">=</span> <span class="n">new_grid</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s1">&#39;topology_grid&#39;</span> <span class="ow">in</span> <span class="n">new_grid</span><span class="p">:</span>
+        <span class="n">topology_grid</span> <span class="o">=</span> <span class="n">new_grid</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;topology_grid&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">old_grid</span><span class="p">,</span> <span class="n">topology_grid</span></div>
+
+<div class="viewcode-block" id="generate_topology"><a class="viewcode-back" href="../../index.html#methylnet.hyperparameter_scans.generate_topology">[docs]</a><span class="k">def</span> <span class="nf">generate_topology</span><span class="p">(</span><span class="n">topology_grid</span><span class="p">,</span> <span class="n">probability_decay_factor</span><span class="o">=</span><span class="mf">0.9</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generates list denoting neural network topology, list of hidden layer sizes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    topology_grid : list</span>
+<span class="sd">        List of different hidden layer sizes (number neurons) to choose from.</span>
+<span class="sd">    probability_decay_factor : float</span>
+<span class="sd">        Degree of neural network model complexity for hyperparameter search. Search for less wide networks with a lower complexity value, bounded between 0 and infinity.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        List of hidden layer sizes.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">probability_decay_factor</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">probability_decay_factor</span><span class="p">,</span><span class="mf">0.</span><span class="p">))</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">probability_decay_factor</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">topology_grid</span><span class="p">))</span>
+    <span class="n">p</span> <span class="o">/=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">n_layer_attempts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">probability_decay_factor</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">n_layer_attempts</span><span class="p">:</span>
+        <span class="n">topology</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">topology_grid</span><span class="p">,</span><span class="n">n_layer_attempts</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">)))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">topology</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span> <span class="n">topology</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="n">topology</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span></div>
+
+<div class="viewcode-block" id="coarse_scan"><a class="viewcode-back" href="../../index.html#methylnet.hyperparameter_scans.coarse_scan">[docs]</a><span class="k">def</span> <span class="nf">coarse_scan</span><span class="p">(</span><span class="n">hyperparameter_input_csv</span><span class="p">,</span> <span class="n">hyperparameter_output_log</span><span class="p">,</span> <span class="n">generate_input</span><span class="p">,</span> <span class="n">job_chunk_size</span><span class="p">,</span> <span class="n">stratify_column</span><span class="p">,</span> <span class="n">reset_all</span><span class="p">,</span> <span class="n">torque</span><span class="p">,</span> <span class="n">gpu</span><span class="p">,</span> <span class="n">gpu_node</span><span class="p">,</span> <span class="n">nohup</span><span class="p">,</span> <span class="n">mlp</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">custom_jobs</span><span class="o">=</span><span class="p">[],</span> <span class="n">model_complexity_factor</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">set_beta</span><span class="o">=-</span><span class="mf">1.</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_softmax</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">additional_command</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">new_grid</span> <span class="o">=</span> <span class="p">{}):</span>
+    <span class="sd">&quot;&quot;&quot;Perform randomized hyperparameter grid search</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    hyperparameter_input_csv : type</span>
+<span class="sd">        CSV file containing hyperparameter inputs.</span>
+<span class="sd">    hyperparameter_output_log : type</span>
+<span class="sd">        CSV file containing prior runs.</span>
+<span class="sd">    generate_input : type</span>
+<span class="sd">        Generate hyperparameter input csv.</span>
+<span class="sd">    job_chunk_size : type</span>
+<span class="sd">        Number of jobs to be launched at same time.</span>
+<span class="sd">    stratify_column : type</span>
+<span class="sd">        Performing classification?</span>
+<span class="sd">    reset_all : type</span>
+<span class="sd">        Rerun all jobs previously scanned.</span>
+<span class="sd">    torque : type</span>
+<span class="sd">        Run jobs using torque.</span>
+<span class="sd">    gpu : type</span>
+<span class="sd">        What GPU to use, set to -1 to be agnostic to GPU selection.</span>
+<span class="sd">    gpu_node : type</span>
+<span class="sd">        What GPU to use, set to -1 to be agnostic to GPU selection, for torque submission.</span>
+<span class="sd">    nohup : type</span>
+<span class="sd">        Launch jobs using nohup.</span>
+<span class="sd">    mlp : type</span>
+<span class="sd">        If running prediction job (classification/regression) after VAE.</span>
+<span class="sd">    custom_jobs : type</span>
+<span class="sd">        Supply custom job parameters to be run.</span>
+<span class="sd">    model_complexity_factor : type</span>
+<span class="sd">        Degree of neural network model complexity for hyperparameter search. Search for less wide networks with a lower complexity value, bounded between 0 and infinity.</span>
+<span class="sd">    set_beta : type</span>
+<span class="sd">        Don&#39;t hyperparameter scan over beta (KL divergence weight), and set it to value.</span>
+<span class="sd">    n_jobs : type</span>
+<span class="sd">        Number of jobs to generate.</span>
+<span class="sd">    categorical : type</span>
+<span class="sd">        Classification task?</span>
+<span class="sd">    add_softmax : type</span>
+<span class="sd">        Add softmax layer at end of neural network.</span>
+<span class="sd">    cuda : type</span>
+<span class="sd">        Whether to use GPU?</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">cycle</span>
+    <span class="kn">from</span> <span class="nn">pathos.multiprocessing</span> <span class="k">import</span> <span class="n">ProcessingPool</span> <span class="k">as</span> <span class="n">Pool</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">hyperparameter_input_csv</span><span class="p">[:</span><span class="n">hyperparameter_input_csv</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)],</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">generated_input</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+    <span class="k">if</span> <span class="n">mlp</span><span class="p">:</span>
+        <span class="n">grid</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;--learning_rate_vae&#39;</span><span class="p">:[</span><span class="mf">1e-5</span><span class="p">,</span><span class="mf">5e-5</span><span class="p">,</span><span class="mf">1e-4</span><span class="p">,</span><span class="mf">5e-4</span><span class="p">,</span><span class="mf">1e-3</span><span class="p">,</span><span class="mf">5e-3</span><span class="p">,</span><span class="mf">1e-2</span><span class="p">,</span><span class="mf">5e-2</span><span class="p">,</span><span class="mf">1e-1</span><span class="p">],</span><span class="s1">&#39;--learning_rate_mlp&#39;</span><span class="p">:[</span><span class="mf">1e-5</span><span class="p">,</span><span class="mf">5e-5</span><span class="p">,</span><span class="mf">1e-4</span><span class="p">,</span><span class="mf">5e-4</span><span class="p">,</span><span class="mf">1e-3</span><span class="p">,</span><span class="mf">5e-3</span><span class="p">,</span><span class="mf">1e-2</span><span class="p">,</span><span class="mf">5e-2</span><span class="p">,</span><span class="mf">1e-1</span><span class="p">,</span><span class="mf">5e-1</span><span class="p">],</span>
+              <span class="s1">&#39;--weight_decay&#39;</span><span class="p">:[</span><span class="mf">1e-4</span><span class="p">],</span><span class="s1">&#39;--n_epochs&#39;</span><span class="p">:[</span><span class="mi">25</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">75</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">200</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">700</span><span class="p">],</span> <span class="s1">&#39;--scheduler&#39;</span><span class="p">:[</span><span class="s1">&#39;warm_restarts&#39;</span><span class="p">,</span><span class="s1">&#39;null&#39;</span><span class="p">],</span> <span class="s1">&#39;--t_max&#39;</span><span class="p">:[</span><span class="mi">10</span><span class="p">],</span>
+              <span class="s1">&#39;--eta_min&#39;</span><span class="p">:[</span><span class="mf">1e-7</span><span class="p">,</span><span class="mf">1e-6</span><span class="p">],</span> <span class="s1">&#39;--t_mult&#39;</span><span class="p">:[</span><span class="mf">1.</span><span class="p">,</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">1.5</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span>
+              <span class="s1">&#39;--batch_size&#39;</span><span class="p">:[</span><span class="mi">50</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">],</span> <span class="s1">&#39;--dropout_p&#39;</span><span class="p">:[</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.5</span><span class="p">],</span>
+              <span class="s1">&#39;--n_workers&#39;</span><span class="p">:[</span><span class="mi">4</span><span class="p">],</span> <span class="s1">&#39;--loss_reduction&#39;</span><span class="p">:[</span><span class="s1">&#39;sum&#39;</span><span class="p">]}</span>
+        <span class="n">topology_grid</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">200</span><span class="p">,</span><span class="mi">300</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="mi">3000</span><span class="p">,</span><span class="mi">4096</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">grid</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;--n_latent&#39;</span><span class="p">:[</span><span class="mi">100</span><span class="p">,</span><span class="mi">150</span><span class="p">,</span><span class="mi">200</span><span class="p">,</span><span class="mi">300</span><span class="p">,</span><span class="mi">500</span><span class="p">],</span>
+              <span class="s1">&#39;--learning_rate&#39;</span><span class="p">:[</span><span class="mf">5e-5</span><span class="p">,</span><span class="mf">1e-4</span><span class="p">,</span><span class="mf">5e-4</span><span class="p">,</span><span class="mf">1e-3</span><span class="p">,</span><span class="mf">5e-3</span><span class="p">,</span><span class="mf">1e-2</span><span class="p">,</span><span class="mf">5e-2</span><span class="p">,</span><span class="mf">1e-1</span><span class="p">],</span>
+              <span class="s1">&#39;--weight_decay&#39;</span><span class="p">:[</span><span class="mf">1e-4</span><span class="p">],</span><span class="s1">&#39;--n_epochs&#39;</span><span class="p">:[</span><span class="mi">25</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">75</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">200</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">700</span><span class="p">],</span>
+              <span class="s1">&#39;--kl_warm_up&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">],</span> <span class="s1">&#39;--beta&#39;</span><span class="p">:[</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">200</span><span class="p">,</span><span class="mi">500</span><span class="p">]</span> <span class="k">if</span> <span class="n">set_beta</span> <span class="o">==</span> <span class="o">-</span><span class="mf">1.</span> <span class="k">else</span> <span class="p">[</span><span class="n">set_beta</span><span class="p">],</span>
+              <span class="s1">&#39;--scheduler&#39;</span><span class="p">:[</span><span class="s1">&#39;warm_restarts&#39;</span><span class="p">,</span><span class="s1">&#39;null&#39;</span><span class="p">],</span> <span class="s1">&#39;--t_max&#39;</span><span class="p">:[</span><span class="mi">10</span><span class="p">],</span>
+              <span class="s1">&#39;--eta_min&#39;</span><span class="p">:[</span><span class="mf">1e-7</span><span class="p">,</span><span class="mf">1e-6</span><span class="p">],</span> <span class="s1">&#39;--t_mult&#39;</span><span class="p">:[</span><span class="mf">1.</span><span class="p">,</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">1.5</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span>
+              <span class="s1">&#39;--batch_size&#39;</span><span class="p">:[</span><span class="mi">50</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">],</span>
+              <span class="s1">&#39;--n_workers&#39;</span><span class="p">:[</span><span class="mi">4</span><span class="p">],</span> <span class="s1">&#39;--loss_reduction&#39;</span><span class="p">:[</span><span class="s1">&#39;sum&#39;</span><span class="p">]}</span>
+        <span class="n">topology_grid</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">200</span><span class="p">,</span><span class="mi">300</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">2000</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">new_grid</span><span class="p">:</span>
+        <span class="n">grid</span><span class="p">,</span><span class="n">topology_grid</span><span class="o">=</span><span class="n">replace_grid</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span><span class="n">new_grid</span><span class="p">,</span><span class="n">topology_grid</span><span class="p">)</span>
+    <span class="n">grid</span><span class="p">[</span><span class="s1">&#39;--hidden_layer_topology&#39;</span> <span class="k">if</span> <span class="n">mlp</span> <span class="k">else</span> <span class="s1">&#39;--hidden_layer_encoder_topology&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="n">generate_topology</span><span class="p">(</span><span class="n">topology_grid</span><span class="p">,</span><span class="n">probability_decay_factor</span><span class="o">=</span><span class="n">model_complexity_factor</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">40</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">generate_input</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_jobs</span><span class="p">):</span>
+            <span class="n">generated_input</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s1">&#39;False&#39;</span><span class="p">]</span><span class="o">+</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">grid</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">grid</span><span class="p">])</span>
+        <span class="n">generated_input</span><span class="o">=</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">generated_input</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;--job_name&#39;</span><span class="p">]</span><span class="o">+</span><span class="nb">list</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">keys</span><span class="p">()))]</span>
+    <span class="k">if</span> <span class="n">custom_jobs</span><span class="p">:</span>
+        <span class="n">custom_jobs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;--job_name&#39;</span><span class="p">]</span><span class="o">=</span><span class="s1">&#39;False&#39;</span>
+        <span class="n">generated_input</span><span class="o">=</span><span class="n">custom_jobs</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">lower</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">gpu</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">gpus</span><span class="o">=</span><span class="n">cycle</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">gpus</span><span class="o">=</span><span class="n">cycle</span><span class="p">([</span><span class="n">gpu</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">hyperparameter_input_csv</span><span class="p">):</span>
+        <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">hyperparameter_input_csv</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">=</span><span class="p">[</span><span class="n">df</span><span class="p">[[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">col</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Unnamed&#39;</span><span class="p">)]]]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">df</span><span class="o">+</span><span class="n">generated_input</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[[</span><span class="s1">&#39;--job_name&#39;</span><span class="p">]</span><span class="o">+</span><span class="nb">list</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">reset_all</span><span class="p">:</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;--job_name&#39;</span><span class="p">]</span><span class="o">=</span><span class="s1">&#39;False&#39;</span>
+    <span class="n">df_final</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;--job_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">lower</span><span class="p">)</span><span class="o">==</span><span class="s1">&#39;false&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="nb">list</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span>
+    <span class="n">commands</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">df_final</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">job_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100000000</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mlp</span><span class="p">:</span>
+            <span class="n">commands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;sh -c &quot;methylnet-embed perform_embedding -bce </span><span class="si">{}</span><span class="s1"> -v -j </span><span class="si">{}</span><span class="s1"> -hl </span><span class="si">{}</span><span class="s1"> -sc </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> &amp;&amp; pymethyl-visualize transform_plot -i embeddings/vae_methyl_arr.pkl -o visualizations/</span><span class="si">{}</span><span class="s1">_vae_embed.html -c </span><span class="si">{}</span><span class="s1"> -nn 10 &quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;-c&quot;</span> <span class="k">if</span> <span class="n">cuda</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span><span class="n">job_id</span><span class="p">,</span><span class="n">hyperparameter_output_log</span><span class="p">,</span><span class="n">stratify_column</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k2</span><span class="p">,</span><span class="n">df_final</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k2</span><span class="p">])</span> <span class="k">for</span> <span class="n">k2</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">df_final</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">df_final</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k2</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span> <span class="ow">and</span> <span class="n">df_final</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k2</span><span class="p">]</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)]),</span><span class="n">job_id</span><span class="p">,</span><span class="n">stratify_column</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">commands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;sh -c &quot;methylnet-predict make_prediction </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> -v </span><span class="si">{}</span><span class="s1"> -j </span><span class="si">{}</span><span class="s1"> -hl </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> &amp;&amp; </span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;-c&quot;</span> <span class="k">if</span> <span class="n">cuda</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span><span class="s1">&#39;-sft&#39;</span> <span class="k">if</span> <span class="n">add_softmax</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span><span class="s1">&#39;-cat&#39;</span> <span class="k">if</span> <span class="n">categorical</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39; -ic </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">stratify_column</span><span class="p">]),</span><span class="s1">&#39;-do&#39;</span> <span class="k">if</span> <span class="n">stratify_column</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;disease_only&#39;</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">job_id</span><span class="p">,</span><span class="n">hyperparameter_output_log</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k2</span><span class="p">,</span><span class="n">df_final</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k2</span><span class="p">])</span> <span class="k">for</span> <span class="n">k2</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">df_final</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">df_final</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k2</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span> <span class="ow">and</span> <span class="n">df_final</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k2</span><span class="p">]</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)]),</span>
+                                <span class="s1">&#39;&amp;&amp;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot; pymethyl-visualize transform_plot -i predictions/vae_mlp_methyl_arr.pkl -o visualizations/</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">_mlp_embed.html -c </span><span class="si">{}</span><span class="s2"> -nn 8 &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span><span class="n">col</span><span class="p">,</span><span class="n">col</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">stratify_column</span><span class="p">])))</span> <span class="c1">#-do</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">==</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;--job_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">lower</span><span class="p">)</span><span class="o">==</span><span class="s1">&#39;false&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="s1">&#39;--job_name&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">job_id</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">commands</span><span class="p">)):</span>
+        <span class="n">commands</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;CUDA_VISIBLE_DEVICES=&quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">gpus</span><span class="p">))</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">torque</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span><span class="s1">&#39;nohup&#39;</span> <span class="k">if</span> <span class="n">nohup</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">commands</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="s1">&#39;&amp;&#39;</span> <span class="k">if</span> <span class="n">nohup</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="c1"># $gpuNum</span>
+    <span class="k">if</span> <span class="n">torque</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
+            <span class="n">job</span> <span class="o">=</span> <span class="n">assemble_run_torque</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">use_gpu</span><span class="o">=</span><span class="n">cuda</span><span class="p">,</span> <span class="n">additions</span><span class="o">=</span><span class="n">additional_command</span><span class="p">,</span> <span class="n">queue</span><span class="o">=</span><span class="s1">&#39;gpuq&#39;</span> <span class="k">if</span> <span class="n">cuda</span> <span class="k">else</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">ngpu</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">additional_options</span><span class="o">=</span><span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">gpu_node</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="s1">&#39; -l hostlist=g0</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gpu_node</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">commands</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">commands</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">commands</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">commands</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">commands</span><span class="p">)</span><span class="o">//</span><span class="n">job_chunk_size</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">command_list</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">nohup</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">command_list</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+                        <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">command_list</span><span class="p">:</span>
+                        <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="sd">&quot;&quot;&quot;pool = Pool(len(command_list))</span>
+<span class="sd">                    pool.map(run, command_list)</span>
+<span class="sd">                    pool.close()</span>
+<span class="sd">                    pool.join()&quot;&quot;&quot;</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">hyperparameter_input_csv</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Joshua Levy
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
