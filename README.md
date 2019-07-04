@@ -19,9 +19,11 @@ MethylNet is a command line tool and python library that provides classes to han
 
 ![MethylNetPresentationSpring2019Lab 005](https://user-images.githubusercontent.com/19698023/55677384-32bb3d00-58b4-11e9-9275-ee595fb81e0f.jpeg)
 
-NOTE: Images will be updated to reflect latest set of MethylNet commands. Wiki page and biorxiv are coming soon!
+NOTE: Images will be updated to reflect latest set of MethylNet commands.   
 
-Help docs: https://christensen-lab-dartmouth.github.io/MethylNet/
+MethylNet is currently in review, Wiki page and biorxiv are coming soon.  
+
+Help docs: https://christensen-lab-dartmouth.github.io/MethylNet/  
 
 **Install (Conda highly recommended, though Docker can be used):**
 * conda create -n methylnet python=3.6  
@@ -50,9 +52,10 @@ Help docs: https://christensen-lab-dartmouth.github.io/MethylNet/
 
 **Running Test Pipeline:**
 1. docker pull joshualevy44/methylnet:0.1  
-2. sh docker_build.sh  
-3. sh run_docker.sh  
-4. methylnet-test test_pipeline  
+2. Alternative: sh docker_build.sh  
+3. docker run -it joshualevy44/methylnet:0.1  
+4. Alternative: sh run_docker.sh  
+5. methylnet-test test_pipeline  
 
 **Example of Running Pipeline:**  
 See ./example_scripts for examples on how to explicitly run:
