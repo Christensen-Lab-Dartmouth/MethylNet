@@ -21,7 +21,7 @@ MethylNet is a command line tool and python library that provides classes to han
 
 NOTE: Images will be updated to reflect latest set of MethylNet commands.   
 
-MethylNet is currently in review, Wiki page and biorxiv are coming soon.  
+MethylNet is currently in review, Wiki page in progress. Biorxiv can be accessed at: https://www.biorxiv.org/content/10.1101/692665v1   
 
 Help docs: https://christensen-lab-dartmouth.github.io/MethylNet/  
 
