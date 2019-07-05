@@ -4,6 +4,11 @@ Deep Learning with Methylation
 
 MethylNet is a command line tool and python library that provides classes to handle deep learning tasks for methylation data. It is built off of pythonic MethylationArray data types introduced in (https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess), and uses PyTorch to explore/make predictions on the methylation data.  
 
+https://www.biorxiv.org/content/10.1101/692665v1   
+
+Help docs: https://christensen-lab-dartmouth.github.io/MethylNet/  
+
+
 **What MethylNet can do:**  
 1. Extract DNA Methylation Latent Space by training Variational Auto-encoders (VAE) after hyperparameter and neural network topology grid-search.  
 
@@ -26,8 +31,8 @@ MethylNet is currently in review, Wiki page in progress. Biorxiv can be accessed
 Help docs: https://christensen-lab-dartmouth.github.io/MethylNet/  
 
 **Install (Conda highly recommended, though Docker can be used):**
-* conda create -n methylnet python=3.6  
-* source activate methylnet  
+* conda create -n methylnet python=3.6   
+* source activate methylnet   
 * See install instructions for PyMethylProcess at https://github.com/Christensen-Lab-Dartmouth/PyMethylProcess  
 * conda install pytorch torchvision -c pytorch  
 * pip install methylnet  
