@@ -2,7 +2,7 @@ from setuptools import setup
 with open('README.md','r', encoding='utf-8') as f:
       long_description = f.read()
 setup(name='methylnet',
-      version='0.1',
+      version='0.1.2',
       description='A modular deep learning approach for Methylation Predictions.',
       url='https://github.com/Christensen-Lab-Dartmouth/MethylNet',
       author='Joshua Levy',

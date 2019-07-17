@@ -83,7 +83,7 @@ def embed_vae(train_pkl,output_dir,cuda,n_latent,lr,weight_decay,n_epochs,hidden
         num_workers=n_workers,
         batch_size=1,
         shuffle=False)
-    latent_projection, sample_names, _ = auto_encoder.transform(methyl_dataset_loader)
+    latent_projection, _, _ = auto_encoder.transform(methyl_dataset_loader)
     #print(latent_projection.shape)
     methyl_array = methyl_dataset.to_methyl_array()
     #sample_names = np.array([sample_name[0] for sample_name in sample_names]) # FIXME

@@ -15,10 +15,11 @@ def torque():
 @click.option('-q', '--queue', default='default', help='Queue for torque submission, gpuq also a good one if using GPUs.', show_default=True)
 @click.option('-t', '--time', default=1, help='Walltime in hours for job.', show_default=True)
 @click.option('-n', '--ngpu', default=0, help='Number of gpus to request.', show_default=True)
-def run_torque_job(command, use_gpu, additions, queue, time, ngpu):
+@click.option('-ao', '--additional_options', default='', help='Additional options to add for torque run.', type=click.Path(exists=False))
+def run_torque_job(command, use_gpu, additions, queue, time, ngpu, additional_options):
     """Run torque job."""
     replace_dict = assemble_replace_dict(command, use_gpu, additions, queue, time, ngpu)
-    run_torque_job_(replace_dict)
+    run_torque_job_(replace_dict, additional_options)
 
 if __name__ == '__main__':
     torque()

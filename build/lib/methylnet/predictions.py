@@ -125,7 +125,7 @@ def train_predict(train_pkl,test_pkl,input_vae_pkl,output_dir,cuda,interest_cols
         num_workers=9,
         batch_size=1,
         shuffle=False)"""
-    Y_pred, Y_true, latent_projection, sample_names = vae_mlp.predict(test_methyl_dataloader) # FIXME change to include predictions for all classes for AUC
+    Y_pred, Y_true, latent_projection, _ = vae_mlp.predict(test_methyl_dataloader) # FIXME change to include predictions for all classes for AUC
     results['test']['y_pred'], results['test']['y_true'] = copy.deepcopy(Y_pred), copy.deepcopy(Y_true)
     if categorical:
         Y_true=Y_true.argmax(axis=1)[:,np.newaxis]
@@ -242,7 +242,7 @@ def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest
         shuffle=False)
     vae_mlp=MLPFinetuneVAE(mlp_model=model,categorical=categorical,cuda=cuda)
 
-    Y_pred, Y_true, latent_projection, sample_names = vae_mlp.predict(test_methyl_dataloader)
+    Y_pred, Y_true, latent_projection, _ = vae_mlp.predict(test_methyl_dataloader)
 
     results = dict(test={})
     results['test']['y_pred'], results['test']['y_true'] = copy.deepcopy(Y_pred), copy.deepcopy(Y_true)

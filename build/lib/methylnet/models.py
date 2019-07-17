@@ -51,7 +51,7 @@ def train_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_u
     total_loss,total_recon_loss,total_kl_loss=0.,0.,0.
     stop_iter = loader.dataset.length // loader.batch_size
     total_loss,total_recon_loss,total_kl_loss=0.,0.,0.
-    for i,(inputs, _, _) in enumerate(loader):
+    for i,(inputs, _) in enumerate(loader):
         if i == stop_iter:
             break
         inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
@@ -106,7 +106,7 @@ def val_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=
     stop_iter = loader.dataset.length // loader.batch_size
     total_loss,total_recon_loss,total_kl_loss=0.,0.,0.
     with torch.no_grad():
-        for i,(inputs, _, _) in enumerate(loader):
+        for i,(inputs, _) in enumerate(loader):
             if i == stop_iter:
                 break
             inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
@@ -145,21 +145,19 @@ def project_vae(model, loader, cuda=True):
     model.eval()
     #print(model)
     final_outputs=[]
-    sample_names_final=[]
     #outcomes_final=[]
     with torch.no_grad():
-        for inputs, sample_names, outcomes in loader:
+        for inputs, outcomes in loader:
             inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1]) # modify for convolutions, add batchnorm2d?
             if cuda:
                 inputs = inputs.cuda()
             z = np.squeeze(model.get_latent_z(inputs).detach().cpu().numpy())
             final_outputs.append(z)
-            sample_names_final.extend([name[0] for name in sample_names])
             #outcomes_final.extend([outcome[0] for outcome in outcomes])
         z=np.vstack(final_outputs)
-        sample_names=np.array(sample_names_final)
+        #sample_names=np.array(sample_names_final)
         #outcomes=np.array(outcomes_final)
-    return z, sample_names, None#outcomes
+    return z, None, None
 
 class AutoEncoder:
     """Wraps Pytorch VAE module into Scikit-learn like interface for ease of training, validation and testing.
@@ -592,7 +590,7 @@ def train_mlp(model, loader, loss_func, optimizer_vae, optimizer_mlp, cuda=True,
     stop_iter = loader.dataset.length // loader.batch_size
     running_loss=0.
     running_decoder_loss=0.
-    for i,(inputs, samples, y_true) in enumerate(loader): # change dataloder for classification/regression tasks
+    for i,(inputs, y_true) in enumerate(loader): # change dataloder for classification/regression tasks
         #print(samples)
         if inputs.size()[0] == 1 and i == stop_iter:
             break
@@ -653,7 +651,7 @@ def val_mlp(model, loader, loss_func, cuda=True, categorical=False, train_decode
     running_decoder_loss=0.
     running_loss=0.
     with torch.no_grad():
-        for i,(inputs, samples, y_true) in enumerate(loader): # change dataloder for classification/regression tasks
+        for i,(inputs, y_true) in enumerate(loader): # change dataloder for classification/regression tasks
             if inputs.size()[0] == 1 and i == stop_iter:
                 break
             inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
@@ -705,10 +703,9 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
     #print(model)
     Y_pred=[]
     final_latent=[]
-    sample_names_final=[]
     Y_true=[]
     with torch.no_grad():
-        for inputs, sample_names, y_true in loader: # change dataloder for classification/regression tasks
+        for inputs, y_true in loader: # change dataloder for classification/regression tasks
             print(inputs)
             inputs = Variable(inputs).view(inputs.size()[0],inputs.size()[1])
             y_true = Variable(y_true)
@@ -727,7 +724,6 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
                 y_true=y_true.flatten()  # FIXME
             Y_pred.append(y_predict)
             final_latent.append(np.squeeze(z.detach().cpu().numpy()))
-            sample_names_final.extend([name[0] for name in sample_names])
             Y_true.append(y_true)
     if len(Y_pred) > 1:
         if all(list(map(lambda x: len(np.shape(x))<2,Y_pred))):
@@ -739,7 +735,6 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
         if len(np.shape(Y_pred))<2:
             Y_pred=Y_pred[:,np.newaxis]
     if len(final_latent) > 1:
-
         final_latent=np.vstack(final_latent)
     else:
         final_latent = final_latent[0]
@@ -754,9 +749,8 @@ def test_mlp(model, loader, categorical, cuda=True, output_latent=True):
             Y_true=Y_true[:,np.newaxis]
     print(Y_pred,Y_true)
     #print(np.hstack([Y_pred,Y_true]))
-    sample_names_final = np.array(sample_names_final)
     if output_latent:
-        return Y_pred, Y_true, final_latent, sample_names_final
+        return Y_pred, Y_true, final_latent, None
     else:
         return Y_pred
 

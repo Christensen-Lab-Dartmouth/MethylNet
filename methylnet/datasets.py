@@ -186,7 +186,7 @@ class MethylationDataSet(Dataset):
         return MethylationArray(self.methylation_array.pheno,pd.DataFrame(self.methylation_array.beta,index=self.samples,columns=self.features),'')
 
     def __getitem__(self,index):
-        return self.transform.generate()(self.methylation_array.beta[index,:]),self.samples[index],self.outcome_col[index]
+        return self.transform.generate()(self.methylation_array.beta[index,:]),self.outcome_col[index]
         """if self.mlp:
             return self.get_item_mlp(index)
         else:
@@ -243,9 +243,9 @@ class MethylationPredictionDataSet(MethylationDataSet):
         #print(self.outcome_col)
 
     def __getitem__(self,index):
-        return self.transform.generate()(self.methylation_array.beta[index,:]),self.samples[index],torch.FloatTensor(self.outcome_col[index,:])
+        return self.transform.generate()(self.methylation_array.beta[index,:]),torch.FloatTensor(self.outcome_col[index,:])
 
-class MethylationGenerationDataSet(MethylationPredictionDataSet):
+class MethylationGenDataSet(MethylationPredictionDataSet):
     """MethylationArray Torch Dataset that contains instances of methylation array samples to be loaded, specifically targetted for prediction.
 
     Parameters
