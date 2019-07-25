@@ -289,7 +289,8 @@ def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest
 @click.option('-a', '--additional_command', default='', help='Additional command to input for torque run.', type=click.Path(exists=False))
 @click.option('-cu', '--cuda', is_flag=True, help='Use GPUs.')
 @click.option('-grid', '--hyperparameter_yaml', default='', help='YAML file with custom subset of hyperparameter grid.', type=click.Path(exists=False))
-def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column, add_softmax, additional_command, cuda, hyperparameter_yaml):
+@click.option('-rs', '--randomseed', default=42, help='Number of jobs to generate.')
+def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, categorical, reset_all, torque, gpu, gpu_node, nohup, n_jobs_relaunch, crossover_p, model_complexity_factor,n_jobs, val_loss_column, add_softmax, additional_command, cuda, hyperparameter_yaml, randomseed):
     """Run randomized hyperparameter scan of neural network hyperparameters."""
     from methylnet.hyperparameter_scans import coarse_scan, find_top_jobs
     custom_jobs=[]
@@ -301,7 +302,7 @@ def launch_hyperparameter_scan(hyperparameter_input_csv, hyperparameter_output_l
             new_grid = load(f.read())
     else:
         new_grid = {}
-    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs, categorical=categorical,add_softmax=add_softmax, additional_command=additional_command, cuda=cuda, new_grid=new_grid)
+    coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, interest_cols, reset_all, torque, gpu, gpu_node, nohup, mlp=True, custom_jobs=custom_jobs, model_complexity_factor=model_complexity_factor,n_jobs=n_jobs, categorical=categorical,add_softmax=add_softmax, additional_command=additional_command, cuda=cuda, new_grid=new_grid, randomseed=randomseed)
 
 @prediction.command()
 @click.option('-r', '--results_pickle', default='predictions/results.p', show_default=True, help='Results from training, validation, and testing.', type=click.Path(exists=False))

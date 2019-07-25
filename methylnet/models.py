@@ -13,6 +13,11 @@ from sklearn.preprocessing import LabelEncoder
 from pymethylprocess.visualizations import umap_embed, plotly_plot
 import copy
 
+RANDOM_SEED=42
+
+np.random.seed(RANDOM_SEED)
+torch.manual_seed(RANDOM_SEED)
+
 def train_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
     """Function for parameter update during VAE training for one iteration.
 

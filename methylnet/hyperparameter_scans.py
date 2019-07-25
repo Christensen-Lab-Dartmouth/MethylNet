@@ -88,7 +88,7 @@ def generate_topology(topology_grid, probability_decay_factor=0.9):
         return ''
     return ''
 
-def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[], model_complexity_factor=0.9, set_beta=-1., n_jobs=4, categorical=True, add_softmax=False, additional_command = "", cuda=True, new_grid = {}):
+def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_input, job_chunk_size, stratify_column, reset_all, torque, gpu, gpu_node, nohup, mlp=False, custom_jobs=[], model_complexity_factor=0.9, set_beta=-1., n_jobs=4, categorical=True, add_softmax=False, additional_command = "", cuda=True, new_grid = {}, randomseed=42):
     """Perform randomized hyperparameter grid search
 
     Parameters
@@ -132,6 +132,7 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
     """
     from itertools import cycle
     from pathos.multiprocessing import ProcessingPool as Pool
+    np.random.seed(randomseed)
     os.makedirs(hyperparameter_input_csv[:hyperparameter_input_csv.rfind('/')],exist_ok=True)
     generated_input=[]
     np.random.seed(int(time.time()))
