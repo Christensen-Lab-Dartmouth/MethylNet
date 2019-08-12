@@ -71,6 +71,7 @@ COMMAND"""
     with open('torque_job.sh','w') as f:
         f.write(txt)
     job=os.popen("mksub {} {}".format('torque_job.sh',additional_options)).read().strip('\n')
+    print("Submitted job: {}".format(job))
     return job
 
 def assemble_run_torque(command, use_gpu, additions, queue, time, ngpu, additional_options=""):
