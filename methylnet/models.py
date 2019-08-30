@@ -17,6 +17,8 @@ RANDOM_SEED=42
 
 np.random.seed(RANDOM_SEED)
 torch.manual_seed(RANDOM_SEED)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
 
 def train_vae(model, loader, loss_func, optimizer, cuda=True, epoch=0, kl_warm_up=0, beta=1.):
     """Function for parameter update during VAE training for one iteration.
