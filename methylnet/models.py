@@ -347,6 +347,17 @@ class AutoEncoder:
         """
         return self.fit(train_data).transform(train_data)
 
+    def generate(self, train_data):
+        self.model.eval()
+        with torch.no_grad():
+            X_hat=[]
+            for i,(X,_) in enumerate(train_data):
+                if self.cuda:
+                    X=X.cuda()
+                X_hat.append(self.model(X)[0].detach().cpu())
+            X_hat=torch.cat(X_hat,0).numpy()
+        return X_hat
+
 def vae_loss(output, input, mean, logvar, loss_func, epoch, kl_warm_up=0, beta=1.):
     """Function to calculate VAE Loss, Reconstruction Loss + Beta KLLoss.
 

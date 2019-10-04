@@ -146,6 +146,38 @@ def perform_embedding(train_pkl,output_dir,cuda,n_latent,learning_rate,weight_de
     hyperparameter_df.to_csv(hyperparameter_log)
 
 @embed.command()
+@click.option('-i', '--input_pkl', default='./train_val_test_sets/train_methyl_array.pkl', help='Input database for beta and phenotype data.', type=click.Path(exists=False), show_default=True)
+@click.option('-og', '--output_generate_pkl', default='./results/generated_vae_methyl_array.pkl', help='Output pickle for embeddings.', type=click.Path(exists=False), show_default=True)
+@click.option('-oe', '--output_embed_pkl', default='./results/embedding_vae_methyl_array.pkl', help='Output pickle for embeddings.', type=click.Path(exists=False), show_default=True)
+@click.option('-c', '--cuda', is_flag=True, help='Use GPUs.')
+@click.option('-vae', '--input_vae_pkl', default='./embeddings/output_model.p', help='Trained VAE.', type=click.Path(exists=False), show_default=True)
+@click.option('-sc', '--stratify_column', default='disease', show_default=True, help='Column to stratify samples on.', type=click.Path(exists=False))
+@click.option('-w', '--n_workers', default=9, show_default=True, help='Number of workers.')
+@click.option('-bs', '--batch_size', default=50, show_default=True, help='Batch size.')
+def generate_embed(input_pkl, output_generate_pkl, output_embed_pkl, cuda, input_vae_pkl, stratify_column, n_workers, batch_size):
+    import copy
+    os.makedirs(os.path.dirname(output_dir),exist_ok=True)
+    methyl_array = MethylationArray.from_pickle(input_pkl) # generate results pickle to run through classification/regression report
+    if cuda:
+        model = torch.load(input_vae_pkl)
+    else:
+        model = torch.load(input_vae_pkl,map_location='cpu')
+    test_methyl_dataset = get_methylation_dataset(copy.deepcopy(methyl_array),stratify_column)
+    test_methyl_dataloader = DataLoader(
+        dataset=test_methyl_dataset,
+        num_workers=n_workers,
+        batch_size=min(batch_size,len(test_methyl_dataset)),
+        shuffle=False)
+
+    auto_encoder=AutoEncoder(autoencoder_model=model,n_epochs=0,loss_fn=None,optimizer=None,cuda=cuda,kl_warm_up=None,beta=None, scheduler_opts={})
+    Z, _, _=auto_encoder.transform(train_data)
+    X_hat = auto_encoder.generate(test_methyl_dataloader)
+    methyl_array.beta.iloc[:,:]=X_hat
+    methyl_array.write_pickle(output_generate_pkl)
+    methyl_array.beta=pd.DataFrame(Z,index=methyl_array.beta.index)
+    methyl_array.write_pickle(output_embed_pkl)
+
+@embed.command()
 @click.option('-hcsv', '--hyperparameter_input_csv', default='embeddings/embed_hyperparameters_scan_input.csv', show_default=True, help='CSV file containing hyperparameter inputs.', type=click.Path(exists=False))
 @click.option('-hl', '--hyperparameter_output_log', default='embeddings/embed_hyperparameters_log.csv', show_default=True, help='CSV file containing prior runs.', type=click.Path(exists=False))
 @click.option('-g', '--generate_input', is_flag=True, help='Generate hyperparameter input csv.')
