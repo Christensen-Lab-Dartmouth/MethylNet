@@ -7,6 +7,7 @@ Run randomized grid search to find ideal model hyperparameters, with possible de
 import os, pandas as pd, numpy as np, subprocess
 import time
 from methylnet.torque_jobs import assemble_run_torque
+import dask
 
 def find_top_jobs(hyperparameter_input_csv,hyperparameter_output_log, n_top_jobs, crossover_p=0, val_loss_column='min_val_loss'):
 	"""Finds top performing jobs from hyper parameter scan to rerun and cross-over parameters.
@@ -210,8 +211,12 @@ def coarse_scan(hyperparameter_input_csv, hyperparameter_output_log, generate_in
 						print(command)
 						subprocess.call(command,shell=True)
 				else:
-					for command in command_list:
-						subprocess.call(command,shell=True)
+					if job_chunk_size<=1:
+						for command in command_list:
+							subprocess.call(command,shell=True)
+					else:
+						dask.compute(*[dask.delayed(lambda x: subprocess.call(x,shell=True))(command) for command in command_list],scheduler='processes')
+
 					"""pool = Pool(len(command_list))
 					pool.map(run, command_list)
 					pool.close()

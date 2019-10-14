@@ -312,7 +312,7 @@ def make_new_predictions(test_pkl, model_pickle, batch_size, n_workers, interest
 @click.option('-hcsv', '--hyperparameter_input_csv', default='predictions/predict_hyperparameters_scan_input.csv', show_default=True, help='CSV file containing hyperparameter inputs.', type=click.Path(exists=False))
 @click.option('-hl', '--hyperparameter_output_log', default='predictions/predict_hyperparameters_log.csv', show_default=True, help='CSV file containing prior runs.', type=click.Path(exists=False))
 @click.option('-g', '--generate_input', is_flag=True, help='Generate hyperparameter input csv.')
-@click.option('-c', '--job_chunk_size', default=4, help='If not series, chunk up and run these number of commands at once..')
+@click.option('-c', '--job_chunk_size', default=1, help='If not series, chunk up and run these number of commands at once..')
 @click.option('-ic', '--interest_cols', default=['disease_only'], multiple=True, help='Column to stratify samples on.')
 @click.option('-cat', '--categorical', is_flag=True, help='Whether to run categorical analysis or not.')
 @click.option('-r', '--reset_all', is_flag=True, help='Run all jobs again.')

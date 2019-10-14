@@ -24,4 +24,5 @@ setup(name='methylnet',
                         'ruamel.yaml',
                         #'modin',
                         'statsmodels',
-                        'mlxtend'])
+                        'mlxtend',
+                        'dask'])
