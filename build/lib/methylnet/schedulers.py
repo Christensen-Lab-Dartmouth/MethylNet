@@ -84,15 +84,16 @@ class Scheduler:
     """
 
     def __init__(self, optimizer=None, opts=dict(scheduler='null',lr_scheduler_decay=0.5,T_max=10,eta_min=5e-8,T_mult=2)):
-        self.schedulers = {'exp':(lambda optimizer: ExponentialLR(optimizer, opts["lr_scheduler_decay"])),
-                            'null':(lambda optimizer: None),
-                            'warm_restarts':(lambda optimizer: CosineAnnealingWithRestartsLR(optimizer, T_max=opts['T_max'], eta_min=opts['eta_min'], last_epoch=-1, T_mult=opts['T_mult']))}
-        self.scheduler_step_fn = {'exp':(lambda scheduler: scheduler.step()),
-                                  'warm_restarts':(lambda scheduler: scheduler.step()),
-                                  'null':(lambda scheduler: None)}
-        self.initial_lr = optimizer.param_groups[0]['lr']
-        self.scheduler_choice = opts['scheduler']
-        self.scheduler = self.schedulers[self.scheduler_choice](optimizer) if optimizer is not None else None
+        if optimizer!=None:
+            self.schedulers = {'exp':(lambda optimizer: ExponentialLR(optimizer, opts["lr_scheduler_decay"])),
+                                'null':(lambda optimizer: None),
+                                'warm_restarts':(lambda optimizer: CosineAnnealingWithRestartsLR(optimizer, T_max=opts['T_max'], eta_min=opts['eta_min'], last_epoch=-1, T_mult=opts['T_mult']))}
+            self.scheduler_step_fn = {'exp':(lambda scheduler: scheduler.step()),
+                                      'warm_restarts':(lambda scheduler: scheduler.step()),
+                                      'null':(lambda scheduler: None)}
+            self.initial_lr = optimizer.param_groups[0]['lr']
+            self.scheduler_choice = opts['scheduler']
+            self.scheduler = self.schedulers[self.scheduler_choice](optimizer) if optimizer is not None else None
 
     def step(self):
         """Update optimizer learning rate"""

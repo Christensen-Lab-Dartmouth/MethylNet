@@ -1,4 +1,5 @@
-pymethylprocess
+pymethylprocess>=0.1.5
 ruamel.yaml
 statsmodels
 mlxtend
+dask

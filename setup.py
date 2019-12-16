@@ -2,7 +2,7 @@ from setuptools import setup
 with open('README.md','r', encoding='utf-8') as f:
       long_description = f.read()
 setup(name='methylnet',
-      version='0.1.2',
+      version='0.1.3',
       description='A modular deep learning approach for Methylation Predictions.',
       url='https://github.com/Christensen-Lab-Dartmouth/MethylNet',
       author='Joshua Levy',
@@ -20,9 +20,11 @@ setup(name='methylnet',
       long_description=long_description,
       long_description_content_type='text/markdown',
       packages=['methylnet'],
-      install_requires=['pymethylprocess',
+      install_requires=['pymethylprocess>=0.1.5',
                         'ruamel.yaml',
                         #'modin',
+                        'torch',
                         'statsmodels',
                         'mlxtend',
-                        'dask'])
+                        'dask',
+                        'networkx'])

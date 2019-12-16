@@ -30,6 +30,9 @@ def assemble_replace_dict(command, use_gpu, additions, queue, time, ngpu):
         Dictionary used to update Torque Script.
 
     """
+    if isinstance(additions,(list,tuple)):
+        additions='\n'.join(additions)
+
     replace_dict = {'COMMAND':"{} {}".format('CUDA_VISIBLE_DEVICES="$gpuNum"' if use_gpu else '',command),
                 'GPU_SETUP':"""gpuNum=`cat $PBS_GPUFILE | sed -e 's/.*-gpu//g'`
 unset CUDA_VISIBLE_DEVICES

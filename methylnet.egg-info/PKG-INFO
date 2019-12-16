@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: methylnet
-Version: 0.1.2
+Version: 0.1.3
 Summary: A modular deep learning approach for Methylation Predictions.
 Home-page: https://github.com/Christensen-Lab-Dartmouth/MethylNet
 Author: Joshua Levy
