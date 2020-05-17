@@ -36,7 +36,7 @@ def assemble_replace_dict(command, use_gpu, additions, queue, time, ngpu):
     replace_dict = {'COMMAND':"{} {}".format('CUDA_VISIBLE_DEVICES="$gpuNum"' if use_gpu else '',command),
                 'GPU_SETUP':"""gpuNum=`cat $PBS_GPUFILE | sed -e 's/.*-gpu//g'`
 unset CUDA_VISIBLE_DEVICES
-export CUDA_DEVICE=$gpuNum""" if use_gpu else '',
+export CUDA_VISIBLE_DEVICES=$gpuNum""" if use_gpu else '',
                 'NGPU':'#PBS -l gpus={}'.format(ngpu) if (use_gpu and ngpu) else '',
                 'USE_GPU':"#PBS -l feature=gpu" if use_gpu else '',
                 'TIME':str(time),'QUEUE':queue,'ADDITIONS':additions}
