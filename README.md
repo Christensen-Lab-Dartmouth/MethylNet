@@ -6,7 +6,7 @@ MethylNet is a command line tool and python library that provides classes to han
 
 Please check out our code ocean demo at: https://codeocean.com/capsule/5473199/
 
-https://www.biorxiv.org/content/10.1101/692665v1   
+Featured in BMC Bioinformatics: https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-020-3443-8  
 
 Help docs: https://christensen-lab-dartmouth.github.io/MethylNet/  
 

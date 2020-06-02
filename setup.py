@@ -27,4 +27,5 @@ setup(name='methylnet',
                         'statsmodels',
                         'mlxtend',
                         'dask',
-                        'networkx'])
+                        'networkx',
+                        'submit_hpc'])

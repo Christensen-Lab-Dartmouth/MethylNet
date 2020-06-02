@@ -1,5 +1,5 @@
 import click, os
-from methylnet.torque_jobs import *
+from submit_hpc.job_generator import *
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h','--help'], max_content_width=90)
 
